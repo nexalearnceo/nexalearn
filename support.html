@@ -1,0 +1,1520 @@
+```html id="q8x4tw"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn - Support</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #06101d;
+      color: #eef6ff;
+    }
+
+    .layout {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 230px;
+      background: #081827;
+      border-right: 1px solid #173047;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      color: #3ddc97;
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      font-size: 10px;
+      color: #7890a5;
+      letter-spacing: 1.2px;
+      margin-bottom: 28px;
+    }
+
+    .nav a {
+      display: block;
+      text-decoration: none;
+      color: #9fb1c2;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 7px;
+      transition: .2s;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #10263a;
+      color: #fff;
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: 230px;
+      width: calc(100% - 230px);
+      padding: 30px;
+    }
+
+    .content {
+      max-width: 1050px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: #91a5b8;
+      line-height: 1.5;
+    }
+
+    /* SUPPORT OPTIONS */
+    .support-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+
+    .support-card {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 15px;
+      padding: 18px;
+    }
+
+    .support-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      background: #102b40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 13px;
+      font-size: 19px;
+    }
+
+    .support-title {
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .support-text {
+      color: #8298aa;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* MAIN GRID */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    .panel-subtitle {
+      color: #8298aa;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    /* FORM */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #b9c9d7;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: #071522;
+      color: #fff;
+      border: 1px solid #294258;
+      border-radius: 10px;
+      padding: 12px 13px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 145px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #3ddc97;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #61788b;
+    }
+
+    .submit-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 13px;
+      background: #3ddc97;
+      color: #06101d;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #52e4a5;
+    }
+
+    .submit-btn:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    /* MESSAGE */
+    .message {
+      display: none;
+      padding: 13px 14px;
+      margin-bottom: 17px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .message.success {
+      display: block;
+      background: #10382a;
+      border: 1px solid #1c6349;
+      color: #75e5ae;
+    }
+
+    .message.error {
+      display: block;
+      background: #402029;
+      border: 1px solid #733847;
+      color: #ff99a8;
+    }
+
+    /* FAQ */
+    .faq-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .faq-item {
+      border: 1px solid #173047;
+      background: #071522;
+      border-radius: 11px;
+      overflow: hidden;
+    }
+
+    .faq-question {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #e4edf5;
+      padding: 14px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .faq-question span:last-child {
+      color: #3ddc97;
+      font-size: 16px;
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 14px 14px;
+      color: #8298aa;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+
+    /* REQUESTS */
+    .requests-panel {
+      margin-top: 20px;
+    }
+
+    .request-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .request {
+      background: #071522;
+      border: 1px solid #173047;
+      border-radius: 11px;
+      padding: 14px;
+    }
+
+    .request-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 7px;
+    }
+
+    .request-subject {
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .request-status {
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pending {
+      background: #3c3114;
+      color: #f4cc68;
+    }
+
+    .resolved {
+      background: #10382a;
+      color: #73e3ac;
+    }
+
+    .request-category {
+      color: #6f879a;
+      font-size: 11px;
+      margin-bottom: 7px;
+    }
+
+    .request-message {
+      color: #9aacbb;
+      font-size: 12px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .request-date {
+      margin-top: 8px;
+      color: #627b8e;
+      font-size: 10px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #7d93a6;
+      padding: 18px 0;
+      font-size: 12px;
+    }
+
+    /* CONTACT */
+    .contact-box {
+      margin-top: 20px;
+      background: #091724;
+      border: 1px solid #173047;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .contact-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    .contact-text {
+      color: #8298aa;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    /* MOBILE */
+    @media (max-width: 1000px) {
+
+      .support-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+
+      .layout {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+        width: 100%;
+        padding: 18px 15px;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 15px 30px;
+      }
+
+      .content {
+        max-width: none;
+      }
+
+      .page-header h1 {
+        font-size: 27px;
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      .sidebar {
+        padding: 16px 12px;
+      }
+
+      .main {
+        padding: 16px 12px 28px;
+      }
+
+      .support-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel,
+      .support-card,
+      .contact-box {
+        padding: 16px;
+        border-radius: 15px;
+      }
+
+      input,
+      select,
+      textarea {
+        font-size: 16px;
+      }
+
+      .request-top {
+        flex-direction: column;
+      }
+
+      .request-status {
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="logo">
+      NexaLearn
+    </div>
+
+    <div class="tagline">
+      LEARN • COMPLETE • EARN
+    </div>
+
+    <nav class="nav">
+
+      <a href="dashboard.html">
+        Dashboard
+      </a>
+
+      <a href="tasks.html">
+        Tasks
+      </a>
+
+      <a href="packages.html">
+        Packages
+      </a>
+
+      <a href="wallet.html">
+        Wallet
+      </a>
+
+      <a href="history.html">
+        History
+      </a>
+
+      <a href="profile.html">
+        Profile
+      </a>
+
+      <a href="support.html" class="active">
+        Support
+      </a>
+
+      <a href="login.html">
+        Logout
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="content">
+
+      <div class="page-header">
+
+        <h1>Support Center</h1>
+
+        <p>
+          Get help with your account, wallet, packages, tasks and withdrawals.
+        </p>
+
+      </div>
+
+
+      <!-- SUPPORT OPTIONS -->
+      <section class="support-grid">
+
+        <div class="support-card">
+
+          <div class="support-icon">
+            ?
+          </div>
+
+          <div class="support-title">
+            Account Help
+          </div>
+
+          <div class="support-text">
+            Questions about your profile, login or account details.
+          </div>
+
+        </div>
+
+
+        <div class="support-card">
+
+          <div class="support-icon">
+            K
+          </div>
+
+          <div class="support-title">
+            Wallet Help
+          </div>
+
+          <div class="support-text">
+            Need help with deposits, balance, packages or withdrawals?
+          </div>
+
+        </div>
+
+
+        <div class="support-card">
+
+          <div class="support-icon">
+            ✓
+          </div>
+
+          <div class="support-title">
+            Task Help
+          </div>
+
+          <div class="support-text">
+            Get assistance with task instructions, submissions or rewards.
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <div id="message" class="message"></div>
+
+
+      <div class="main-grid">
+
+        <!-- CONTACT FORM -->
+        <section class="panel">
+
+          <div class="panel-title">
+            Contact Support
+          </div>
+
+          <div class="panel-subtitle">
+            Submit your issue and include enough information for the support team to understand the problem.
+          </div>
+
+
+          <form id="supportForm">
+
+            <div class="form-group">
+
+              <label for="category">
+                Support Category
+              </label>
+
+              <select
+                id="category"
+                required>
+
+                <option value="">
+                  Select a category
+                </option>
+
+                <option value="Account">
+                  Account
+                </option>
+
+                <option value="Deposit">
+                  Deposit
+                </option>
+
+                <option value="Wallet">
+                  Wallet
+                </option>
+
+                <option value="Package">
+                  Package
+                </option>
+
+                <option value="Task">
+                  Task
+                </option>
+
+                <option value="Withdrawal">
+                  Withdrawal
+                </option>
+
+                <option value="Technical">
+                  Technical Issue
+                </option>
+
+                <option value="Other">
+                  Other
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="subject">
+                Subject
+              </label>
+
+              <input
+                type="text"
+                id="subject"
+                placeholder="Example: Deposit not showing"
+                maxlength="100"
+                required>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="supportMessage">
+                Message
+              </label>
+
+              <textarea
+                id="supportMessage"
+                placeholder="Describe your issue clearly..."
+                maxlength="2000"
+                required></textarea>
+
+            </div>
+
+
+            <button
+              type="submit"
+              class="submit-btn"
+              id="submitBtn">
+
+              Submit Support Request
+
+            </button>
+
+          </form>
+
+        </section>
+
+
+        <!-- FAQ -->
+        <section class="panel">
+
+          <div class="panel-title">
+            Frequently Asked Questions
+          </div>
+
+          <div class="panel-subtitle">
+            Common questions about using NexaLearn.
+          </div>
+
+
+          <div class="faq-list">
+
+
+            <div class="faq-item">
+
+              <button
+                type="button"
+                class="faq-question"
+                onclick="toggleFaq(this)">
+
+                <span>
+                  How do I deposit funds?
+                </span>
+
+                <span>
+                  +
+                </span>
+
+              </button>
+
+              <div class="faq-answer">
+                Open Wallet, select Deposit Funds and send your desired amount to the NexaLearn M-Pesa payment number. Then submit your amount, your own M-Pesa number and transaction code for review.
+              </div>
+
+            </div>
+
+
+            <div class="faq-item">
+
+              <button
+                type="button"
+                class="faq-question"
+                onclick="toggleFaq(this)">
+
+                <span>
+                  Are deposits linked to packages?
+                </span>
+
+                <span>
+                  +
+                </span>
+
+              </button>
+
+              <div class="faq-answer">
+                No. A deposit simply adds funds to your wallet after approval. Package activation is a separate action that uses your available wallet balance.
+              </div>
+
+            </div>
+
+
+            <div class="faq-item">
+
+              <button
+                type="button"
+                class="faq-question"
+                onclick="toggleFaq(this)">
+
+                <span>
+                  How do I activate a package?
+                </span>
+
+                <span>
+                  +
+                </span>
+
+              </button>
+
+              <div class="faq-answer">
+                Make sure your wallet contains enough funds, open Packages, select a package and continue with activation. The package fee is deducted from the wallet in the current development version.
+              </div>
+
+            </div>
+
+
+            <div class="faq-item">
+
+              <button
+                type="button"
+                class="faq-question"
+                onclick="toggleFaq(this)">
+
+                <span>
+                  What task categories are available?
+                </span>
+
+                <span>
+                  +
+                </span>
+
+              </button>
+
+              <div class="faq-answer">
+                NexaLearn currently supports Data Annotation, Audio, Swahili to English Language Translation and Image Annotation.
+              </div>
+
+            </div>
+
+
+            <div class="faq-item">
+
+              <button
+                type="button"
+                class="faq-question"
+                onclick="toggleFaq(this)">
+
+                <span>
+                  When is a withdrawal deducted?
+                </span>
+
+                <span>
+                  +
+                </span>
+
+              </button>
+
+              <div class="faq-answer">
+                In this development version, a withdrawal request is pending until reviewed. The wallet deduction is intended to happen when the request is approved.
+              </div>
+
+            </div>
+
+
+            <div class="faq-item">
+
+              <button
+                type="button"
+                class="faq-question"
+                onclick="toggleFaq(this)">
+
+                <span>
+                  Where can I see my activity?
+                </span>
+
+                <span>
+                  +
+                </span>
+
+              </button>
+
+              <div class="faq-answer">
+                Open History to review deposits, package activations, task earnings and withdrawals.
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </section>
+
+      </div>
+
+
+      <!-- SUPPORT REQUEST HISTORY -->
+      <section class="panel requests-panel">
+
+        <div class="panel-title">
+          My Support Requests
+        </div>
+
+        <div class="panel-subtitle">
+          Review the support requests you have submitted from this browser.
+        </div>
+
+        <div
+          id="requestList"
+          class="request-list">
+        </div>
+
+      </section>
+
+
+      <!-- CONTACT INFO -->
+      <section class="contact-box">
+
+        <div class="contact-title">
+          Need urgent account assistance?
+        </div>
+
+        <div class="contact-text">
+          Submit a support request with the correct category and a clear description.
+          Keep your transaction references available when asking about deposits or withdrawals.
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  function readJSON(key, fallback) {
+
+    try {
+
+      const value =
+        JSON.parse(
+          localStorage.getItem(key) ||
+          JSON.stringify(fallback)
+        );
+
+      return value;
+
+    } catch (error) {
+
+      return fallback;
+
+    }
+
+  }
+
+
+  function writeJSON(key, value) {
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
+    );
+
+  }
+
+
+  function getUser() {
+
+    return readJSON(
+      "nexaLearnUser",
+      null
+    );
+
+  }
+
+
+  function getUserName(user) {
+
+    if (!user) {
+      return "NexaLearn Member";
+    }
+
+    if (user.name) {
+      return user.name;
+    }
+
+    if (user.fullName) {
+      return user.fullName;
+    }
+
+    const first =
+      user.firstName ||
+      user.first_name ||
+      "";
+
+    const last =
+      user.lastName ||
+      user.last_name ||
+      "";
+
+    return (
+      `${first} ${last}`
+        .trim() ||
+      "NexaLearn Member"
+    );
+
+  }
+
+
+  function getUserEmail(user) {
+
+    return user?.email || "";
+
+  }
+
+
+  function showMessage(text, type) {
+
+    const box =
+      document.getElementById(
+        "message"
+      );
+
+    box.textContent =
+      text;
+
+    box.className =
+      "message " + type;
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  function getRequests() {
+
+    const requests =
+      readJSON(
+        "nexaLearnSupportRequests",
+        []
+      );
+
+    return Array.isArray(requests)
+      ? requests
+      : [];
+
+  }
+
+
+  function saveRequests(requests) {
+
+    writeJSON(
+      "nexaLearnSupportRequests",
+      requests
+    );
+
+  }
+
+
+  function userMatches(request) {
+
+    const user =
+      getUser();
+
+    if (!user) {
+      return true;
+    }
+
+    const email =
+      String(
+        user.email ||
+        ""
+      ).toLowerCase();
+
+    const requestEmail =
+      String(
+        request.userEmail ||
+        ""
+      ).toLowerCase();
+
+
+    if (
+      email &&
+      requestEmail
+    ) {
+      return email === requestEmail;
+    }
+
+
+    const name =
+      getUserName(
+        user
+      ).toLowerCase();
+
+
+    const requestName =
+      String(
+        request.userName ||
+        ""
+      ).toLowerCase();
+
+
+    if (
+      name &&
+      requestName
+    ) {
+      return name === requestName;
+    }
+
+
+    return true;
+
+  }
+
+
+  function formatDate(value) {
+
+    if (!value) {
+      return "—";
+    }
+
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return "—";
+    }
+
+    return date.toLocaleString(
+      "en-KE",
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
+
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replaceAll(
+        "&",
+        "&amp;"
+      )
+      .replaceAll(
+        "<",
+        "&lt;"
+      )
+      .replaceAll(
+        ">",
+        "&gt;"
+      )
+      .replaceAll(
+        '"',
+        "&quot;"
+      )
+      .replaceAll(
+        "'",
+        "&#039;"
+      );
+
+  }
+
+
+  function toggleFaq(button) {
+
+    const item =
+      button.closest(
+        ".faq-item"
+      );
+
+    const isOpen =
+      item.classList.contains(
+        "open"
+      );
+
+
+    document
+      .querySelectorAll(
+        ".faq-item"
+      )
+      .forEach(
+        element => {
+
+          element.classList.remove(
+            "open"
+          );
+
+          const icon =
+            element.querySelector(
+              ".faq-question span:last-child"
+            );
+
+          if (icon) {
+            icon.textContent = "+";
+          }
+
+        }
+      );
+
+
+    if (!isOpen) {
+
+      item.classList.add(
+        "open"
+      );
+
+      const icon =
+        item.querySelector(
+          ".faq-question span:last-child"
+        );
+
+      if (icon) {
+        icon.textContent = "−";
+      }
+
+    }
+
+  }
+
+
+  function renderRequests() {
+
+    const container =
+      document.getElementById(
+        "requestList"
+      );
+
+
+    const requests =
+      getRequests()
+        .filter(
+          request =>
+            userMatches(request)
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.date || 0).getTime() -
+            new Date(a.date || 0).getTime()
+        );
+
+
+    if (!requests.length) {
+
+      container.innerHTML = `
+
+        <div class="empty">
+          You have not submitted a support request yet.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      requests.map(
+        request => {
+
+          const status =
+            String(
+              request.status ||
+              "Pending"
+            ).toLowerCase();
+
+
+          const statusClass =
+            status === "resolved"
+              ? "resolved"
+              : "pending";
+
+
+          return `
+
+            <div class="request">
+
+              <div class="request-top">
+
+                <div class="request-subject">
+                  ${escapeHtml(
+                    request.subject ||
+                    "Support Request"
+                  )}
+                </div>
+
+                <span class="request-status ${statusClass}">
+                  ${escapeHtml(
+                    request.status ||
+                    "Pending"
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="request-category">
+                Category:
+                ${escapeHtml(
+                  request.category ||
+                  "Other"
+                )}
+              </div>
+
+
+              <div class="request-message">
+                ${escapeHtml(
+                  request.message ||
+                  ""
+                )}
+              </div>
+
+
+              <div class="request-date">
+                Submitted:
+                ${formatDate(
+                  request.date
+                )}
+              </div>
+
+            </div>
+
+          `;
+
+        }
+      ).join("");
+
+  }
+
+
+  document
+    .getElementById(
+      "supportForm"
+    )
+    .addEventListener(
+      "submit",
+      function(event) {
+
+        event.preventDefault();
+
+
+        const user =
+          getUser();
+
+
+        if (!user) {
+
+          showMessage(
+            "Please log in before submitting a support request.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        const category =
+          document.getElementById(
+            "category"
+          ).value;
+
+
+        const subject =
+          document.getElementById(
+            "subject"
+          ).value.trim();
+
+
+        const message =
+          document.getElementById(
+            "supportMessage"
+          ).value.trim();
+
+
+        const submitBtn =
+          document.getElementById(
+            "submitBtn"
+          );
+
+
+        if (!category) {
+
+          showMessage(
+            "Please select a support category.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (
+          !subject ||
+          subject.length < 3
+        ) {
+
+          showMessage(
+            "Enter a clear support subject.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (
+          !message ||
+          message.length < 10
+        ) {
+
+          showMessage(
+            "Please provide more details about your issue.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        submitBtn.disabled = true;
+
+        submitBtn.textContent =
+          "Submitting...";
+
+
+        const requests =
+          getRequests();
+
+
+        const request = {
+
+          id:
+            "SUP-" +
+            Date.now(),
+
+          userName:
+            getUserName(user),
+
+          userEmail:
+            getUserEmail(user),
+
+          category:
+            category,
+
+          subject:
+            subject,
+
+          message:
+            message,
+
+          date:
+            new Date().toISOString(),
+
+          status:
+            "Pending"
+
+        };
+
+
+        requests.unshift(
+          request
+        );
+
+
+        saveRequests(
+          requests
+        );
+
+
+        showMessage(
+          "Your support request has been submitted successfully.",
+          "success"
+        );
+
+
+        document
+          .getElementById(
+            "supportForm"
+          )
+          .reset();
+
+
+        submitBtn.disabled =
+          false;
+
+        submitBtn.textContent =
+          "Submit Support Request";
+
+
+        renderRequests();
+
+      });
+
+
+  renderRequests();
+
+
+  window.addEventListener(
+    "storage",
+    renderRequests
+  );
+
+
+  document.addEventListener(
+    "visibilitychange",
+    function() {
+
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+        renderRequests();
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
+```

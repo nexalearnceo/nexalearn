@@ -1,0 +1,957 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NexaLearn - Tasks</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #06101d;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 70px;
+            background: #0b1828;
+            border-bottom: 1px solid #1c3045;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #39d98a;
+        }
+
+        .back-link {
+            color: #9db1c6;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #9db1c6;
+            line-height: 1.6;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            background: #0b1828;
+            color: #9db1c6;
+            border: 1px solid #1c3045;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            color: #ffffff;
+            border-color: #294158;
+        }
+
+        .filter-btn.active {
+            background: #39d98a;
+            color: #06101d;
+            border-color: #39d98a;
+            font-weight: bold;
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background: #0b1828;
+            border: 1px solid #1c3045;
+            border-radius: 14px;
+            padding: 25px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            border-color: #294158;
+        }
+
+        .task-category {
+            display: inline-block;
+            padding: 6px 10px;
+            background: #16283a;
+            color: #9db1c6;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .task-card h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+        }
+
+        .task-description {
+            color: #9db1c6;
+            line-height: 1.6;
+            min-height: 52px;
+            margin-bottom: 20px;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .reward {
+            color: #39d98a;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .start-btn {
+            padding: 11px 18px;
+            background: #39d98a;
+            color: #06101d;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .start-btn:hover {
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            color: #9db1c6;
+            padding: 50px 20px;
+        }
+
+        .message {
+            background: #0b1828;
+            border: 1px solid #1c3045;
+            border-radius: 12px;
+            padding: 25px;
+            color: #9db1c6;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .error {
+            color: #ff9da8;
+            border-color: #683039;
+            background: #30171b;
+        }
+
+        .empty {
+            color: #9db1c6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 750px) {
+
+            .topbar {
+                padding: 0 18px;
+            }
+
+            .container {
+                margin: 25px auto;
+                padding: 0 12px;
+            }
+
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .start-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <div class="logo">
+        Nexa<span>Learn</span>
+    </div>
+
+    <a href="dashboard.html" class="back-link">
+        ← Dashboard
+    </a>
+
+</div>
+
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h1>Available Tasks</h1>
+
+        <p>
+            Complete available tasks and earn KSh 50 for every verified submission.
+            Rewards are credited immediately.
+        </p>
+
+    </div>
+
+
+    <div class="filters">
+
+        <button
+            class="filter-btn active"
+            data-category="All">
+            All Tasks
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Language Translation">
+            Language Translation
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Data Annotation">
+            Data Annotation
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Audio">
+            Audio
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Image Annotation">
+            Image Annotation
+        </button>
+
+    </div>
+
+
+    <div id="loadingArea" class="loading">
+        Loading available tasks...
+    </div>
+
+
+    <div
+        id="messageArea"
+        class="message hidden">
+    </div>
+
+
+    <div
+        id="tasksGrid"
+        class="tasks-grid">
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   SUPABASE
+   ========================================================= */
+
+const SUPABASE_URL =
+    "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+        {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        }
+    );
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+let currentUser = null;
+
+let allTasks = [];
+
+let currentCategory = "All";
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const loadingArea =
+    document.getElementById("loadingArea");
+
+const messageArea =
+    document.getElementById("messageArea");
+
+const tasksGrid =
+    document.getElementById("tasksGrid");
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   GET CURRENT USER
+   ========================================================= */
+
+async function getCurrentUser() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.getUser();
+
+
+    if (error) {
+        throw error;
+    }
+
+
+    if (
+        !data ||
+        !data.user
+    ) {
+
+        window.location.href =
+            "login.html";
+
+        return null;
+    }
+
+
+    return data.user;
+}
+
+
+/* =========================================================
+   START TASK
+   ========================================================= */
+
+async function startTask(taskId) {
+
+    if (!taskId) {
+
+        alert(
+            "Task ID is missing."
+        );
+
+        return;
+    }
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Check Supabase again before opening
+     * the task.
+     *
+     * This prevents a task that was deleted
+     * or deactivated by the admin from being
+     * opened using an old task ID.
+     */
+
+    const {
+        data: task,
+        error
+    } = await supabaseClient
+        .from("tasks")
+        .select("id,status")
+        .eq("id", taskId)
+        .eq("status", "active")
+        .maybeSingle();
+
+
+    if (
+        error ||
+        !task
+    ) {
+
+        /*
+         * Remove the old task from local storage.
+         */
+
+        localStorage.removeItem(
+            "nexaLearnCurrentTaskId"
+        );
+
+
+        alert(
+            "This task is no longer available."
+        );
+
+
+        /*
+         * Reload the task list.
+         */
+
+        await loadTasks();
+
+        return;
+    }
+
+
+    /*
+     * Save current task.
+     */
+
+    localStorage.setItem(
+        "nexaLearnCurrentTaskId",
+        taskId
+    );
+
+
+    /*
+     * Verify it was saved.
+     */
+
+    const savedTaskId =
+        localStorage.getItem(
+            "nexaLearnCurrentTaskId"
+        );
+
+
+    if (
+        savedTaskId !==
+        taskId
+    ) {
+
+        alert(
+            "Unable to save the selected task."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Open workspace.
+     */
+
+    window.location.href =
+        "/task-workspace";
+}
+
+
+/* =========================================================
+   LOAD TASKS
+   ========================================================= */
+
+async function loadTasks() {
+
+    try {
+
+        /*
+         * Show loading state.
+         */
+
+        loadingArea.classList.remove(
+            "hidden"
+        );
+
+
+        messageArea.classList.add(
+            "hidden"
+        );
+
+
+        tasksGrid.innerHTML =
+            "";
+
+
+        /*
+         * Get logged-in user.
+         */
+
+        currentUser =
+            await getCurrentUser();
+
+
+        if (!currentUser) {
+            return;
+        }
+
+
+        /*
+         * ONLY ACTIVE TASKS ARE LOADED.
+         *
+         * There are NO fallback tasks.
+         *
+         * If admin deletes a task from Supabase,
+         * it will not appear here.
+         */
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("tasks")
+            .select(`
+                id,
+                title,
+                category,
+                description,
+                reward,
+                currency,
+                status,
+                created_at
+            `)
+            .eq(
+                "status",
+                "active"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        /*
+         * Only keep active tasks.
+         */
+
+        allTasks =
+            (data || []).filter(
+                task =>
+                    String(
+                        task.status || ""
+                    ).toLowerCase() ===
+                    "active"
+            );
+
+
+        /*
+         * Remove any saved task ID that
+         * is no longer active.
+         */
+
+        const savedTaskId =
+            localStorage.getItem(
+                "nexaLearnCurrentTaskId"
+            );
+
+
+        if (savedTaskId) {
+
+            const stillActive =
+                allTasks.some(
+                    task =>
+                        String(task.id) ===
+                        String(savedTaskId)
+                );
+
+
+            if (!stillActive) {
+
+                localStorage.removeItem(
+                    "nexaLearnCurrentTaskId"
+                );
+
+            }
+        }
+
+
+        loadingArea.classList.add(
+            "hidden"
+        );
+
+
+        renderTasks();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Task loading error:",
+            error
+        );
+
+
+        loadingArea.classList.add(
+            "hidden"
+        );
+
+
+        tasksGrid.innerHTML =
+            "";
+
+
+        messageArea.textContent =
+            "Unable to load tasks: " +
+            (
+                error?.message ||
+                "Unknown error"
+            );
+
+
+        messageArea.className =
+            "message error";
+
+
+        messageArea.classList.remove(
+            "hidden"
+        );
+    }
+}
+
+
+/* =========================================================
+   RENDER TASKS
+   ========================================================= */
+
+function renderTasks() {
+
+    let filteredTasks =
+        allTasks;
+
+
+    if (
+        currentCategory !==
+        "All"
+    ) {
+
+        filteredTasks =
+            allTasks.filter(
+                task =>
+                    task.category ===
+                    currentCategory
+            );
+    }
+
+
+    tasksGrid.innerHTML =
+        "";
+
+
+    if (
+        filteredTasks.length ===
+        0
+    ) {
+
+        tasksGrid.innerHTML = `
+
+            <div class="message empty">
+
+                No tasks are currently available
+                in this category.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    filteredTasks.forEach(
+        task => {
+
+            /*
+             * Extra safety:
+             *
+             * Never render a task unless
+             * its status is active.
+             */
+
+            if (
+                String(
+                    task.status || ""
+                ).toLowerCase() !==
+                "active"
+            ) {
+                return;
+            }
+
+
+            const reward =
+                Number(
+                    task.reward || 50
+                );
+
+
+            const currency =
+                task.currency ||
+                "KES";
+
+
+            const currencyDisplay =
+                currency === "KES"
+                    ? "KSh"
+                    : currency;
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "task-card";
+
+
+            card.innerHTML = `
+
+                <div class="task-category">
+                    ${escapeHtml(
+                        task.category ||
+                        "Task"
+                    )}
+                </div>
+
+                <h2>
+                    ${escapeHtml(
+                        task.title ||
+                        "NexaLearn Task"
+                    )}
+                </h2>
+
+                <div class="task-description">
+                    ${escapeHtml(
+                        task.description ||
+                        "Complete this task accurately."
+                    )}
+                </div>
+
+                <div class="task-footer">
+
+                    <div class="reward">
+
+                        ${currencyDisplay}
+                        ${reward.toLocaleString(
+                            "en-KE"
+                        )}
+
+                        / task
+
+                    </div>
+
+                    <button
+                        class="start-btn"
+                        type="button"
+                        data-task-id="${escapeHtml(
+                            task.id
+                        )}">
+
+                        Start Task
+
+                    </button>
+
+                </div>
+            `;
+
+
+            tasksGrid.appendChild(
+                card
+            );
+        }
+    );
+
+
+    /*
+     * Attach Start Task events.
+     */
+
+    document
+        .querySelectorAll(
+            ".start-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const taskId =
+                            this.getAttribute(
+                                "data-task-id"
+                            );
+
+
+                        startTask(
+                            taskId
+                        );
+
+                    }
+                );
+
+            }
+        );
+}
+
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+document
+    .querySelectorAll(
+        ".filter-btn"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    document
+                        .querySelectorAll(
+                            ".filter-btn"
+                        )
+                        .forEach(
+                            btn => {
+
+                                btn.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                    this.classList.add(
+                        "active"
+                    );
+
+
+                    currentCategory =
+                        this.getAttribute(
+                            "data-category"
+                        ) ||
+                        "All";
+
+
+                    renderTasks();
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   REFRESH WHEN USER RETURNS TO PAGE
+   ========================================================= */
+
+window.addEventListener(
+    "pageshow",
+    function () {
+
+        loadTasks();
+
+    }
+);
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+loadTasks();
+
+</script>
+
+</body>
+</html>
+```

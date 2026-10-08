@@ -1,0 +1,1639 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn Withdraw</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #06101d;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 230px;
+      height: 100vh;
+      background: #091827;
+      border-right: 1px solid #17283b;
+      padding: 25px 15px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .logo h2 {
+      color: #3b82f6;
+      font-size: 23px;
+    }
+
+    .logo p {
+      font-size: 10px;
+      color: #8392a5;
+      margin-top: 5px;
+      letter-spacing: 1px;
+    }
+
+    .nav a {
+      display: block;
+      padding: 13px 15px;
+      margin-bottom: 7px;
+      text-decoration: none;
+      color: #aebbc9;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #102a45;
+      color: #fff;
+    }
+
+    .logout {
+      position: absolute;
+      bottom: 25px;
+      left: 15px;
+      right: 15px;
+    }
+
+    .logout a {
+      color: #ef4444;
+    }
+
+    .main {
+      margin-left: 230px;
+      padding: 35px;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+    }
+
+    .header p {
+      color: #8492a4;
+      margin-top: 7px;
+    }
+
+    .balance-card {
+      background: linear-gradient(135deg, #0d2b4d, #0a1b2e);
+      border: 1px solid #1b3b5b;
+      border-radius: 14px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .balance-card span {
+      color: #91a1b4;
+      font-size: 13px;
+    }
+
+    .balance-card h2 {
+      font-size: 32px;
+      margin-top: 8px;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .card {
+      background: #0b1a2b;
+      border: 1px solid #17283b;
+      border-radius: 12px;
+      padding: 25px;
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      font-size: 19px;
+    }
+
+    .form-group {
+      margin-bottom: 17px;
+    }
+
+    label {
+      display: block;
+      color: #aebbc9;
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      background: #071422;
+      border: 1px solid #20354b;
+      border-radius: 7px;
+      color: white;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #3b82f6;
+    }
+
+    .method-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .method-btn {
+      padding: 12px;
+      background: #071422;
+      border: 1px solid #20354b;
+      border-radius: 7px;
+      color: #aebbc9;
+      cursor: pointer;
+    }
+
+    .method-btn.active {
+      background: #102f50;
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 7px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .submit-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .submit-btn:disabled {
+      background: #334155;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      padding: 12px;
+      border-radius: 7px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    .success {
+      display: block;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+    }
+
+    .error {
+      display: block;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #f87171;
+    }
+
+    .request {
+      padding: 15px 0;
+      border-bottom: 1px solid #17283b;
+    }
+
+    .request:last-child {
+      border-bottom: none;
+    }
+
+    .request-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .request-amount {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .request-date {
+      color: #75869a;
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    .request-details {
+      color: #9aa9ba;
+      font-size: 12px;
+      margin-top: 9px;
+      line-height: 1.6;
+    }
+
+    .status {
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+    }
+
+    .status-approved {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    .status-rejected {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .admin-note {
+      margin-top: 9px;
+      padding: 9px;
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 3px solid #ef4444;
+      color: #fca5a5;
+      font-size: 12px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #718096;
+      padding: 30px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+
+      .logout {
+        position: static;
+        margin-top: 20px;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <h2>NexaLearn</h2>
+      <p>LEARN • COMPLETE • EARN</p>
+    </div>
+
+    <div class="nav">
+
+      <a href="dashboard.html">Dashboard</a>
+
+      <a href="packages.html">Packages</a>
+
+      <a href="tasks.html">Tasks</a>
+
+      <a href="wallet.html">Wallet</a>
+
+      <a href="history.html">History</a>
+
+      <a href="profile.html">Profile</a>
+
+      <a href="support.html">Support</a>
+
+      <a href="withdraw.html" class="active">Withdraw</a>
+
+    </div>
+
+    <div class="logout">
+      <a href="#" onclick="logout()">Logout</a>
+    </div>
+
+  </aside>
+
+
+  <main class="main">
+
+    <div class="header">
+
+      <h1>Withdraw Funds</h1>
+
+      <p>
+        Request a withdrawal from your NexaLearn account.
+      </p>
+
+    </div>
+
+
+    <div class="balance-card">
+
+      <span>Available Earning Balance</span>
+
+      <h2 id="balance">
+        KES 0.00
+      </h2>
+
+    </div>
+
+
+    <div id="message" class="message"></div>
+
+
+    <div class="content">
+
+      <!-- WITHDRAW FORM -->
+
+      <div class="card">
+
+        <h2>Withdrawal Request</h2>
+
+        <form id="withdrawForm">
+
+          <div class="form-group">
+
+            <label for="accountName">
+              Account Name
+            </label>
+
+            <input
+              type="text"
+              id="accountName"
+              placeholder="Enter account name"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="amount">
+              Amount (KES)
+            </label>
+
+            <input
+              type="number"
+              id="amount"
+              min="1"
+              step="0.01"
+              placeholder="Enter amount"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Withdrawal Method
+            </label>
+
+            <div class="method-buttons">
+
+              <button
+                type="button"
+                class="method-btn active"
+                id="mobileBtn"
+                onclick="selectMethod('Mobile Money')"
+              >
+                Mobile Money
+              </button>
+
+              <button
+                type="button"
+                class="method-btn"
+                id="bankBtn"
+                onclick="selectMethod('Bank Account')"
+              >
+                Bank Account
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- MOBILE MONEY -->
+
+          <div
+            class="form-group"
+            id="mobileGroup"
+          >
+
+            <label for="mobileNumber">
+              M-Pesa Number
+            </label>
+
+            <input
+              type="text"
+              id="mobileNumber"
+              placeholder="e.g. 0712345678"
+              autocomplete="tel"
+            >
+
+          </div>
+
+
+          <!-- BANK -->
+
+          <div
+            class="form-group"
+            id="bankGroup"
+            style="display:none;"
+          >
+
+            <label for="bankName">
+              Bank Name
+            </label>
+
+            <input
+              type="text"
+              id="bankName"
+              placeholder="Enter bank name"
+            >
+
+
+            <label
+              for="bankAccountNumber"
+              style="margin-top:12px;"
+            >
+              Account Number
+            </label>
+
+            <input
+              type="text"
+              id="bankAccountNumber"
+              placeholder="Enter account number"
+            >
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="submit-btn"
+            id="submitBtn"
+          >
+            Submit Withdrawal
+          </button>
+
+        </form>
+
+      </div>
+
+
+      <!-- REQUEST HISTORY -->
+
+      <div class="card">
+
+        <h2>
+          Withdrawal Requests
+        </h2>
+
+        <div id="requests">
+
+          <div class="empty">
+            Loading requests...
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    }
+  );
+
+
+let selectedMethod = "Mobile Money";
+
+let currentBalance = 0;
+
+
+/* =========================================
+   LOAD EARNING BALANCE
+========================================= */
+
+async function loadBalance() {
+
+  try {
+
+    const {
+      data: {
+        user
+      },
+      error: userError
+    } =
+      await supabaseClient.auth.getUser();
+
+
+    if (userError) {
+
+      console.error(
+        "Authentication error:",
+        userError
+      );
+
+      showMessage(
+        "Unable to verify your account.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    if (!user) {
+
+      currentBalance = 0;
+
+      document.getElementById(
+        "balance"
+      ).textContent = "KES 0.00";
+
+      return;
+    }
+
+
+    const {
+      data: wallet,
+      error
+    } =
+      await supabaseClient
+        .from("wallets")
+        .select(`
+          balance,
+          deposit_balance,
+          total_earned,
+          total_withdrawn
+        `)
+        .eq(
+          "user_id",
+          user.id
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "Wallet loading error:",
+        error
+      );
+
+      showMessage(
+        "Unable to load your earning balance.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    if (!wallet) {
+
+      currentBalance = 0;
+
+      document.getElementById(
+        "balance"
+      ).textContent = "KES 0.00";
+
+      return;
+    }
+
+
+    currentBalance =
+      Number(
+        wallet.balance || 0
+      );
+
+
+    document.getElementById(
+      "balance"
+    ).textContent =
+      "KES " +
+      currentBalance.toFixed(2);
+
+
+  } catch (error) {
+
+    console.error(
+      "Balance loading exception:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   SELECT METHOD
+========================================= */
+
+function selectMethod(method) {
+
+  selectedMethod = method;
+
+
+  const mobileBtn =
+    document.getElementById(
+      "mobileBtn"
+    );
+
+  const bankBtn =
+    document.getElementById(
+      "bankBtn"
+    );
+
+  const mobileGroup =
+    document.getElementById(
+      "mobileGroup"
+    );
+
+  const bankGroup =
+    document.getElementById(
+      "bankGroup"
+    );
+
+
+  if (
+    method ===
+    "Mobile Money"
+  ) {
+
+    mobileBtn.classList.add(
+      "active"
+    );
+
+    bankBtn.classList.remove(
+      "active"
+    );
+
+    mobileGroup.style.display =
+      "block";
+
+    bankGroup.style.display =
+      "none";
+
+
+  } else {
+
+    bankBtn.classList.add(
+      "active"
+    );
+
+    mobileBtn.classList.remove(
+      "active"
+    );
+
+    mobileGroup.style.display =
+      "none";
+
+    bankGroup.style.display =
+      "block";
+
+  }
+
+}
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+function showMessage(
+  text,
+  type
+) {
+
+  const message =
+    document.getElementById(
+      "message"
+    );
+
+
+  message.textContent =
+    text;
+
+
+  message.className =
+    "message " + type;
+
+}
+
+
+/* =========================================
+   SUBMIT WITHDRAWAL
+========================================= */
+
+document
+  .getElementById(
+    "withdrawForm"
+  )
+  .addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      const submitBtn =
+        document.getElementById(
+          "submitBtn"
+        );
+
+
+      submitBtn.disabled =
+        true;
+
+
+      submitBtn.textContent =
+        "Checking balance...";
+
+
+      try {
+
+        /* ============================
+           GET USER
+        ============================ */
+
+        const {
+          data: {
+            user
+          },
+          error: userError
+        } =
+          await supabaseClient.auth.getUser();
+
+
+        if (userError) {
+
+          console.error(
+            userError
+          );
+
+          showMessage(
+            "Unable to verify your account.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        if (!user) {
+
+          showMessage(
+            "Please log in before requesting a withdrawal.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        /* ============================
+           FORM DATA
+        ============================ */
+
+        const accountName =
+          document
+            .getElementById(
+              "accountName"
+            )
+            .value
+            .trim();
+
+
+        const amount =
+          Number(
+            document
+              .getElementById(
+                "amount"
+              )
+              .value
+          );
+
+
+        if (!accountName) {
+
+          showMessage(
+            "Please enter the account name.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        if (
+          !amount ||
+          amount <= 0
+        ) {
+
+          showMessage(
+            "Please enter a valid withdrawal amount.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        /* ============================
+           GET FRESH WALLET BALANCE
+        ============================ */
+
+        submitBtn.textContent =
+          "Checking balance...";
+
+
+        const {
+          data: wallet,
+          error: walletError
+        } =
+          await supabaseClient
+            .from("wallets")
+            .select(
+              "balance"
+            )
+            .eq(
+              "user_id",
+              user.id
+            )
+            .maybeSingle();
+
+
+        if (walletError) {
+
+          console.error(
+            "Wallet error:",
+            walletError
+          );
+
+          showMessage(
+            "Unable to verify your earning balance.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        if (!wallet) {
+
+          showMessage(
+            "Wallet account not found.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        const balance =
+          Number(
+            wallet.balance || 0
+          );
+
+
+        currentBalance =
+          balance;
+
+
+        document.getElementById(
+          "balance"
+        ).textContent =
+          "KES " +
+          balance.toFixed(2);
+
+
+        /* ============================
+           CHECK BALANCE
+        ============================ */
+
+        if (
+          amount >
+          balance
+        ) {
+
+          showMessage(
+            "Insufficient earning balance. Available: KES " +
+            balance.toFixed(2),
+            "error"
+          );
+
+          return;
+        }
+
+
+        /* ============================
+           PREPARE ACCOUNT DETAILS
+        ============================ */
+
+        let mpesaNumber =
+          null;
+
+        let accountNumber =
+          null;
+
+
+        /* ============================
+           MOBILE MONEY
+        ============================ */
+
+        if (
+          selectedMethod ===
+          "Mobile Money"
+        ) {
+
+          mpesaNumber =
+            document
+              .getElementById(
+                "mobileNumber"
+              )
+              .value
+              .trim();
+
+
+          if (!mpesaNumber) {
+
+            showMessage(
+              "Please enter your M-Pesa number.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          /*
+            Save the M-Pesa number in
+            the correct database column.
+          */
+
+          accountNumber =
+            mpesaNumber;
+
+
+        }
+
+
+        /* ============================
+           BANK ACCOUNT
+        ============================ */
+
+        else {
+
+          const bankName =
+            document
+              .getElementById(
+                "bankName"
+              )
+              .value
+              .trim();
+
+
+          const bankAccountNumber =
+            document
+              .getElementById(
+                "bankAccountNumber"
+              )
+              .value
+              .trim();
+
+
+          if (
+            !bankName ||
+            !bankAccountNumber
+          ) {
+
+            showMessage(
+              "Please enter the bank name and account number.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          /*
+            Store the bank details
+            together in account_number.
+          */
+
+          accountNumber =
+            bankName +
+            " - " +
+            bankAccountNumber;
+
+        }
+
+
+        /* ============================
+           INSERT REQUEST
+        ============================ */
+
+        submitBtn.textContent =
+          "Submitting...";
+
+
+        const {
+          data: withdrawal,
+          error
+        } =
+          await supabaseClient
+            .from(
+              "withdrawal_requests"
+            )
+            .insert({
+
+              user_id:
+                user.id,
+
+              amount:
+                amount,
+
+              currency:
+                "KES",
+
+              method:
+                selectedMethod,
+
+              mpesa_number:
+                mpesaNumber,
+
+              account_number:
+                accountNumber,
+
+              account_name:
+                accountName,
+
+              status:
+                "pending"
+
+            })
+            .select()
+            .single();
+
+
+        if (error) {
+
+          console.error(
+            "Withdrawal request error:",
+            error
+          );
+
+          showMessage(
+            "Withdrawal request failed: " +
+            error.message,
+            "error"
+          );
+
+          return;
+        }
+
+
+        console.log(
+          "Withdrawal created:",
+          withdrawal
+        );
+
+
+        /* ============================
+           SUCCESS
+        ============================ */
+
+        showMessage(
+          "Withdrawal request submitted successfully.",
+          "success"
+        );
+
+
+        document
+          .getElementById(
+            "withdrawForm"
+          )
+          .reset();
+
+
+        selectedMethod =
+          "Mobile Money";
+
+
+        selectMethod(
+          "Mobile Money"
+        );
+
+
+        await loadBalance();
+
+        await loadRequests();
+
+
+      } catch (error) {
+
+        console.error(
+          "Withdrawal exception:",
+          error
+        );
+
+        showMessage(
+          "Something went wrong while processing your withdrawal.",
+          "error"
+        );
+
+
+      } finally {
+
+        submitBtn.disabled =
+          false;
+
+
+        submitBtn.textContent =
+          "Submit Withdrawal";
+
+      }
+
+    }
+  );
+
+
+/* =========================================
+   LOAD WITHDRAWAL REQUESTS
+========================================= */
+
+async function loadRequests() {
+
+  const requestsContainer =
+    document.getElementById(
+      "requests"
+    );
+
+
+  const {
+    data: {
+      user
+    },
+    error: userError
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  if (
+    userError ||
+    !user
+  ) {
+
+    requestsContainer.innerHTML = `
+      <div class="empty">
+        Please log in to view your withdrawal requests.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "withdrawal_requests"
+      )
+      .select(`
+        id,
+        amount,
+        currency,
+        method,
+        mpesa_number,
+        account_number,
+        account_name,
+        status,
+        admin_note,
+        reviewed_at,
+        created_at
+      `)
+      .eq(
+        "user_id",
+        user.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Request loading error:",
+      error
+    );
+
+    requestsContainer.innerHTML = `
+      <div class="empty">
+        Failed to load withdrawal requests.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    requestsContainer.innerHTML = `
+      <div class="empty">
+        You have no withdrawal requests yet.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  requestsContainer.innerHTML =
+    data
+      .map(
+        request => {
+
+          const status =
+            request.status ||
+            "pending";
+
+
+          const statusLower =
+            String(
+              status
+            ).toLowerCase();
+
+
+          let statusClass =
+            "status-pending";
+
+
+          if (
+            statusLower ===
+            "approved"
+          ) {
+
+            statusClass =
+              "status-approved";
+
+          } else if (
+            statusLower ===
+            "rejected"
+          ) {
+
+            statusClass =
+              "status-rejected";
+
+          }
+
+
+          let paymentDetails =
+            "";
+
+
+          if (
+            request.method ===
+            "Mobile Money"
+          ) {
+
+            paymentDetails =
+              `
+                <strong>
+                  M-Pesa:
+                </strong>
+
+                ${escapeHtml(
+                  request.mpesa_number
+                )}
+              `;
+
+          } else {
+
+            paymentDetails =
+              `
+                <strong>
+                  Bank Account:
+                </strong>
+
+                ${escapeHtml(
+                  request.account_number
+                )}
+              `;
+
+          }
+
+
+          return `
+
+            <div class="request">
+
+              <div class="request-top">
+
+                <div class="request-amount">
+
+                  KES ${Number(
+                    request.amount || 0
+                  ).toFixed(2)}
+
+                </div>
+
+                <span
+                  class="status ${statusClass}"
+                >
+                  ${escapeHtml(
+                    status
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="request-date">
+
+                Submitted:
+                ${formatDate(
+                  request.created_at
+                )}
+
+              </div>
+
+
+              <div class="request-details">
+
+                <strong>
+                  Account Name:
+                </strong>
+
+                ${escapeHtml(
+                  request.account_name
+                )}
+
+                <br>
+
+                <strong>
+                  Method:
+                </strong>
+
+                ${escapeHtml(
+                  request.method
+                )}
+
+                <br>
+
+                ${paymentDetails}
+
+                ${
+                  request.reviewed_at
+                    ?
+                    `
+                      <br>
+
+                      <strong>
+                        Reviewed:
+                      </strong>
+
+                      ${formatDate(
+                        request.reviewed_at
+                      )}
+                    `
+                    :
+                    ""
+                }
+
+              </div>
+
+
+              ${
+                statusLower ===
+                  "rejected" &&
+                request.admin_note
+                  ?
+                  `
+                    <div class="admin-note">
+
+                      <strong>
+                        Admin Note:
+                      </strong>
+
+                      <br>
+
+                      ${escapeHtml(
+                        request.admin_note
+                      )}
+
+                    </div>
+                  `
+                  :
+                  ""
+              }
+
+            </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/* =========================================
+   FORMAT DATE
+========================================= */
+
+function formatDate(date) {
+
+  if (!date) {
+    return "-";
+  }
+
+
+  return new Date(
+    date
+  ).toLocaleString();
+
+}
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+async function logout() {
+
+  await supabaseClient
+    .auth
+    .signOut();
+
+
+  localStorage.removeItem(
+    "nexaLearnLoggedIn"
+  );
+
+  localStorage.removeItem(
+    "nexaLearnUser"
+  );
+
+  localStorage.removeItem(
+    "nexaLearnUserId"
+  );
+
+  localStorage.removeItem(
+    "nexaLearnBalance"
+  );
+
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+/* =========================================
+   INITIALIZE
+========================================= */
+
+async function initializeWithdrawalPage() {
+
+  await loadBalance();
+
+  await loadRequests();
+
+}
+
+
+initializeWithdrawalPage();
+
+</script>
+
+</body>
+</html>
+```

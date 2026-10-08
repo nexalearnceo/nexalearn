@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexaLearn - Create Account</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #06101d;
+      color: #eef6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      color: #3ddc97;
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .tagline {
+      color: #7890a5;
+      font-size: 10px;
+      letter-spacing: 1.3px;
+    }
+
+    .card {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, .25);
+    }
+
+    h1 {
+      margin: 0 0 7px;
+      font-size: 25px;
+    }
+
+    .subtitle {
+      margin: 0 0 22px;
+      color: #91a5b8;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #b9c9d7;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1px solid #294258;
+      background: #071522;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #3ddc97;
+    }
+
+    input::placeholder {
+      color: #61788b;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 5px 0 18px;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      margin-top: 3px;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      color: #91a5b8;
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: normal;
+    }
+
+    .submit-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      background: #3ddc97;
+      color: #06101d;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #51e4a4;
+    }
+
+    .submit-btn:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      padding: 13px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .message.success {
+      display: block;
+      background: #10382a;
+      border: 1px solid #1c6349;
+      color: #75e5ae;
+    }
+
+    .message.error {
+      display: block;
+      background: #402029;
+      border: 1px solid #733847;
+      color: #ff99a8;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 18px;
+      color: #8197aa;
+      font-size: 13px;
+    }
+
+    .login-link a {
+      color: #3ddc97;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .connection-status {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: #60788b;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+        align-items: flex-start;
+      }
+
+      .container {
+        margin-top: 15px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 15px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      input,
+      select {
+        font-size: 16px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="brand">
+    <div class="logo">NexaLearn</div>
+    <div class="tagline">LEARN • COMPLETE • EARN</div>
+  </div>
+
+  <div class="card">
+
+    <h1>Create Your Account</h1>
+
+    <p class="subtitle">
+      Create your NexaLearn account to access your dashboard,
+      wallet, packages and available tasks.
+    </p>
+
+    <div id="message" class="message"></div>
+
+    <form id="signupForm">
+
+      <div class="grid">
+
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            placeholder="First name"
+            autocomplete="given-name"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            placeholder="Last name"
+            autocomplete="family-name"
+            required
+          >
+        </div>
+
+        <div class="form-group full">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="form-group full">
+          <label for="phone">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            placeholder="07XXXXXXXX"
+            autocomplete="tel"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country</label>
+
+          <select id="country" required>
+            <option value="">Select country</option>
+            <option value="Kenya">Kenya</option>
+            <option value="Uganda">Uganda</option>
+            <option value="Tanzania">Tanzania</option>
+            <option value="Rwanda">Rwanda</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div></div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+
+          <input
+            type="password"
+            id="password"
+            placeholder="Create password"
+            autocomplete="new-password"
+            minlength="6"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+
+          <input
+            type="password"
+            id="confirmPassword"
+            placeholder="Confirm password"
+            autocomplete="new-password"
+            minlength="6"
+            required
+          >
+        </div>
+
+      </div>
+
+      <div class="checkbox-row">
+
+        <input
+          type="checkbox"
+          id="agree"
+          required
+        >
+
+        <label for="agree">
+          I confirm that the information provided is correct
+          and I agree to use the NexaLearn platform according
+          to its terms and policies.
+        </label>
+
+      </div>
+
+      <button
+        type="submit"
+        class="submit-btn"
+        id="submitBtn"
+      >
+        Create Account
+      </button>
+
+    </form>
+
+    <div class="login-link">
+      Already have an account?
+      <a href="login.html">Log in</a>
+    </div>
+
+    <div
+      id="connectionStatus"
+      class="connection-status"
+    >
+      Checking connection...
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /* =====================================================
+     NEW NEXALEARN SUPABASE PROJECT
+     ===================================================== */
+
+  const SUPABASE_URL = "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+  let supabaseClient = null;
+
+
+  /* =====================================================
+     MESSAGE
+     ===================================================== */
+
+  function showMessage(text, type) {
+
+    const message =
+      document.getElementById("message");
+
+    message.textContent = text;
+
+    message.className =
+      "message " + type;
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+
+
+  /* =====================================================
+     PHONE
+     ===================================================== */
+
+  function normalizePhone(phone) {
+
+    return String(phone || "")
+      .trim()
+      .replace(/\s+/g, "");
+
+  }
+
+
+  function validKenyanPhone(phone) {
+
+    const value =
+      normalizePhone(phone);
+
+    return (
+      /^(07|01)\d{8}$/.test(value) ||
+      /^254(7|1)\d{8}$/.test(value) ||
+      /^\+254(7|1)\d{8}$/.test(value)
+    );
+
+  }
+
+
+  /* =====================================================
+     CONNECTION STATUS
+     ===================================================== */
+
+  function setConnectionStatus(text) {
+
+    document.getElementById(
+      "connectionStatus"
+    ).textContent = text;
+
+  }
+
+
+  /* =====================================================
+     INITIALIZE SUPABASE
+     ===================================================== */
+
+  async function initializeSupabase() {
+
+    if (
+      !window.supabase ||
+      typeof window.supabase.createClient !== "function"
+    ) {
+
+      setConnectionStatus(
+        "Supabase library did not load."
+      );
+
+      return false;
+
+    }
+
+
+    try {
+
+      supabaseClient =
+        window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_KEY,
+          {
+            auth: {
+              autoRefreshToken: true,
+              persistSession: true,
+              detectSessionInUrl: true
+            }
+          }
+        );
+
+
+      const {
+        error
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (error) {
+
+        console.error(
+          "Supabase connection error:",
+          error
+        );
+
+        setConnectionStatus(
+          "Supabase connection error."
+        );
+
+        return false;
+
+      }
+
+
+      setConnectionStatus(
+        "Connected to NexaLearn."
+      );
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "Supabase initialization error:",
+        error
+      );
+
+      setConnectionStatus(
+        "Unable to connect to Supabase."
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     SIGNUP
+     ===================================================== */
+
+  document
+    .getElementById("signupForm")
+    .addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+
+        const submitBtn =
+          document.getElementById("submitBtn");
+
+
+        const firstName =
+          document
+            .getElementById("firstName")
+            .value
+            .trim();
+
+
+        const lastName =
+          document
+            .getElementById("lastName")
+            .value
+            .trim();
+
+
+        const email =
+          document
+            .getElementById("email")
+            .value
+            .trim()
+            .toLowerCase();
+
+
+        const phone =
+          normalizePhone(
+            document
+              .getElementById("phone")
+              .value
+          );
+
+
+        const country =
+          document
+            .getElementById("country")
+            .value;
+
+
+        const password =
+          document
+            .getElementById("password")
+            .value;
+
+
+        const confirmPassword =
+          document
+            .getElementById("confirmPassword")
+            .value;
+
+
+        const agree =
+          document
+            .getElementById("agree")
+            .checked;
+
+
+        /* VALIDATION */
+
+        if (!firstName || !lastName) {
+
+          showMessage(
+            "Please enter your first and last name.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (!email) {
+
+          showMessage(
+            "Please enter your email address.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (!validKenyanPhone(phone)) {
+
+          showMessage(
+            "Enter a valid Kenyan phone number, for example 0712345678.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (!country) {
+
+          showMessage(
+            "Please select your country.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (password.length < 6) {
+
+          showMessage(
+            "Your password must contain at least 6 characters.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (password !== confirmPassword) {
+
+          showMessage(
+            "The passwords do not match.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (!agree) {
+
+          showMessage(
+            "Please accept the terms before creating your account.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (!supabaseClient) {
+
+          showMessage(
+            "NexaLearn is not connected to Supabase. Please refresh the page and try again.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        submitBtn.disabled = true;
+
+        submitBtn.textContent =
+          "Creating Account...";
+
+
+        try {
+
+          const {
+            data,
+            error
+          } =
+            await supabaseClient.auth.signUp({
+
+              email: email,
+
+              password: password,
+
+              options: {
+
+                data: {
+
+                  first_name: firstName,
+
+                  last_name: lastName,
+
+                  phone: phone,
+
+                  country: country
+
+                }
+
+              }
+
+            });
+
+
+          /* ERROR */
+
+          if (error) {
+
+            console.error(
+              "Supabase signup error:",
+              error
+            );
+
+
+            const errorMessage =
+              String(
+                error.message || ""
+              );
+
+
+            const lower =
+              errorMessage.toLowerCase();
+
+
+            if (
+              lower.includes(
+                "user already registered"
+              )
+            ) {
+
+              showMessage(
+                "An account with this email already exists. Please log in instead.",
+                "error"
+              );
+
+            }
+
+            else if (
+              lower.includes(
+                "security purposes"
+              )
+            ) {
+
+              showMessage(
+                "Supabase has temporarily rate-limited signup emails. Please wait before trying again.",
+                "error"
+              );
+
+            }
+
+            else if (
+              lower.includes(
+                "email rate limit"
+              )
+            ) {
+
+              showMessage(
+                "Too many confirmation emails have been requested. Please wait and try again later.",
+                "error"
+              );
+
+            }
+
+            else if (
+              lower.includes(
+                "failed to fetch"
+              )
+            ) {
+
+              showMessage(
+                "The browser could not reach Supabase. Check your internet connection and make sure you are using localhost.",
+                "error"
+              );
+
+            }
+
+            else {
+
+              showMessage(
+                errorMessage ||
+                "Unable to create the account.",
+                "error"
+              );
+
+            }
+
+
+            submitBtn.disabled = false;
+
+            submitBtn.textContent =
+              "Create Account";
+
+            return;
+
+          }
+
+
+          /* =================================================
+             ACCOUNT CREATED
+             ================================================= */
+
+          if (
+            data &&
+            data.user &&
+            !data.session
+          ) {
+
+            showMessage(
+              "Account created successfully. Please check your email and confirm your NexaLearn account before logging in.",
+              "success"
+            );
+
+            document
+              .getElementById("signupForm")
+              .reset();
+
+          }
+
+
+          /* =================================================
+             ACCOUNT CREATED + LOGGED IN
+             ================================================= */
+
+          else if (
+            data &&
+            data.user &&
+            data.session
+          ) {
+
+            showMessage(
+              "Account created successfully. Redirecting to your dashboard...",
+              "success"
+            );
+
+
+            setTimeout(
+              function() {
+
+                window.location.href =
+                  "dashboard.html";
+
+              },
+              1200
+            );
+
+            return;
+
+          }
+
+
+          else {
+
+            showMessage(
+              "Account created successfully. Please check your email for confirmation.",
+              "success"
+            );
+
+            document
+              .getElementById("signupForm")
+              .reset();
+
+          }
+
+        }
+
+
+        catch (error) {
+
+          console.error(
+            "Unexpected signup error:",
+            error
+          );
+
+
+          showMessage(
+            "The signup request could not reach Supabase. Check your internet connection and try again.",
+            "error"
+          );
+
+        }
+
+
+        submitBtn.disabled = false;
+
+        submitBtn.textContent =
+          "Create Account";
+
+      }
+    );
+
+
+  /* =====================================================
+     START
+     ===================================================== */
+
+  window.addEventListener(
+    "load",
+    async function() {
+
+      await initializeSupabase();
+
+    }
+  );
+
+</script>
+
+</body>
+</html>

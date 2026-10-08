@@ -1,0 +1,1688 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn - Admin Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #06101d;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 230px;
+      height: 100vh;
+      background: #081827;
+      border-right: 1px solid #173047;
+      padding: 25px 15px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .tagline {
+      font-size: 10px;
+      color: #8da4b8;
+      letter-spacing: 1px;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      text-decoration: none;
+      color: #aebfd0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #102b42;
+      color: #ffffff;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: #173047;
+      margin: 18px 0;
+    }
+
+    .logout-btn {
+      width: 100%;
+      border: none;
+      background: #8f3030;
+      color: white;
+      padding: 12px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .logout-btn:hover {
+      background: #b63838;
+    }
+
+    .main {
+      margin-left: 230px;
+      padding: 35px;
+    }
+
+    .topbar {
+      margin-bottom: 30px;
+    }
+
+    .topbar h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .topbar p {
+      color: #8da4b8;
+      font-size: 15px;
+    }
+
+    .admin-badge {
+      display: inline-block;
+      margin-top: 12px;
+      background: #123a52;
+      color: #71c7ff;
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #0b1b2b;
+      border: 1px solid #173047;
+      border-radius: 12px;
+      padding: 22px;
+    }
+
+    .stat-label {
+      color: #8da4b8;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .stat-note {
+      color: #71899d;
+      font-size: 12px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 21px;
+      margin-bottom: 15px;
+    }
+
+    .management-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .management-card {
+      background: #0b1b2b;
+      border: 1px solid #173047;
+      border-radius: 12px;
+      padding: 22px;
+    }
+
+    .management-card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .management-card p {
+      color: #8da4b8;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .management-btn {
+      display: inline-block;
+      text-decoration: none;
+      background: #1769aa;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .management-btn:hover {
+      background: #2185d0;
+    }
+
+    .management-btn.green {
+      background: #159447;
+    }
+
+    .management-btn.green:hover {
+      background: #1bb354;
+    }
+
+    .management-btn.red {
+      background: #963535;
+    }
+
+    .management-btn.red:hover {
+      background: #b83f3f;
+    }
+
+    .table-card {
+      background: #0b1b2b;
+      border: 1px solid #173047;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 20px;
+      border-bottom: 1px solid #173047;
+    }
+
+    .table-header h2 {
+      font-size: 19px;
+      margin-bottom: 6px;
+    }
+
+    .table-header p {
+      color: #8da4b8;
+      font-size: 13px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #173047;
+      font-size: 13px;
+    }
+
+    th {
+      color: #8da4b8;
+      font-weight: bold;
+      background: #091725;
+    }
+
+    td {
+      color: #dce7ef;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .status.pending {
+      background: #4b3917;
+      color: #f2c75c;
+    }
+
+    .status.approved {
+      background: #123d28;
+      color: #65d695;
+    }
+
+    .status.rejected {
+      background: #481f24;
+      color: #ed7777;
+    }
+
+    .action-btn {
+      border: none;
+      padding: 7px 10px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 11px;
+      margin-right: 5px;
+    }
+
+    .approve-btn {
+      background: #159447;
+    }
+
+    .approve-btn:hover {
+      background: #1bb354;
+    }
+
+    .reject-btn {
+      background: #963535;
+    }
+
+    .reject-btn:hover {
+      background: #b83f3f;
+    }
+
+    .empty {
+      padding: 25px;
+      color: #8198aa;
+      text-align: center;
+    }
+
+    .message {
+      display: none;
+      margin-bottom: 20px;
+      padding: 12px 15px;
+      background: #102536;
+      border: 1px solid #21435d;
+      border-radius: 8px;
+      color: #a9c8dd;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1100px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .management-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .management-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      NexaLearn
+    </div>
+
+    <div class="tagline">
+      LEARN • COMPLETE • EARN
+    </div>
+
+    <a href="admin.html" class="active">
+      Dashboard
+    </a>
+
+    <a href="admin-audio.html">
+      Audio Uploads
+    </a>
+
+    <a href="admin-images.html">
+      Image Uploads
+    </a>
+
+    <a href="tasks.html">
+      Manage Tasks
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="dashboard.html">
+      User Dashboard
+    </a>
+
+    <button class="logout-btn" id="logoutBtn">
+      Logout
+    </button>
+
+  </aside>
+
+
+  <main class="main">
+
+    <div class="topbar">
+
+      <h1>Admin Dashboard</h1>
+
+      <p>
+        Manage NexaLearn accounts, deposits, withdrawals and transactions.
+      </p>
+
+      <div class="admin-badge">
+        Administrator
+      </div>
+
+    </div>
+
+
+    <div id="message" class="message"></div>
+
+
+    <section class="stats">
+
+      <div class="stat-card">
+        <div class="stat-label">Pending Deposits</div>
+
+        <div class="stat-value" id="pendingDeposits">
+          0
+        </div>
+
+        <div class="stat-note">
+          Awaiting approval
+        </div>
+      </div>
+
+
+      <div class="stat-card">
+        <div class="stat-label">Pending Withdrawals</div>
+
+        <div class="stat-value" id="pendingWithdrawals">
+          0
+        </div>
+
+        <div class="stat-note">
+          Awaiting approval
+        </div>
+      </div>
+
+
+      <div class="stat-card">
+        <div class="stat-label">Total Deposited</div>
+
+        <div class="stat-value" id="totalDeposited">
+          KSh 0.00
+        </div>
+
+        <div class="stat-note">
+          Approved deposits
+        </div>
+      </div>
+
+
+      <div class="stat-card">
+        <div class="stat-label">Total Withdrawn</div>
+
+        <div class="stat-value" id="totalWithdrawn">
+          KSh 0.00
+        </div>
+
+        <div class="stat-note">
+          Approved withdrawals
+        </div>
+      </div>
+
+    </section>
+
+
+    <section class="section">
+
+      <h2 class="section-title">
+        Quick Management
+      </h2>
+
+      <div class="management-grid">
+
+        <div class="management-card">
+          <h3>Deposit Approvals</h3>
+
+          <p>
+            Review and approve or reject user deposit requests.
+          </p>
+
+          <a href="#deposits" class="management-btn green">
+            Review Deposits
+          </a>
+        </div>
+
+
+        <div class="management-card">
+          <h3>Withdrawal Approvals</h3>
+
+          <p>
+            Review user withdrawal requests and process them.
+          </p>
+
+          <a href="#withdrawals" class="management-btn red">
+            Review Withdrawals
+          </a>
+        </div>
+
+
+        <div class="management-card">
+          <h3>Manage Tasks</h3>
+
+          <p>
+            Create, edit and manage NexaLearn tasks.
+          </p>
+
+          <a href="tasks.html" class="management-btn">
+            Manage Tasks
+          </a>
+        </div>
+
+
+        <div class="management-card">
+          <h3>Audio Uploads</h3>
+
+          <p>
+            Upload and manage audio content for NexaLearn tasks.
+          </p>
+
+          <a href="admin-audio.html" class="management-btn">
+            Manage Audio
+          </a>
+        </div>
+
+
+        <div class="management-card">
+          <h3>Image Uploads</h3>
+
+          <p>
+            Upload and manage image content for NexaLearn tasks.
+          </p>
+
+          <a href="admin-images.html" class="management-btn">
+            Manage Images
+          </a>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="section" id="deposits">
+
+      <div class="table-card">
+
+        <div class="table-header">
+
+          <h2>Deposit Requests</h2>
+
+          <p>
+            Review and process user deposit requests.
+          </p>
+
+        </div>
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="depositTable">
+
+              <tr>
+                <td colspan="7" class="empty">
+                  Loading deposit requests...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="section" id="withdrawals">
+
+      <div class="table-card">
+
+        <div class="table-header">
+
+          <h2>Withdrawal Requests</h2>
+
+          <p>
+            Review and process user withdrawal requests.
+          </p>
+
+        </div>
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Account</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="withdrawalTable">
+
+              <tr>
+                <td colspan="7" class="empty">
+                  Loading withdrawal requests...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+<script>
+
+  /* =====================================================
+     SUPABASE
+  ====================================================== */
+
+  const SUPABASE_URL =
+    "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+
+  /*
+    IMPORTANT:
+    No custom storageKey here.
+
+    This allows admin.html to use the same
+    Supabase authentication session as the
+    rest of NexaLearn.
+  */
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      }
+    );
+
+
+  /* =====================================================
+     HELPERS
+  ====================================================== */
+
+  function money(amount) {
+
+    return new Intl.NumberFormat(
+      "en-KE",
+      {
+        style: "currency",
+        currency: "KES",
+        minimumFractionDigits: 2
+      }
+    ).format(
+      Number(amount || 0)
+    );
+
+  }
+
+
+  function escapeHtml(value) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function formatDate(date) {
+
+    if (!date) {
+      return "-";
+    }
+
+    return new Date(date)
+      .toLocaleString(
+        "en-KE",
+        {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }
+      );
+
+  }
+
+
+  function showMessage(message) {
+
+    const box =
+      document.getElementById("message");
+
+    box.style.display = "block";
+    box.textContent = message;
+
+  }
+
+
+  /* =====================================================
+     CHECK ADMIN
+  ====================================================== */
+
+  async function checkAdmin() {
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      const user = data?.user;
+
+
+      console.log(
+        "ADMIN CHECK - USER:",
+        user
+      );
+
+
+      if (error) {
+
+        console.error(
+          "ADMIN CHECK - USER ERROR:",
+          error
+        );
+
+        window.location.href =
+          "login.html";
+
+        return false;
+      }
+
+
+      if (!user) {
+
+        console.log(
+          "ADMIN CHECK - NO USER"
+        );
+
+        window.location.href =
+          "login.html";
+
+        return false;
+      }
+
+
+      console.log(
+        "ADMIN CHECK - USER ID:",
+        user.id
+      );
+
+
+      const {
+        data: profile,
+        error: profileError
+      } =
+        await supabaseClient
+          .from("profiles")
+          .select("id, role")
+          .eq("id", user.id)
+          .maybeSingle();
+
+
+      console.log(
+        "ADMIN CHECK - PROFILE:",
+        profile
+      );
+
+
+      console.log(
+        "ADMIN CHECK - PROFILE ERROR:",
+        profileError
+      );
+
+
+      if (profileError) {
+
+        console.error(
+          "PROFILE QUERY FAILED:",
+          profileError
+        );
+
+        alert(
+          "Profile check failed: " +
+          profileError.message
+        );
+
+        return false;
+      }
+
+
+      if (!profile) {
+
+        alert(
+          "No profile was found for this account."
+        );
+
+        return false;
+      }
+
+
+      const role =
+        String(
+          profile.role || ""
+        ).trim().toLowerCase();
+
+
+      console.log(
+        "ADMIN CHECK - ROLE:",
+        role
+      );
+
+
+      if (role !== "admin") {
+
+        alert(
+          "Administrator access required. Role found: " +
+          profile.role
+        );
+
+        window.location.href =
+          "dashboard.html";
+
+        return false;
+      }
+
+
+      console.log(
+        "ADMIN CHECK - ADMIN VERIFIED"
+      );
+
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "ADMIN CHECK - UNEXPECTED ERROR:",
+        error
+      );
+
+      alert(
+        "Admin verification failed: " +
+        (
+          error.message ||
+          "Unknown error"
+        )
+      );
+
+      return false;
+    }
+
+  }
+
+
+  /* =====================================================
+     LOAD DASHBOARD STATISTICS
+  ====================================================== */
+
+  async function loadStatistics() {
+
+    try {
+
+      const {
+        data: deposits,
+        error: depositError
+      } =
+        await supabaseClient
+          .from("deposit_requests")
+          .select("amount,status");
+
+
+      if (depositError) {
+        throw depositError;
+      }
+
+
+      const {
+        data: withdrawals,
+        error: withdrawalError
+      } =
+        await supabaseClient
+          .from("withdrawal_requests")
+          .select("amount,status");
+
+
+      if (withdrawalError) {
+        throw withdrawalError;
+      }
+
+
+      const pendingDeposits =
+        (deposits || [])
+          .filter(
+            item =>
+              String(item.status)
+                .toLowerCase() ===
+              "pending"
+          )
+          .length;
+
+
+      const pendingWithdrawals =
+        (withdrawals || [])
+          .filter(
+            item =>
+              String(item.status)
+                .toLowerCase() ===
+              "pending"
+          )
+          .length;
+
+
+      const totalDeposited =
+        (deposits || [])
+          .filter(
+            item =>
+              String(item.status)
+                .toLowerCase() ===
+              "approved"
+          )
+          .reduce(
+            (sum, item) =>
+              sum +
+              Number(item.amount || 0),
+            0
+          );
+
+
+      const totalWithdrawn =
+        (withdrawals || [])
+          .filter(
+            item =>
+              String(item.status)
+                .toLowerCase() ===
+              "approved"
+          )
+          .reduce(
+            (sum, item) =>
+              sum +
+              Number(item.amount || 0),
+            0
+          );
+
+
+      document.getElementById(
+        "pendingDeposits"
+      ).textContent =
+        pendingDeposits;
+
+
+      document.getElementById(
+        "pendingWithdrawals"
+      ).textContent =
+        pendingWithdrawals;
+
+
+      document.getElementById(
+        "totalDeposited"
+      ).textContent =
+        money(totalDeposited);
+
+
+      document.getElementById(
+        "totalWithdrawn"
+      ).textContent =
+        money(totalWithdrawn);
+
+    } catch (error) {
+
+      console.error(
+        "Statistics error:",
+        error
+      );
+
+      showMessage(
+        "Unable to load dashboard statistics: " +
+        (
+          error.message ||
+          "Unknown error"
+        )
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     LOAD DEPOSITS
+  ====================================================== */
+
+  async function loadDeposits() {
+
+    const table =
+      document.getElementById(
+        "depositTable"
+      );
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("deposit_requests")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Deposit error:",
+        error
+      );
+
+      table.innerHTML =
+        '<tr><td colspan="7" class="empty">' +
+        "Unable to load deposits: " +
+        escapeHtml(error.message) +
+        "</td></tr>";
+
+      return;
+    }
+
+
+    if (
+      !data ||
+      data.length === 0
+    ) {
+
+      table.innerHTML =
+        '<tr><td colspan="7" class="empty">' +
+        "No deposit requests found." +
+        "</td></tr>";
+
+      return;
+    }
+
+
+    table.innerHTML = "";
+
+
+    for (const item of data) {
+
+      const status =
+        String(
+          item.status ||
+          "pending"
+        ).toLowerCase();
+
+
+      const row =
+        document.createElement("tr");
+
+
+      row.innerHTML = `
+
+        <td>
+          ${escapeHtml(
+            item.user_id || "-"
+          )}
+        </td>
+
+        <td>
+          ${money(item.amount)}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            item.method || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            item.reference ||
+            item.transaction_code ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          <span class="status ${status}">
+            ${escapeHtml(
+              item.status ||
+              "Pending"
+            )}
+          </span>
+        </td>
+
+        <td>
+          ${formatDate(
+            item.created_at
+          )}
+        </td>
+
+        <td>
+          ${
+            status === "pending"
+            ? `
+              <button
+                class="action-btn approve-btn"
+                onclick="approveDeposit('${item.id}')"
+              >
+                Approve
+              </button>
+
+              <button
+                class="action-btn reject-btn"
+                onclick="rejectDeposit('${item.id}')"
+              >
+                Reject
+              </button>
+            `
+            : "-"
+          }
+        </td>
+
+      `;
+
+
+      table.appendChild(row);
+
+    }
+
+  }
+
+
+  /* =====================================================
+     LOAD WITHDRAWALS
+  ====================================================== */
+
+  async function loadWithdrawals() {
+
+    const table =
+      document.getElementById(
+        "withdrawalTable"
+      );
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("withdrawal_requests")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Withdrawal error:",
+        error
+      );
+
+      table.innerHTML =
+        '<tr><td colspan="7" class="empty">' +
+        "Unable to load withdrawals: " +
+        escapeHtml(error.message) +
+        "</td></tr>";
+
+      return;
+    }
+
+
+    if (
+      !data ||
+      data.length === 0
+    ) {
+
+      table.innerHTML =
+        '<tr><td colspan="7" class="empty">' +
+        "No withdrawal requests found." +
+        "</td></tr>";
+
+      return;
+    }
+
+
+    table.innerHTML = "";
+
+
+    for (const item of data) {
+
+      const status =
+        String(
+          item.status ||
+          "pending"
+        ).toLowerCase();
+
+
+      const row =
+        document.createElement("tr");
+
+
+      row.innerHTML = `
+
+        <td>
+          ${escapeHtml(
+            item.user_id || "-"
+          )}
+        </td>
+
+        <td>
+          ${money(item.amount)}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            item.method || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            item.account_number ||
+            item.phone_number ||
+            item.account ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          <span class="status ${status}">
+            ${escapeHtml(
+              item.status ||
+              "Pending"
+            )}
+          </span>
+        </td>
+
+        <td>
+          ${formatDate(
+            item.created_at
+          )}
+        </td>
+
+        <td>
+          ${
+            status === "pending"
+            ? `
+              <button
+                class="action-btn approve-btn"
+                onclick="approveWithdrawal('${item.id}')"
+              >
+                Approve
+              </button>
+
+              <button
+                class="action-btn reject-btn"
+                onclick="rejectWithdrawal('${item.id}')"
+              >
+                Reject
+              </button>
+            `
+            : "-"
+          }
+        </td>
+
+      `;
+
+
+      table.appendChild(row);
+
+    }
+
+  }
+
+
+  /* =====================================================
+     APPROVE DEPOSIT
+  ====================================================== */
+
+  async function approveDeposit(requestId) {
+
+    if (!confirm("Approve this deposit?")) {
+      return;
+    }
+
+
+    try {
+
+      showMessage(
+        "Approving deposit..."
+      );
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .rpc(
+            "approve_deposit",
+            {
+              p_request_id:
+                requestId
+            }
+          );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      console.log(
+        "Deposit approved:",
+        data
+      );
+
+
+      showMessage(
+        "Deposit approved successfully."
+      );
+
+
+      await loadStatistics();
+      await loadDeposits();
+
+    } catch (error) {
+
+      console.error(
+        "Approve deposit error:",
+        error
+      );
+
+      alert(
+        "Unable to approve deposit: " +
+        (
+          error.message ||
+          "Unknown error"
+        )
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     REJECT DEPOSIT
+  ====================================================== */
+
+  async function rejectDeposit(requestId) {
+
+    if (!confirm("Reject this deposit?")) {
+      return;
+    }
+
+
+    try {
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("deposit_requests")
+          .update({
+            status: "rejected"
+          })
+          .eq(
+            "id",
+            requestId
+          );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      showMessage(
+        "Deposit rejected."
+      );
+
+
+      await loadStatistics();
+      await loadDeposits();
+
+    } catch (error) {
+
+      console.error(
+        "Reject deposit error:",
+        error
+      );
+
+      alert(
+        "Unable to reject deposit: " +
+        (
+          error.message ||
+          "Unknown error"
+        )
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     APPROVE WITHDRAWAL
+  ====================================================== */
+
+  async function approveWithdrawal(requestId) {
+
+    if (!confirm("Approve this withdrawal?")) {
+      return;
+    }
+
+
+    try {
+
+      showMessage(
+        "Approving withdrawal..."
+      );
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .rpc(
+            "approve_withdrawal",
+            {
+              p_request_id:
+                requestId
+            }
+          );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      console.log(
+        "Withdrawal approved:",
+        data
+      );
+
+
+      showMessage(
+        "Withdrawal approved successfully."
+      );
+
+
+      await loadStatistics();
+      await loadWithdrawals();
+
+    } catch (error) {
+
+      console.error(
+        "Approve withdrawal error:",
+        error
+      );
+
+      alert(
+        "Unable to approve withdrawal: " +
+        (
+          error.message ||
+          "Unknown error"
+        )
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     REJECT WITHDRAWAL
+  ====================================================== */
+
+  async function rejectWithdrawal(requestId) {
+
+    if (!confirm("Reject this withdrawal?")) {
+      return;
+    }
+
+
+    try {
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("withdrawal_requests")
+          .update({
+            status: "rejected"
+          })
+          .eq(
+            "id",
+            requestId
+          );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      showMessage(
+        "Withdrawal rejected."
+      );
+
+
+      await loadStatistics();
+      await loadWithdrawals();
+
+    } catch (error) {
+
+      console.error(
+        "Reject withdrawal error:",
+        error
+      );
+
+      alert(
+        "Unable to reject withdrawal: " +
+        (
+          error.message ||
+          "Unknown error"
+        )
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     LOGOUT
+  ====================================================== */
+
+  document
+    .getElementById("logoutBtn")
+    .addEventListener(
+      "click",
+      async function () {
+
+        await supabaseClient.auth.signOut();
+
+        localStorage.removeItem(
+          "nexaLearnLoggedIn"
+        );
+
+        localStorage.removeItem(
+          "nexaLearnUser"
+        );
+
+        localStorage.removeItem(
+          "nexaLearnUserId"
+        );
+
+        window.location.href =
+          "login.html";
+
+      }
+    );
+
+
+  /* =====================================================
+     START ADMIN DASHBOARD
+  ====================================================== */
+
+  async function startAdmin() {
+
+    console.log(
+      "Starting NexaLearn Admin Dashboard..."
+    );
+
+
+    const isAdmin =
+      await checkAdmin();
+
+
+    if (!isAdmin) {
+      return;
+    }
+
+
+    console.log(
+      "Admin verified. Loading dashboard..."
+    );
+
+
+    await loadStatistics();
+
+    await loadDeposits();
+
+    await loadWithdrawals();
+
+
+    console.log(
+      "NexaLearn Admin Dashboard loaded successfully."
+    );
+
+  }
+
+
+  startAdmin();
+
+</script>
+
+</body>
+</html>
+```

@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn - History</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #06101d;
+      color: #eef6ff;
+    }
+
+    .layout {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 230px;
+      background: #081827;
+      border-right: 1px solid #173047;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      color: #3ddc97;
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      font-size: 10px;
+      color: #7890a5;
+      letter-spacing: 1.2px;
+      margin-bottom: 28px;
+    }
+
+    .nav a {
+      display: block;
+      text-decoration: none;
+      color: #9fb1c2;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 7px;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #10263a;
+      color: #fff;
+    }
+
+    .main {
+      margin-left: 230px;
+      width: calc(100% - 230px);
+      padding: 30px;
+    }
+
+    .content {
+      max-width: 1100px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: #91a5b8;
+      line-height: 1.5;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 15px;
+      padding: 18px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      color: #8197aa;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .summary-value {
+      font-size: 23px;
+      font-weight: 900;
+    }
+
+    .green {
+      color: #3ddc97;
+    }
+
+    .red {
+      color: #ff8f9f;
+    }
+
+    .blue {
+      color: #88c7ec;
+    }
+
+    .filter-card {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 18px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      border: 1px solid #294258;
+      background: #071522;
+      color: #aebdcc;
+      padding: 10px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: #3ddc97;
+      background: #16344b;
+      color: #fff;
+    }
+
+    .history-card {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .history-top {
+      padding: 18px 20px;
+      border-bottom: 1px solid #173047;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .record-count {
+      color: #8197aa;
+      font-size: 12px;
+    }
+
+    .records {
+      padding: 5px 20px 10px;
+    }
+
+    .record {
+      display: grid;
+      grid-template-columns: 52px 1.7fr 1fr 1fr 1fr;
+      align-items: center;
+      gap: 14px;
+      padding: 17px 0;
+      border-bottom: 1px solid #132b3e;
+    }
+
+    .record:last-child {
+      border-bottom: 0;
+    }
+
+    .record-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 19px;
+      background: #102b40;
+    }
+
+    .record-main {
+      min-width: 0;
+    }
+
+    .record-name {
+      font-weight: 800;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .record-meta {
+      color: #748b9f;
+      font-size: 11px;
+      word-break: break-word;
+      line-height: 1.45;
+    }
+
+    .record-label {
+      color: #72899d;
+      font-size: 10px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .record-value {
+      font-size: 13px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .amount-credit {
+      color: #3ddc97;
+    }
+
+    .amount-debit {
+      color: #ff8f9f;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .status-completed {
+      background: #10382a;
+      color: #73e3ac;
+    }
+
+    .status-approved {
+      background: #10382a;
+      color: #73e3ac;
+    }
+
+    .status-pending {
+      background: #3c3114;
+      color: #f5cd69;
+    }
+
+    .status-rejected {
+      background: #402029;
+      color: #ff99a8;
+    }
+
+    .status-default {
+      background: #173047;
+      color: #9bb0c2;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 55px 20px;
+      color: #7e94a7;
+    }
+
+    .empty-icon {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .empty-title {
+      color: #dce8f2;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: #06101d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+    }
+
+    .note {
+      margin-top: 20px;
+      background: #091724;
+      border: 1px solid #173047;
+      border-radius: 14px;
+      padding: 15px;
+      color: #8499aa;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 950px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 15px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .record {
+        grid-template-columns: 45px 1fr 1fr;
+      }
+
+      .record-date {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .filter-btn {
+        width: 100%;
+      }
+
+      .record {
+        grid-template-columns: 42px 1fr;
+        gap: 10px;
+      }
+
+      .record-main {
+        grid-column: 2;
+      }
+
+      .record-amount,
+      .record-status,
+      .record-date {
+        grid-column: 2;
+      }
+
+      .record-date {
+        display: block;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+<div id="loadingScreen" class="loading">
+  Loading your history...
+</div>
+
+<div class="layout">
+
+  <aside class="sidebar">
+
+```
+<div class="logo">
+  NexaLearn
+</div>
+
+<div class="tagline">
+  LEARN • COMPLETE • EARN
+</div>
+
+<nav class="nav">
+
+  <a href="dashboard.html">Dashboard</a>
+
+  <a href="tasks.html">Tasks</a>
+
+  <a href="packages.html">Packages</a>
+
+  <a href="wallet.html">Wallet</a>
+
+  <a href="history.html" class="active">
+    History
+  </a>
+
+  <a href="profile.html">Profile</a>
+
+  <a href="support.html">Support</a>
+
+  <a href="login.html">Logout</a>
+
+</nav>
+```
+
+  </aside>
+
+  <main class="main">
+
+```
+<div class="content">
+
+  <div class="page-header">
+
+    <h1>
+      Transaction History
+    </h1>
+
+    <p>
+      View your deposits, package activations,
+      task earnings and withdrawals.
+    </p>
+
+  </div>
+
+  <section class="summary-grid">
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Available Balance
+      </div>
+
+      <div
+        class="summary-value green"
+        id="availableBalance">
+        KSh 0.00
+      </div>
+
+    </div>
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Total Earned
+      </div>
+
+      <div
+        class="summary-value blue"
+        id="totalEarned">
+        KSh 0.00
+      </div>
+
+    </div>
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Task Earnings
+      </div>
+
+      <div
+        class="summary-value green"
+        id="taskEarnings">
+        KSh 0.00
+      </div>
+
+    </div>
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Withdrawals
+      </div>
+
+      <div
+        class="summary-value red"
+        id="withdrawals">
+        KSh 0.00
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="filter-card">
+
+    <div class="filters">
+
+      <button
+        class="filter-btn active"
+        data-filter="All"
+        onclick="setFilter('All')">
+        All
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="Earnings"
+        onclick="setFilter('Earnings')">
+        Earnings
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="Deposits"
+        onclick="setFilter('Deposits')">
+        Deposits
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="Packages"
+        onclick="setFilter('Packages')">
+        Packages
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="Withdrawals"
+        onclick="setFilter('Withdrawals')">
+        Withdrawals
+      </button>
+
+    </div>
+
+  </section>
+
+  <section class="history-card">
+
+    <div class="history-top">
+
+      <div class="history-title">
+        Activity
+      </div>
+
+      <div
+        class="record-count"
+        id="recordCount">
+        0 records
+      </div>
+
+    </div>
+
+    <div
+      class="records"
+      id="records">
+    </div>
+
+  </section>
+
+  <div class="note">
+
+    All records shown here are loaded directly
+    from your NexaLearn Supabase account.
+
+  </div>
+
+</div>
+```
+
+  </main>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+  "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    }
+  );
+
+
+let currentFilter = "All";
+let allRecords = [];
+let allTransactions = [];
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function money(value) {
+
+  return "KSh " +
+    Number(value || 0).toLocaleString(
+      "en-KE",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    );
+
+}
+
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+function formatDate(value) {
+
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString(
+    "en-KE",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+
+}
+
+
+function statusClass(status) {
+
+  const value =
+    String(status || "")
+      .toLowerCase();
+
+  if (
+    value === "approved" ||
+    value === "completed"
+  ) {
+    return "status-" + value;
+  }
+
+  if (value === "pending") {
+    return "status-pending";
+  }
+
+  if (value === "rejected") {
+    return "status-rejected";
+  }
+
+  return "status-default";
+
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+async function loadWallet(userId) {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("wallets")
+      .select(
+        "balance,total_earned"
+      )
+      .eq(
+        "user_id",
+        userId
+      )
+      .maybeSingle();
+
+  if (error) {
+
+    console.error(
+      "Wallet error:",
+      error
+    );
+
+    return null;
+  }
+
+  return data;
+
+}
+
+
+/* =========================
+   TRANSACTIONS
+========================= */
+
+async function loadTransactions(userId) {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("transactions")
+      .select(`
+        id,
+        user_id,
+        type,
+        amount,
+        currency,
+        status,
+        description,
+        reference_id,
+        created_at
+      `)
+      .eq(
+        "user_id",
+        userId
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+  if (error) {
+
+    console.error(
+      "Transactions error:",
+      error
+    );
+
+    return [];
+
+  }
+
+  return data || [];
+
+}
+
+
+/* =========================
+   BUILD RECORDS
+========================= */
+
+function buildHistory(transactions) {
+
+  return transactions.map(
+    transaction => {
+
+      const type =
+        String(
+          transaction.type || ""
+        ).toLowerCase();
+
+      let recordType = "other";
+      let title = "Transaction";
+
+      let description =
+        transaction.description ||
+        "Wallet transaction";
+
+      let direction = "credit";
+
+      let status =
+        transaction.status ||
+        "completed";
+
+
+      if (type === "deposit") {
+
+        recordType = "deposit";
+        title = "Wallet Deposit";
+        direction = "credit";
+
+        if (!transaction.description) {
+          description =
+            "Wallet deposit";
+        }
+
+      }
+
+      else if (
+        type === "task_reward" ||
+        type === "task_earning"
+      ) {
+
+        recordType = "earning";
+        title = "Task Reward";
+        direction = "credit";
+
+        if (!transaction.description) {
+          description =
+            "Task reward";
+        }
+
+      }
+
+      else if (
+        type === "package_activation"
+      ) {
+
+        recordType = "package";
+        title =
+          transaction.description ||
+          "Package Activation";
+
+        direction = "debit";
+
+        description =
+          transaction.description ||
+          "Package activation";
+
+      }
+
+      else if (
+        type === "withdrawal"
+      ) {
+
+        recordType = "withdrawal";
+        title = "Withdrawal";
+        direction = "debit";
+
+        if (!transaction.description) {
+          description =
+            "Wallet withdrawal";
+        }
+
+      }
+
+
+      return {
+
+        id:
+          transaction.id,
+
+        type:
+          recordType,
+
+        title:
+          title,
+
+        description:
+          description,
+
+        amount:
+          Math.abs(
+            Number(
+              transaction.amount || 0
+            )
+          ),
+
+        direction:
+          direction,
+
+        status:
+          status,
+
+        date:
+          transaction.created_at,
+
+        reference:
+          transaction.reference_id || ""
+
+      };
+
+    }
+  );
+
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+function updateSummary(
+  wallet,
+  transactions
+) {
+
+  const balance =
+    Number(
+      wallet?.balance || 0
+    );
+
+  const totalEarned =
+    Number(
+      wallet?.total_earned || 0
+    );
+
+  const taskEarnings =
+    transactions
+      .filter(
+        transaction => {
+
+          const type =
+            String(
+              transaction.type || ""
+            ).toLowerCase();
+
+          return (
+            type === "task_reward" ||
+            type === "task_earning"
+          );
+
+        }
+      )
+      .reduce(
+        (total, transaction) =>
+          total +
+          Number(
+            transaction.amount || 0
+          ),
+        0
+      );
+
+  const withdrawals =
+    transactions
+      .filter(
+        transaction =>
+          String(
+            transaction.type || ""
+          ).toLowerCase() ===
+          "withdrawal"
+      )
+      .reduce(
+        (total, transaction) =>
+          total +
+          Number(
+            transaction.amount || 0
+          ),
+        0
+      );
+
+
+  document.getElementById(
+    "availableBalance"
+  ).textContent =
+    money(balance);
+
+  document.getElementById(
+    "totalEarned"
+  ).textContent =
+    money(totalEarned);
+
+  document.getElementById(
+    "taskEarnings"
+  ).textContent =
+    money(taskEarnings);
+
+  document.getElementById(
+    "withdrawals"
+  ).textContent =
+    money(withdrawals);
+
+}
+
+
+/* =========================
+   ICONS
+========================= */
+
+function iconFor(type) {
+
+  if (type === "deposit") {
+    return "↓";
+  }
+
+  if (type === "package") {
+    return "▣";
+  }
+
+  if (type === "earning") {
+    return "✓";
+  }
+
+  if (type === "withdrawal") {
+    return "↑";
+  }
+
+  return "•";
+
+}
+
+
+/* =========================
+   CATEGORY
+========================= */
+
+function categoryFor(type) {
+
+  if (type === "deposit") {
+    return "Deposits";
+  }
+
+  if (type === "package") {
+    return "Packages";
+  }
+
+  if (type === "earning") {
+    return "Earnings";
+  }
+
+  if (type === "withdrawal") {
+    return "Withdrawals";
+  }
+
+  return "All";
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function renderRecords() {
+
+  const records =
+    currentFilter === "All"
+      ? allRecords
+      : allRecords.filter(
+          record =>
+            categoryFor(
+              record.type
+            ) === currentFilter
+        );
+
+
+  document.getElementById(
+    "recordCount"
+  ).textContent =
+    records.length +
+    (
+      records.length === 1
+        ? " record"
+        : " records"
+    );
+
+
+  const container =
+    document.getElementById(
+      "records"
+    );
+
+
+  if (!records.length) {
+
+    container.innerHTML = `
+
+      <div class="empty">
+
+        <div class="empty-icon">
+          ▣
+        </div>
+
+        <div class="empty-title">
+          No records found
+        </div>
+
+        <div>
+          Your activity will appear here.
+        </div>
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    records.map(
+      record => {
+
+        const isCredit =
+          record.direction ===
+          "credit";
+
+        const amountClass =
+          isCredit
+            ? "amount-credit"
+            : "amount-debit";
+
+        const prefix =
+          isCredit
+            ? "+"
+            : "-";
+
+
+        return `
+
+          <div class="record">
+
+            <div class="record-icon">
+              ${iconFor(record.type)}
+            </div>
+
+            <div class="record-main">
+
+              <div class="record-name">
+                ${escapeHtml(
+                  record.title
+                )}
+              </div>
+
+              <div class="record-meta">
+                ${escapeHtml(
+                  record.description || ""
+                )}
+              </div>
+
+            </div>
+
+            <div class="record-amount">
+
+              <div class="record-label">
+                Amount
+              </div>
+
+              <div
+                class="record-value ${amountClass}">
+                ${prefix}${money(
+                  record.amount
+                )}
+              </div>
+
+            </div>
+
+            <div class="record-status">
+
+              <div class="record-label">
+                Status
+              </div>
+
+              <span
+                class="status ${statusClass(
+                  record.status
+                )}">
+                ${escapeHtml(
+                  String(
+                    record.status
+                  ).replace(
+                    /^./,
+                    letter =>
+                      letter.toUpperCase()
+                  )
+                )}
+              </span>
+
+            </div>
+
+            <div class="record-date">
+
+              <div class="record-label">
+                Date
+              </div>
+
+              <div class="record-value">
+                ${formatDate(
+                  record.date
+                )}
+              </div>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    ).join("");
+
+}
+
+
+/* =========================
+   FILTER
+========================= */
+
+function setFilter(filter) {
+
+  currentFilter =
+    filter;
+
+
+  document
+    .querySelectorAll(
+      ".filter-btn"
+    )
+    .forEach(
+      button => {
+
+        button.classList.toggle(
+          "active",
+          button.dataset.filter ===
+          filter
+        );
+
+      }
+    );
+
+
+  renderRecords();
+
+}
+
+
+/* =========================
+   LOAD HISTORY
+========================= */
+
+async function loadHistory() {
+
+  const loading =
+    document.getElementById(
+      "loadingScreen"
+    );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      error ||
+      !data.session
+    ) {
+
+      window.location.href =
+        "login.html";
+
+      return;
+    }
+
+
+    const userId =
+      data.session.user.id;
+
+
+    console.log(
+      "History user:",
+      userId
+    );
+
+
+    const [
+      wallet,
+      transactions
+    ] =
+      await Promise.all([
+
+        loadWallet(userId),
+
+        loadTransactions(userId)
+
+      ]);
+
+
+    console.log(
+      "Wallet:",
+      wallet
+    );
+
+    console.log(
+      "Transactions:",
+      transactions
+    );
+
+
+    allTransactions =
+      transactions;
+
+
+    updateSummary(
+      wallet,
+      transactions
+    );
+
+
+    allRecords =
+      buildHistory(
+        transactions
+      );
+
+
+    renderRecords();
+
+
+    loading.style.display =
+      "none";
+
+
+  } catch (error) {
+
+    console.error(
+      "History loading error:",
+      error
+    );
+
+
+    document.getElementById(
+      "records"
+    ).innerHTML = `
+
+      <div class="empty">
+
+        <div class="empty-icon">
+          ⚠
+        </div>
+
+        <div class="empty-title">
+          Unable to load history
+        </div>
+
+        <div>
+          Please refresh the page and try again.
+        </div>
+
+      </div>
+
+    `;
+
+
+    loading.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================
+   AUTH
+========================= */
+
+supabaseClient.auth.onAuthStateChange(
+  (
+    event,
+    session
+  ) => {
+
+    console.log(
+      "Auth event:",
+      event
+    );
+
+
+    if (
+      event ===
+      "SIGNED_OUT"
+    ) {
+
+      window.location.href =
+        "login.html";
+
+    }
+
+  }
+);
+
+
+/* =========================
+   START
+========================= */
+
+loadHistory();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasks | NexaLearn</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #06101d;
+      color: #fff;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* =========================
+       SIDEBAR
+    ========================= */
+
+    .sidebar {
+      width: 240px;
+      background: #081523;
+      border-right: 1px solid #15304a;
+      padding: 22px 15px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      overflow-y: auto;
+    }
+
+    .brand {
+      padding: 5px 10px 24px;
+      border-bottom: 1px solid #15304a;
+      margin-bottom: 20px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: #38a9ff;
+      font-size: 25px;
+    }
+
+    .brand p {
+      margin: 7px 0 0;
+      color: #8ea4bb;
+      font-size: 11px;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 12px 13px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      color: #9fb2c5;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: #0d2237;
+      color: #fff;
+    }
+
+    .logout {
+      width: 100%;
+      padding: 11px;
+      margin-top: 20px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid #203b54;
+      color: #a9bacb;
+      cursor: pointer;
+    }
+
+    .logout:hover {
+      background: #102437;
+      color: #fff;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    .main {
+      margin-left: 240px;
+      width: calc(100% - 240px);
+      padding: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .title h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .title p {
+      margin: 7px 0 0;
+      color: #8ea4bb;
+      font-size: 14px;
+    }
+
+    .balance-pill {
+      background: #0a1828;
+      border: 1px solid #183650;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: #22d3a3;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      background: linear-gradient(
+        135deg,
+        #0b2135,
+        #091725
+      );
+      border: 1px solid #1a4567;
+      border-radius: 18px;
+      padding: 23px;
+      margin-bottom: 18px;
+    }
+
+    .hero h3 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #94a9bc;
+      font-size: 13px;
+      line-height: 1.7;
+      max-width: 850px;
+    }
+
+    /* =========================
+       CATEGORY FILTERS
+    ========================= */
+
+    .categories {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .category-btn {
+      border: 1px solid #24425e;
+      background: #10253a;
+      color: #aebfce;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .category-btn:hover,
+    .category-btn.active {
+      background: #168cff;
+      border-color: #168cff;
+      color: #fff;
+    }
+
+    /* =========================
+       TASK GRID
+    ========================= */
+
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 17px;
+    }
+
+    .task-card {
+      background: #0a1828;
+      border: 1px solid #15304a;
+      border-radius: 16px;
+      padding: 20px;
+      transition: .2s;
+    }
+
+    .task-card:hover {
+      border-color: #28648f;
+      transform: translateY(-2px);
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .task-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      background: #10253a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38a9ff;
+      font-weight: bold;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .task-heading {
+      flex: 1;
+    }
+
+    .task-name {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .task-category {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 5px 8px;
+      border-radius: 20px;
+      background: #102b43;
+      color: #9fc2dc;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .task-reward {
+      color: #22d3a3;
+      font-size: 15px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .task-description {
+      margin-top: 16px;
+      color: #9badbf;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .task-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .meta-box {
+      background: #071321;
+      border: 1px solid #142e44;
+      padding: 10px;
+      border-radius: 9px;
+    }
+
+    .meta-label {
+      color: #6e8498;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .meta-value {
+      color: #d4dfe8;
+      font-size: 12px;
+    }
+
+    .task-button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border: none;
+      border-radius: 9px;
+      background: #168cff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .task-button:hover {
+      background: #0879df;
+    }
+
+    .task-button.completed {
+      background: #123b38;
+      border: 1px solid #206e5d;
+      color: #5ee8c3;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px 20px;
+      color: #778ca0;
+      border: 1px dashed #24415c;
+      border-radius: 14px;
+    }
+
+    .notice {
+      margin-top: 20px;
+      background: rgba(56, 169, 255, .08);
+      border: 1px solid rgba(56, 169, 255, .18);
+      color: #9ccfff;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 950px) {
+      .tasks-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 18px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .main {
+        padding: 14px;
+      }
+
+      .hero,
+      .task-card {
+        padding: 16px;
+      }
+
+      .task-top {
+        align-items: flex-start;
+      }
+
+      .task-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .task-reward {
+        font-size: 13px;
+      }
+
+      .categories {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .category-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <h1>NexaLearn</h1>
+      <p>LEARN • COMPLETE • EARN</p>
+    </div>
+
+    <a href="dashboard.html" class="nav-link">
+      Dashboard
+    </a>
+
+    <a href="packages.html" class="nav-link">
+      Packages
+    </a>
+
+    <a href="tasks.html" class="nav-link active">
+      Tasks
+    </a>
+
+    <a href="wallet.html" class="nav-link">
+      Wallet
+    </a>
+
+    <a href="history.html" class="nav-link">
+      History
+    </a>
+
+    <a href="profile.html" class="nav-link">
+      Profile
+    </a>
+
+    <a href="support.html" class="nav-link">
+      Support
+    </a>
+
+    <button
+      class="logout"
+      onclick="logout()"
+    >
+      Log Out
+    </button>
+
+  </aside>
+
+
+  <!-- MAIN -->
+
+  <main class="main">
+
+    <div class="topbar">
+
+      <div class="title">
+
+        <h2>
+          Available Tasks
+        </h2>
+
+        <p>
+          Complete data work and earn rewards from verified tasks.
+        </p>
+
+      </div>
+
+
+      <div
+        class="balance-pill"
+        id="balancePill"
+      >
+        Balance: KSh 0
+      </div>
+
+    </div>
+
+
+    <!-- HERO -->
+
+    <div class="hero">
+
+      <h3>
+        Data Work Marketplace
+      </h3>
+
+      <p>
+        NexaLearn tasks focus on real data-work activities:
+        data annotation, audio annotation, language translation,
+        and image annotation. Each verified task currently earns
+        <strong>KSh 50</strong>.
+      </p>
+
+    </div>
+
+
+    <!-- CATEGORIES -->
+
+    <div class="categories">
+
+      <button
+        class="category-btn active"
+        onclick="filterTasks('All', this)"
+      >
+        All Tasks
+      </button>
+
+      <button
+        class="category-btn"
+        onclick="filterTasks('Data Annotation', this)"
+      >
+        Data Annotation
+      </button>
+
+      <button
+        class="category-btn"
+        onclick="filterTasks('Audio', this)"
+      >
+        Audio
+      </button>
+
+      <button
+        class="category-btn"
+        onclick="filterTasks('Language Translation', this)"
+      >
+        Language Translation
+      </button>
+
+      <button
+        class="category-btn"
+        onclick="filterTasks('Image Annotation', this)"
+      >
+        Image Annotation
+      </button>
+
+    </div>
+
+
+    <!-- TASKS -->
+
+    <div
+      class="tasks-grid"
+      id="tasksGrid"
+    ></div>
+
+
+    <div class="notice">
+
+      Tasks may be completed again where the task permits it.
+      Rewards are credited after successful task verification.
+      Current prototype reward:
+      <strong>KSh 50 per verified task</strong>.
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  /* ==========================================
+     LOGIN
+  ========================================== */
+
+  function checkLogin() {
+
+    const loggedIn =
+      localStorage.getItem(
+        "nexaLearnLoggedIn"
+      );
+
+    if (loggedIn !== "true") {
+
+      window.location.href =
+        "login.html";
+
+      return false;
+    }
+
+    return true;
+  }
+
+
+  function logout() {
+
+    localStorage.removeItem(
+      "nexaLearnLoggedIn"
+    );
+
+    window.location.href =
+      "login.html";
+  }
+
+
+  /* ==========================================
+     HELPERS
+  ========================================== */
+
+  function readJSON(
+    key,
+    fallback
+  ) {
+
+    try {
+
+      const value =
+        JSON.parse(
+          localStorage.getItem(key)
+        );
+
+      return value ?? fallback;
+
+    } catch (error) {
+
+      return fallback;
+    }
+  }
+
+
+  function escapeHTML(value) {
+
+    return String(
+      value ?? ""
+    )
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+  }
+
+
+  function formatKES(value) {
+
+    return (
+      "KSh " +
+      Number(
+        value || 0
+      ).toLocaleString(
+        "en-KE"
+      )
+    );
+  }
+
+
+  /* ==========================================
+     FALLBACK TASKS
+  ========================================== */
+
+  const fallbackTasks = [
+
+    {
+      id: "DEMO-DATA-001",
+      name: "Text Data Annotation",
+      category: "Data Annotation",
+      reward: 50,
+      items: 10,
+      instructions:
+        "Review text samples and label the requested data fields accurately.",
+      sections: [
+        {
+          title: "Text Labeling",
+          description:
+            "Identify and label the relevant information in the provided text.",
+          type: "text",
+          question:
+            "Enter the labels for the provided text sample.",
+          options: []
+        }
+      ]
+    },
+
+    {
+      id: "DEMO-AUDIO-001",
+      name: "Audio Transcription",
+      category: "Audio",
+      reward: 50,
+      items: 5,
+      instructions:
+        "Listen to short audio clips and provide accurate transcriptions.",
+      sections: [
+        {
+          title: "Audio Transcription",
+          description:
+            "Listen carefully and transcribe the spoken content.",
+          type: "text",
+          question:
+            "Enter the exact words spoken in the audio clip.",
+          options: []
+        }
+      ]
+    },
+
+    {
+      id: "DEMO-LANG-001",
+      name: "Language Translation",
+      category: "Language Translation",
+      reward: 50,
+      items: 10,
+      instructions:
+        "Translate short phrases while preserving their meaning and context.",
+      sections: [
+        {
+          title: "Translation",
+          description:
+            "Translate the provided phrase into the requested language.",
+          type: "translation",
+          question:
+            "Provide an accurate translation.",
+          options: []
+        }
+      ]
+    },
+
+    {
+      id: "DEMO-IMAGE-001",
+      name: "Image Annotation",
+      category: "Image Annotation",
+      reward: 50,
+      items: 8,
+      instructions:
+        "Review images and identify or classify the objects shown.",
+      sections: [
+        {
+          title: "Image Labeling",
+          description:
+            "Identify the required objects or categories in the image.",
+          type: "choice",
+          question:
+            "Select the correct label for the image.",
+          options: [
+            "Person",
+            "Vehicle",
+            "Animal",
+            "Object"
+          ]
+        }
+      ]
+    }
+
+  ];
+
+
+  /* ==========================================
+     CURRENT FILTER
+  ========================================== */
+
+  let currentFilter =
+    "All";
+
+
+  /* ==========================================
+     TASK DATA
+  ========================================== */
+
+  let allTasks = [];
+
+
+  function loadTasks() {
+
+    const adminTasks =
+      readJSON(
+        "nexaLearnTasks",
+        []
+      );
+
+
+    const activeAdminTasks =
+      adminTasks.filter(
+        task =>
+          task.status === "Active"
+      );
+
+
+    if (
+      activeAdminTasks.length
+    ) {
+
+      allTasks =
+        activeAdminTasks;
+
+    } else {
+
+      allTasks =
+        fallbackTasks;
+
+    }
+
+
+    renderTasks();
+
+  }
+
+
+  /* ==========================================
+     ICONS
+  ========================================== */
+
+  function getTaskIcon(
+    category
+  ) {
+
+    const value =
+      String(
+        category || ""
+      ).toLowerCase();
+
+
+    if (
+      value.includes("audio")
+    ) {
+      return "♪";
+    }
+
+
+    if (
+      value.includes("translation") ||
+      value.includes("language")
+    ) {
+      return "文";
+    }
+
+
+    if (
+      value.includes("image")
+    ) {
+      return "▣";
+    }
+
+
+    if (
+      value.includes("data")
+    ) {
+      return "⌘";
+    }
+
+
+    return "✓";
+  }
+
+
+  /* ==========================================
+     RENDER TASKS
+  ========================================== */
+
+  function renderTasks() {
+
+    const container =
+      document.getElementById(
+        "tasksGrid"
+      );
+
+
+    const filtered =
+      currentFilter === "All"
+
+        ? allTasks
+
+        : allTasks.filter(
+            task =>
+              task.category ===
+              currentFilter
+          );
+
+
+    if (
+      !filtered.length
+    ) {
+
+      container.innerHTML = `
+
+        <div class="empty">
+
+          No tasks available in this category.
+
+        </div>
+
+      `;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      filtered
+        .map(
+          (task) => {
+
+            const originalIndex =
+              allTasks.indexOf(
+                task
+              );
+
+
+            const completed =
+              getTaskCompletionCount(
+                task.id
+              );
+
+
+            return `
+
+              <div class="task-card">
+
+                <div class="task-top">
+
+                  <div
+                    class="task-icon"
+                  >
+                    ${getTaskIcon(
+                      task.category
+                    )}
+                  </div>
+
+
+                  <div
+                    class="task-heading"
+                  >
+
+                    <h3
+                      class="task-name"
+                    >
+                      ${escapeHTML(
+                        task.name
+                      )}
+                    </h3>
+
+                    <span
+                      class="task-category"
+                    >
+                      ${escapeHTML(
+                        task.category
+                      )}
+                    </span>
+
+                  </div>
+
+
+                  <div
+                    class="task-reward"
+                  >
+                    ${formatKES(
+                      task.reward ??
+                      50
+                    )}
+                  </div>
+
+                </div>
+
+
+                <div
+                  class="task-description"
+                >
+                  ${escapeHTML(
+                    task.instructions
+                  )}
+                </div>
+
+
+                <div
+                  class="task-meta"
+                >
+
+                  <div
+                    class="meta-box"
+                  >
+
+                    <div
+                      class="meta-label"
+                    >
+                      Items
+                    </div>
+
+                    <div
+                      class="meta-value"
+                    >
+                      ${Number(
+                        task.items || 1
+                      )}
+                    </div>
+
+                  </div>
+
+
+                  <div
+                    class="meta-box"
+                  >
+
+                    <div
+                      class="meta-label"
+                    >
+                      Reward
+                    </div>
+
+                    <div
+                      class="meta-value"
+                    >
+                      ${formatKES(
+                        task.reward ??
+                        50
+                      )}
+                    </div>
+
+                  </div>
+
+
+                  <div
+                    class="meta-box"
+                  >
+
+                    <div
+                      class="meta-label"
+                    >
+                      Completed
+                    </div>
+
+                    <div
+                      class="meta-value"
+                    >
+                      ${completed}
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+                <button
+                  class="
+                    task-button
+                    ${completed > 0
+                      ? "completed"
+                      : ""}
+                  "
+                  onclick="
+                    startTask(${originalIndex})
+                  "
+                >
+
+                  ${
+                    completed > 0
+                      ? "Complete Again"
+                      : "Start Task"
+                  }
+
+                </button>
+
+              </div>
+
+            `;
+
+          }
+        )
+        .join("");
+
+  }
+
+
+  /* ==========================================
+     FILTER
+  ========================================== */
+
+  function filterTasks(
+    category,
+    button
+  ) {
+
+    currentFilter =
+      category;
+
+
+    document
+      .querySelectorAll(
+        ".category-btn"
+      )
+      .forEach(
+        btn => {
+          btn.classList.remove(
+            "active"
+          );
+        }
+      );
+
+
+    button.classList.add(
+      "active"
+    );
+
+
+    renderTasks();
+
+  }
+
+
+  /* ==========================================
+     TASK COMPLETION COUNT
+  ========================================== */
+
+  function getTaskCompletionCount(
+    taskId
+  ) {
+
+    const history =
+      readJSON(
+        "nexaLearnHistory",
+        []
+      );
+
+
+    return history.filter(
+      item => {
+
+        if (
+          item.type !==
+          "earning"
+        ) {
+          return false;
+        }
+
+
+        return (
+          item.taskId ===
+          taskId
+        );
+
+      }
+    ).length;
+
+  }
+
+
+  /* ==========================================
+     START TASK
+  ========================================== */
+
+  function startTask(
+    index
+  ) {
+
+    const task =
+      allTasks[index];
+
+
+    if (!task) {
+      return;
+    }
+
+
+    /*
+      Fallback demo tasks use
+      the fallback index.
+    */
+
+    if (
+      task.id &&
+      task.id.startsWith(
+        "DEMO-"
+      )
+    ) {
+
+      window.location.href =
+        "task-workspace.html?fallback=" +
+        index;
+
+      return;
+    }
+
+
+    /*
+      Admin tasks currently use
+      their task array index.
+    */
+
+    const adminTasks =
+      readJSON(
+        "nexaLearnTasks",
+        []
+      );
+
+
+    const adminIndex =
+      adminTasks.findIndex(
+        item =>
+          item.id ===
+          task.id
+      );
+
+
+    if (
+      adminIndex >= 0
+    ) {
+
+      window.location.href =
+        "task-workspace.html?index=" +
+        adminIndex;
+
+      return;
+    }
+
+
+    alert(
+      "This task could not be opened."
+    );
+
+  }
+
+
+  /* ==========================================
+     BALANCE
+  ========================================== */
+
+  function loadBalance() {
+
+    const balance =
+      Number(
+        localStorage.getItem(
+          "nexaLearnBalance"
+        ) || 0
+      );
+
+
+    document.getElementById(
+      "balancePill"
+    ).textContent =
+      "Balance: " +
+      formatKES(
+        balance
+      );
+
+  }
+
+
+  /* ==========================================
+     STARTUP
+  ========================================== */
+
+  if (
+    checkLogin()
+  ) {
+
+    loadTasks();
+
+    loadBalance();
+
+  }
+
+
+  /* ==========================================
+     REFRESH
+  ========================================== */
+
+  window.addEventListener(
+    "storage",
+    function() {
+
+      loadTasks();
+
+      loadBalance();
+
+    }
+  );
+
+</script>
+
+</body>
+</html>

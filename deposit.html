@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn - Deposit Funds</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #06101d;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 230px;
+      height: 100vh;
+      background: #081827;
+      border-right: 1px solid #183047;
+      padding: 25px 15px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .logo h2 {
+      color: #38bdf8;
+      font-size: 24px;
+    }
+
+    .logo p {
+      color: #718096;
+      font-size: 10px;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+
+    .nav a {
+      display: block;
+      text-decoration: none;
+      color: #9fb0c2;
+      padding: 13px 15px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #102b42;
+      color: #38bdf8;
+    }
+
+    .main {
+      margin-left: 230px;
+      padding: 35px;
+      max-width: 1000px;
+    }
+
+    .back {
+      display: inline-block;
+      color: #8fa3b7;
+      text-decoration: none;
+      margin-bottom: 25px;
+    }
+
+    .back:hover {
+      color: #38bdf8;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #8fa3b7;
+      margin-bottom: 28px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .card {
+      background: #0a1b2b;
+      border: 1px solid #19364d;
+      border-radius: 14px;
+      padding: 25px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .payment-box {
+      background: #0c2133;
+      border: 1px solid #1d4059;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .payment-label {
+      color: #8fa3b7;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .payment-number {
+      color: #38bdf8;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .recipient {
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .instruction {
+      color: #8fa3b7;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .step {
+      margin-bottom: 13px;
+    }
+
+    label {
+      display: block;
+      color: #c4d2df;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      background: #061522;
+      border: 1px solid #23445c;
+      color: #fff;
+      border-radius: 8px;
+      padding: 13px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #38bdf8;
+    }
+
+    input::placeholder {
+      color: #60788c;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: #38bdf8;
+      color: #06101d;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #67cdf9;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .message {
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .message.success {
+      display: block;
+      background: #10291e;
+      border: 1px solid #285f40;
+      color: #8ee5af;
+    }
+
+    .message.error {
+      display: block;
+      background: #29151a;
+      border: 1px solid #632832;
+      color: #ff9b9b;
+    }
+
+    .recent {
+      margin-top: 25px;
+    }
+
+    .deposit-item {
+      border-bottom: 1px solid #19364d;
+      padding: 15px 0;
+    }
+
+    .deposit-item:last-child {
+      border-bottom: none;
+    }
+
+    .deposit-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .amount {
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    .status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 20px;
+      background: #3a3218;
+      color: #f1d675;
+    }
+
+    .status.approved {
+      background: #123321;
+      color: #8ee5af;
+    }
+
+    .status.rejected {
+      background: #35191d;
+      color: #ff9b9b;
+    }
+
+    .deposit-meta {
+      color: #71889b;
+      font-size: 12px;
+    }
+
+    .empty {
+      color: #71889b;
+      font-size: 14px;
+      padding: 15px 0;
+    }
+
+    @media (max-width: 750px) {
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <h2>NexaLearn</h2>
+      <p>LEARN • COMPLETE • EARN</p>
+    </div>
+
+    <nav class="nav">
+
+      <a href="dashboard.html">
+        Dashboard
+      </a>
+
+      <a href="tasks.html">
+        Tasks
+      </a>
+
+      <a href="packages.html">
+        Packages
+      </a>
+
+      <a href="wallet.html" class="active">
+        Wallet
+      </a>
+
+      <a href="history.html">
+        History
+      </a>
+
+      <a href="profile.html">
+        Profile
+      </a>
+
+      <a href="support.html">
+        Support
+      </a>
+
+      <a href="#" id="logoutBtn">
+        Logout
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <!-- MAIN -->
+
+  <main class="main">
+
+    <a href="wallet.html" class="back">
+      ← Back to Wallet
+    </a>
+
+    <h1>
+      Deposit Funds
+    </h1>
+
+    <p class="subtitle">
+      Add funds to your NexaLearn wallet using M-Pesa.
+    </p>
+
+
+    <div id="message" class="message"></div>
+
+
+    <div class="grid">
+
+
+      <!-- PAYMENT INSTRUCTIONS -->
+
+      <div class="card">
+
+        <h2>
+          M-Pesa Payment
+        </h2>
+
+        <div class="payment-box">
+
+          <div class="payment-label">
+            Send M-Pesa to
+          </div>
+
+          <div class="payment-number">
+            +254 117 537 358
+          </div>
+
+          <div class="recipient">
+            Recipient: Stephen
+          </div>
+
+        </div>
+
+
+        <div class="instruction">
+
+          <div class="step">
+            <strong>1.</strong>
+            Send the amount you want to deposit using M-Pesa.
+          </div>
+
+          <div class="step">
+            <strong>2.</strong>
+            Make sure you use your own M-Pesa number.
+          </div>
+
+          <div class="step">
+            <strong>3.</strong>
+            After payment, copy the M-Pesa transaction code.
+          </div>
+
+          <div class="step">
+            <strong>4.</strong>
+            Enter the payment details in the form.
+          </div>
+
+          <div class="step">
+            <strong>5.</strong>
+            Submit the request and wait for admin approval.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- FORM -->
+
+      <div class="card">
+
+        <h2>
+          Deposit Details
+        </h2>
+
+
+        <form id="depositForm">
+
+          <div class="form-group">
+
+            <label for="amount">
+              Deposit Amount (KSh)
+            </label>
+
+            <input
+              type="number"
+              id="amount"
+              min="1"
+              step="1"
+              placeholder="Enter amount"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="mpesaNumber">
+              Your M-Pesa Number
+            </label>
+
+            <input
+              type="tel"
+              id="mpesaNumber"
+              placeholder="e.g. 0712345678"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="transactionCode">
+              M-Pesa Transaction Code
+            </label>
+
+            <input
+              type="text"
+              id="transactionCode"
+              placeholder="e.g. QAB123XYZ"
+              maxlength="30"
+              required
+            >
+
+          </div>
+
+
+          <button
+            type="submit"
+            id="submitBtn"
+            class="submit-btn">
+
+            Submit Deposit Request
+
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+
+    <!-- RECENT DEPOSITS -->
+
+    <div class="card recent">
+
+      <h2>
+        My Deposit Requests
+      </h2>
+
+      <div id="depositList">
+
+        <div class="empty">
+          Loading deposit history...
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <script>
+
+    /* =========================
+       SUPABASE
+    ========================= */
+
+    const SUPABASE_URL =
+      "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true
+          }
+        }
+      );
+
+
+    let currentUser = null;
+
+
+    /* =========================
+       MESSAGE
+    ========================= */
+
+    function showMessage(
+      text,
+      type
+    ) {
+
+      const box =
+        document.getElementById(
+          "message"
+        );
+
+      box.className =
+        "message " + type;
+
+      box.textContent = text;
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+
+    /* =========================
+       LOAD USER
+    ========================= */
+
+    async function loadUser() {
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await supabaseClient.auth.getSession();
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (!data.session) {
+
+          window.location.href =
+            "login.html";
+
+          return false;
+        }
+
+
+        currentUser =
+          data.session.user;
+
+        return true;
+
+
+      } catch (error) {
+
+        console.error(
+          "Session error:",
+          error
+        );
+
+        window.location.href =
+          "login.html";
+
+        return false;
+      }
+    }
+
+
+    /* =========================
+       SUBMIT DEPOSIT
+    ========================= */
+
+    document
+      .getElementById("depositForm")
+      .addEventListener(
+        "submit",
+        async function(e) {
+
+          e.preventDefault();
+
+
+          if (!currentUser) {
+            return;
+          }
+
+
+          const amount =
+            Number(
+              document.getElementById(
+                "amount"
+              ).value
+            );
+
+
+          const mpesaNumber =
+            document.getElementById(
+              "mpesaNumber"
+            ).value
+            .trim();
+
+
+          const transactionCode =
+            document.getElementById(
+              "transactionCode"
+            ).value
+            .trim()
+            .toUpperCase();
+
+
+          const submitBtn =
+            document.getElementById(
+              "submitBtn"
+            );
+
+
+          /* VALIDATION */
+
+          if (
+            !amount ||
+            amount <= 0
+          ) {
+
+            showMessage(
+              "Please enter a valid deposit amount.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          if (
+            mpesaNumber.length < 9
+          ) {
+
+            showMessage(
+              "Please enter a valid M-Pesa number.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          if (
+            transactionCode.length < 5
+          ) {
+
+            showMessage(
+              "Please enter a valid M-Pesa transaction code.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          submitBtn.disabled = true;
+
+          submitBtn.textContent =
+            "Submitting...";
+
+
+          try {
+
+            /*
+              Check whether the transaction code
+              has already been submitted.
+            */
+
+            const {
+              data: existing,
+              error: existingError
+            } =
+              await supabaseClient
+                .from("deposit_requests")
+                .select("id")
+                .eq(
+                  "transaction_code",
+                  transactionCode
+                )
+                .maybeSingle();
+
+
+            if (existingError) {
+              throw existingError;
+            }
+
+
+            if (existing) {
+
+              throw new Error(
+                "This M-Pesa transaction code has already been submitted."
+              );
+            }
+
+
+            /*
+              Create deposit request.
+              Status remains Pending until
+              an administrator reviews it.
+            */
+
+            const {
+              data: deposit,
+              error: depositError
+            } =
+              await supabaseClient
+                .from("deposit_requests")
+                .insert({
+
+                  user_id:
+                    currentUser.id,
+
+                  amount:
+                    amount,
+
+                  currency:
+                    "KES",
+
+                  method:
+                    "M-Pesa",
+
+                  user_mpesa_number:
+                    mpesaNumber,
+
+                  transaction_code:
+                    transactionCode,
+
+                  status:
+                    "Pending"
+
+                })
+                .select()
+                .single();
+
+
+            if (depositError) {
+              throw depositError;
+            }
+
+
+            console.log(
+              "Deposit submitted:",
+              deposit
+            );
+
+
+            showMessage(
+              "Deposit request submitted successfully. Your request is now Pending admin approval.",
+              "success"
+            );
+
+
+            document
+              .getElementById(
+                "depositForm"
+              )
+              .reset();
+
+
+            loadDeposits();
+
+
+          } catch (error) {
+
+            console.error(
+              "Deposit error:",
+              error
+            );
+
+
+            showMessage(
+              error.message ||
+              "Unable to submit deposit request.",
+              "error"
+            );
+
+          } finally {
+
+            submitBtn.disabled = false;
+
+            submitBtn.textContent =
+              "Submit Deposit Request";
+          }
+
+        }
+      );
+
+
+    /* =========================
+       LOAD DEPOSIT HISTORY
+    ========================= */
+
+    async function loadDeposits() {
+
+      if (!currentUser) {
+        return;
+      }
+
+
+      const list =
+        document.getElementById(
+          "depositList"
+        );
+
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await supabaseClient
+            .from("deposit_requests")
+            .select(
+              "id,amount,currency,method,user_mpesa_number,transaction_code,status,created_at"
+            )
+            .eq(
+              "user_id",
+              currentUser.id
+            )
+            .order(
+              "created_at",
+              {
+                ascending: false
+              }
+            )
+            .limit(10);
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (
+          !data ||
+          data.length === 0
+        ) {
+
+          list.innerHTML = `
+            <div class="empty">
+              You have no deposit requests yet.
+            </div>
+          `;
+
+          return;
+        }
+
+
+        list.innerHTML =
+          data.map(
+            deposit => {
+
+              const amount =
+                Number(
+                  deposit.amount || 0
+                );
+
+
+              const date =
+                new Date(
+                  deposit.created_at
+                ).toLocaleString(
+                  "en-KE"
+                );
+
+
+              const status =
+                String(
+                  deposit.status || "Pending"
+                ).toLowerCase();
+
+
+              return `
+                <div class="deposit-item">
+
+                  <div class="deposit-top">
+
+                    <span class="amount">
+                      KSh ${amount.toLocaleString("en-KE")}
+                    </span>
+
+                    <span class="status ${status}">
+                      ${capitalize(status)}
+                    </span>
+
+                  </div>
+
+                  <div class="deposit-meta">
+                    M-Pesa:
+                    ${escapeHtml(
+                      deposit.user_mpesa_number
+                    )}
+                    <br>
+
+                    Transaction:
+                    ${escapeHtml(
+                      deposit.transaction_code
+                    )}
+                    <br>
+
+                    ${date}
+                  </div>
+
+                </div>
+              `;
+
+            }
+          ).join("");
+
+
+      } catch (error) {
+
+        console.error(
+          "Deposit history error:",
+          error
+        );
+
+
+        list.innerHTML = `
+          <div class="empty">
+            Unable to load deposit history.
+          </div>
+        `;
+      }
+    }
+
+
+    /* =========================
+       HELPERS
+    ========================= */
+
+    function capitalize(value) {
+
+      return value.charAt(0).toUpperCase()
+        + value.slice(1);
+    }
+
+
+    function escapeHtml(value) {
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    /* =========================
+       LOGOUT
+    ========================= */
+
+    document
+      .getElementById("logoutBtn")
+      .addEventListener(
+        "click",
+        async function(e) {
+
+          e.preventDefault();
+
+          await supabaseClient
+            .auth
+            .signOut();
+
+          window.location.href =
+            "login.html";
+
+        }
+      );
+
+
+    /* =========================
+       START
+    ========================= */
+
+    async function start() {
+
+      const loggedIn =
+        await loadUser();
+
+      if (loggedIn) {
+        await loadDeposits();
+      }
+
+    }
+
+
+    start();
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,662 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn Packages</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #06101d;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 230px;
+      height: 100vh;
+      background: #091827;
+      border-right: 1px solid #183047;
+      padding: 25px 15px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .tagline {
+      color: #7f95aa;
+      font-size: 10px;
+      letter-spacing: 1px;
+      margin-top: 5px;
+      margin-bottom: 30px;
+    }
+
+    .wallet-box {
+      background: #102b43;
+      border: 1px solid #1d405b;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+    }
+
+    .wallet-label {
+      color: #8197aa;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .wallet-balance {
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    nav a {
+      display: block;
+      text-decoration: none;
+      color: #aebfd0;
+      padding: 12px;
+      border-radius: 7px;
+      margin-bottom: 5px;
+    }
+
+    nav a:hover,
+    nav a.active {
+      background: #102b43;
+      color: #ffffff;
+    }
+
+    .logout {
+      margin-top: 20px;
+      color: #ff8292 !important;
+      background: #28151b;
+      text-align: center;
+    }
+
+    .main {
+      margin-left: 230px;
+      padding: 35px;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 29px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #8197aa;
+    }
+
+    .message {
+      display: none;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .error {
+      background: #3a171c;
+      border: 1px solid #682631;
+      color: #ff8292;
+    }
+
+    .packages {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .package {
+      background: #0a1928;
+      border: 1px solid #183047;
+      border-radius: 13px;
+      padding: 22px;
+      transition: .2s;
+    }
+
+    .package:hover {
+      transform: translateY(-3px);
+      border-color: #28506d;
+    }
+
+    .package-name {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .description {
+      color: #7f95aa;
+      font-size: 13px;
+      min-height: 38px;
+      margin-bottom: 20px;
+    }
+
+    .price {
+      font-size: 27px;
+      font-weight: bold;
+      margin-bottom: 18px;
+    }
+
+    .currency {
+      font-size: 14px;
+      color: #7f95aa;
+      font-weight: normal;
+    }
+
+    .details {
+      border-top: 1px solid #183047;
+      padding-top: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 11px;
+      font-size: 13px;
+    }
+
+    .detail span:first-child {
+      color: #7f95aa;
+    }
+
+    .detail span:last-child {
+      font-weight: bold;
+    }
+
+    .reward {
+      color: #56e39f;
+    }
+
+    .select-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      background: #155c3d;
+      color: #ffffff;
+      padding: 11px;
+      border-radius: 7px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .select-btn:hover {
+      background: #1c7650;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #8197aa;
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1100px) {
+      .packages {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .packages {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+  <div class="logo">NexaLearn</div>
+
+  <div class="tagline">
+    LEARN • COMPLETE • EARN
+  </div>
+
+  <div class="wallet-box">
+
+    <div class="wallet-label">
+      Available Balance
+    </div>
+
+    <div class="wallet-balance" id="walletBalance">
+      KSh 0
+    </div>
+
+  </div>
+
+  <nav>
+
+    <a href="dashboard.html">
+      Dashboard
+    </a>
+
+    <a href="packages.html" class="active">
+      Packages
+    </a>
+
+    <a href="tasks.html">
+      Tasks
+    </a>
+
+    <a href="wallet.html">
+      Wallet
+    </a>
+
+    <a href="history.html">
+      History
+    </a>
+
+    <a href="profile.html">
+      Profile
+    </a>
+
+    <a href="support.html">
+      Support
+    </a>
+
+    <a href="login.html" class="logout" id="logoutBtn">
+      Logout
+    </a>
+
+  </nav>
+
+</aside>
+
+
+<main class="main">
+
+  <div class="header">
+
+    <h1>Choose Your Package</h1>
+
+    <p>
+      Activate a package using your available wallet balance.
+    </p>
+
+  </div>
+
+
+  <div id="message" class="message"></div>
+
+
+  <div id="packagesContainer" class="packages">
+
+    <div class="loading">
+      Loading packages...
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://vzgrzzesquqnftfhchwt.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
+  );
+
+
+const packagesContainer =
+  document.getElementById("packagesContainer");
+
+const walletBalance =
+  document.getElementById("walletBalance");
+
+const message =
+  document.getElementById("message");
+
+
+function formatMoney(amount) {
+
+  return "KSh " +
+    Number(amount || 0).toLocaleString(
+      "en-KE",
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }
+    );
+
+}
+
+
+function showError(text) {
+
+  message.textContent = text;
+
+  message.className =
+    "message show error";
+
+}
+
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* --------------------------------
+   LOAD WALLET
+-------------------------------- */
+
+async function loadWallet(userId) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("wallets")
+    .select("balance, deposit_balance")
+    .eq("user_id", userId)
+    .single();
+
+
+  if (error) {
+
+    console.error(
+      "Wallet error:",
+      error
+    );
+
+    walletBalance.textContent =
+      "KSh 0";
+
+    return;
+  }
+
+
+  walletBalance.textContent =
+    formatMoney(data?.balance || 0);
+
+}
+
+
+/* --------------------------------
+   LOAD PACKAGES
+-------------------------------- */
+
+async function loadPackages() {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("packages")
+    .select(
+      "id,name,price,task_limit,reward_per_task,currency,description"
+    )
+    .order(
+      "price",
+      {
+        ascending: true
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Package error:",
+      error
+    );
+
+    packagesContainer.innerHTML = `
+      <div class="loading">
+        Unable to load packages.
+      </div>
+    `;
+
+    showError(
+      "Unable to load packages: " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    packagesContainer.innerHTML = `
+      <div class="loading">
+        No packages available.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  packagesContainer.innerHTML =
+    data.map(pkg => {
+
+      const taskCount =
+        Number(pkg.task_limit || 0);
+
+      const reward =
+        Number(pkg.reward_per_task || 50);
+
+      const potentialRewards =
+        taskCount * reward;
+
+
+      return `
+
+        <div class="package">
+
+          <div class="package-name">
+            ${escapeHtml(pkg.name)}
+          </div>
+
+          <div class="description">
+            ${escapeHtml(
+              pkg.description ||
+              "Complete verified tasks and earn rewards."
+            )}
+          </div>
+
+          <div class="price">
+
+            ${formatMoney(pkg.price)}
+
+            <span class="currency">
+              KSh
+            </span>
+
+          </div>
+
+          <div class="details">
+
+            <div class="detail">
+
+              <span>
+                Tasks
+              </span>
+
+              <span>
+                ${taskCount}
+              </span>
+
+            </div>
+
+
+            <div class="detail">
+
+              <span>
+                Reward / Task
+              </span>
+
+              <span class="reward">
+                ${formatMoney(reward)}
+              </span>
+
+            </div>
+
+
+            <div class="detail">
+
+              <span>
+                Total Task Rewards
+              </span>
+
+              <span class="reward">
+                ${formatMoney(potentialRewards)}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <a
+            class="select-btn"
+            href="select-package.html?package_id=${encodeURIComponent(pkg.id)}"
+          >
+            Select Package
+          </a>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* --------------------------------
+   LOGOUT
+-------------------------------- */
+
+document
+  .getElementById("logoutBtn")
+  .addEventListener(
+    "click",
+    async function(event) {
+
+      event.preventDefault();
+
+      await supabaseClient.auth.signOut();
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+
+/* --------------------------------
+   INITIALIZE
+-------------------------------- */
+
+(async function init() {
+
+  const {
+    data: {
+      session
+    },
+    error
+  } =
+    await supabaseClient.auth.getSession();
+
+
+  if (error) {
+
+    console.error(
+      "Session error:",
+      error
+    );
+
+    window.location.href =
+      "login.html";
+
+    return;
+  }
+
+
+  if (!session) {
+
+    window.location.href =
+      "login.html";
+
+    return;
+  }
+
+
+  await loadWallet(
+    session.user.id
+  );
+
+  await loadPackages();
+
+})();
+
+</script>
+
+</body>
+</html>
+```

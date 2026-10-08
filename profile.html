@@ -1,0 +1,1347 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NexaLearn - Profile</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #06101d;
+      color: #eef6ff;
+    }
+
+    .layout {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 230px;
+      background: #081827;
+      border-right: 1px solid #173047;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      color: #3ddc97;
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      font-size: 10px;
+      color: #7890a5;
+      letter-spacing: 1.2px;
+      margin-bottom: 28px;
+    }
+
+    .nav a {
+      display: block;
+      text-decoration: none;
+      color: #9fb1c2;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 7px;
+      transition: .2s;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #10263a;
+      color: #fff;
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: 230px;
+      width: calc(100% - 230px);
+      padding: 30px;
+    }
+
+    .content {
+      max-width: 1050px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: #91a5b8;
+      line-height: 1.5;
+    }
+
+    /* PROFILE HEADER */
+    .profile-header {
+      background: linear-gradient(
+        135deg,
+        #0d2538,
+        #0b1c2c
+      );
+      border: 1px solid #1a4059;
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 76px;
+      height: 76px;
+      min-width: 76px;
+      border-radius: 50%;
+      background: #15344a;
+      color: #3ddc97;
+      border: 2px solid #28536d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .profile-name {
+      font-size: 25px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .profile-email {
+      color: #8fa5b8;
+      font-size: 13px;
+      margin-bottom: 9px;
+      word-break: break-word;
+    }
+
+    .member-badge {
+      display: inline-block;
+      background: #10382a;
+      color: #71e2aa;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: #0b1c2c;
+      border: 1px solid #173047;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 17px;
+    }
+
+    /* INFO ROWS */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 12px 0;
+      border-bottom: 1px solid #132b3e;
+    }
+
+    .info-row:last-child {
+      border-bottom: 0;
+    }
+
+    .info-label {
+      color: #738a9d;
+      font-size: 12px;
+      min-width: 105px;
+    }
+
+    .info-value {
+      color: #e1ebf3;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    /* PACKAGE CARD */
+    .package-box {
+      background: #071522;
+      border: 1px solid #173047;
+      border-radius: 13px;
+      padding: 16px;
+    }
+
+    .package-name {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .package-status {
+      display: inline-block;
+      background: #10382a;
+      color: #71e2aa;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      margin-bottom: 15px;
+    }
+
+    .package-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .package-item {
+      background: #0b1c2c;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .package-label {
+      color: #748b9f;
+      font-size: 10px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .package-value {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .no-package {
+      color: #8197aa;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .action-btn {
+      display: inline-block;
+      text-decoration: none;
+      background: #3ddc97;
+      color: #06101d;
+      padding: 11px 15px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 13px;
+    }
+
+    /* ACCOUNT SUMMARY */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .summary-box {
+      background: #071522;
+      border: 1px solid #173047;
+      border-radius: 11px;
+      padding: 13px;
+    }
+
+    .summary-label {
+      color: #748b9f;
+      font-size: 10px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .green {
+      color: #3ddc97;
+    }
+
+    .blue {
+      color: #8bc9ee;
+    }
+
+    /* NOTIFICATION */
+    .notice {
+      margin-top: 20px;
+      background: #091724;
+      border: 1px solid #173047;
+      border-radius: 14px;
+      padding: 17px;
+    }
+
+    .notice-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .notice-text {
+      color: #8499aa;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    /* LOGOUT */
+    .logout-btn {
+      margin-top: 20px;
+      width: 100%;
+      border: 1px solid #5b2a34;
+      background: #24141a;
+      color: #ff98a7;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background: #321a22;
+    }
+
+    /* MESSAGE */
+    .message {
+      display: none;
+      margin-bottom: 18px;
+      padding: 13px 15px;
+      border-radius: 11px;
+      font-size: 13px;
+    }
+
+    .message.success {
+      display: block;
+      background: #10382a;
+      border: 1px solid #1c6349;
+      color: #75e5ae;
+    }
+
+    /* MOBILE */
+    @media (max-width: 900px) {
+
+      .layout {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+        width: 100%;
+        padding: 18px 15px;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 15px 30px;
+      }
+
+      .content {
+        max-width: none;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header h1 {
+        font-size: 27px;
+      }
+
+    }
+
+    @media (max-width: 600px) {
+
+      .sidebar {
+        padding: 16px 12px;
+      }
+
+      .main {
+        padding: 16px 12px 28px;
+      }
+
+      .profile-header {
+        padding: 18px;
+        align-items: flex-start;
+      }
+
+      .avatar {
+        width: 60px;
+        height: 60px;
+        min-width: 60px;
+        font-size: 22px;
+      }
+
+      .profile-name {
+        font-size: 21px;
+      }
+
+      .panel,
+      .notice {
+        padding: 16px;
+        border-radius: 15px;
+      }
+
+      .info-row {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .info-value {
+        text-align: left;
+      }
+
+      .package-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="logo">
+      NexaLearn
+    </div>
+
+    <div class="tagline">
+      LEARN • COMPLETE • EARN
+    </div>
+
+    <nav class="nav">
+
+      <a href="dashboard.html">
+        Dashboard
+      </a>
+
+      <a href="tasks.html">
+        Tasks
+      </a>
+
+      <a href="packages.html">
+        Packages
+      </a>
+
+      <a href="wallet.html">
+        Wallet
+      </a>
+
+      <a href="history.html">
+        History
+      </a>
+
+      <a href="profile.html" class="active">
+        Profile
+      </a>
+
+      <a href="support.html">
+        Support
+      </a>
+
+      <a href="login.html">
+        Logout
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="content">
+
+      <div class="page-header">
+
+        <h1>My Profile</h1>
+
+        <p>
+          View your NexaLearn account information, package and earnings summary.
+        </p>
+
+      </div>
+
+
+      <div id="message" class="message"></div>
+
+
+      <!-- PROFILE HEADER -->
+      <section class="profile-header">
+
+        <div
+          class="avatar"
+          id="avatar">
+          NL
+        </div>
+
+        <div>
+
+          <div
+            class="profile-name"
+            id="profileName">
+            NexaLearn Member
+          </div>
+
+          <div
+            class="profile-email"
+            id="profileEmail">
+            —
+          </div>
+
+          <span class="member-badge">
+            ACCOUNT ACTIVE
+          </span>
+
+        </div>
+
+      </section>
+
+
+      <div class="grid">
+
+        <!-- PERSONAL INFORMATION -->
+        <section class="panel">
+
+          <div class="panel-title">
+            Personal Information
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              First Name
+            </div>
+
+            <div
+              class="info-value"
+              id="firstName">
+              —
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Last Name
+            </div>
+
+            <div
+              class="info-value"
+              id="lastName">
+              —
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Email
+            </div>
+
+            <div
+              class="info-value"
+              id="email">
+              —
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Phone
+            </div>
+
+            <div
+              class="info-value"
+              id="phone">
+              —
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Country
+            </div>
+
+            <div
+              class="info-value"
+              id="country">
+              —
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- PACKAGE -->
+        <section class="panel">
+
+          <div class="panel-title">
+            Current Package
+          </div>
+
+          <div id="packageArea"></div>
+
+        </section>
+
+
+        <!-- ACCOUNT SUMMARY -->
+        <section class="panel">
+
+          <div class="panel-title">
+            Account Summary
+          </div>
+
+
+          <div class="summary-grid">
+
+            <div class="summary-box">
+
+              <div class="summary-label">
+                Wallet Balance
+              </div>
+
+              <div
+                class="summary-value green"
+                id="walletBalance">
+                KSh 0.00
+              </div>
+
+            </div>
+
+
+            <div class="summary-box">
+
+              <div class="summary-label">
+                Total Earned
+              </div>
+
+              <div
+                class="summary-value blue"
+                id="totalEarned">
+                KSh 0.00
+              </div>
+
+            </div>
+
+
+            <div class="summary-box">
+
+              <div class="summary-label">
+                Completed Tasks
+              </div>
+
+              <div
+                class="summary-value green"
+                id="completedTasks">
+                0
+              </div>
+
+            </div>
+
+
+            <div class="summary-box">
+
+              <div class="summary-label">
+                Approved Deposits
+              </div>
+
+              <div
+                class="summary-value green"
+                id="approvedDeposits">
+                KSh 0.00
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ACCOUNT INFORMATION -->
+        <section class="panel">
+
+          <div class="panel-title">
+            Account Information
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Account Status
+            </div>
+
+            <div
+              class="info-value green"
+              id="accountStatus">
+              Active
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Member Since
+            </div>
+
+            <div
+              class="info-value"
+              id="memberSince">
+              —
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Currency
+            </div>
+
+            <div class="info-value">
+              KES — Kenya Shillings
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-label">
+              Platform
+            </div>
+
+            <div class="info-value">
+              NexaLearn
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+
+      <!-- NOTICE -->
+      <section class="notice">
+
+        <div class="notice-title">
+          Account & Wallet
+        </div>
+
+        <div class="notice-text">
+          Your wallet balance is used for package activation and
+          withdrawals. Deposits are independent of packages. Task
+          rewards are added to your wallet after successful task
+          completion in the current development version.
+        </div>
+
+      </section>
+
+
+      <!-- LOGOUT -->
+      <button
+        type="button"
+        class="logout-btn"
+        onclick="logout()">
+        Log Out
+      </button>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  function readJSON(key, fallback) {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(key) ||
+        JSON.stringify(fallback)
+      );
+
+    } catch (error) {
+
+      return fallback;
+
+    }
+
+  }
+
+
+  function money(value) {
+
+    return "KSh " +
+      Number(value || 0).toLocaleString(
+        "en-KE",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
+      );
+
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  function formatDate(value) {
+
+    if (!value) {
+      return "—";
+    }
+
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return "—";
+    }
+
+    return date.toLocaleDateString(
+      "en-KE",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }
+    );
+
+  }
+
+
+  function getUser() {
+
+    return readJSON(
+      "nexaLearnUser",
+      null
+    );
+
+  }
+
+
+  function getFullName(user) {
+
+    if (!user) {
+      return "NexaLearn Member";
+    }
+
+    if (user.name) {
+      return user.name;
+    }
+
+    if (user.fullName) {
+      return user.fullName;
+    }
+
+    const first =
+      user.firstName || "";
+
+    const last =
+      user.lastName || "";
+
+    const full =
+      `${first} ${last}`.trim();
+
+    return full ||
+      "NexaLearn Member";
+
+  }
+
+
+  function getInitials(name) {
+
+    const parts =
+      String(name || "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (!parts.length) {
+      return "NL";
+    }
+
+    if (parts.length === 1) {
+      return parts[0]
+        .substring(0, 2)
+        .toUpperCase();
+    }
+
+    return (
+      parts[0][0] +
+      parts[parts.length - 1][0]
+    ).toUpperCase();
+
+  }
+
+
+  function loadProfile() {
+
+    const user =
+      getUser();
+
+
+    if (!user) {
+
+      document.getElementById(
+        "profileName"
+      ).textContent =
+        "NexaLearn Member";
+
+      document.getElementById(
+        "profileEmail"
+      ).textContent =
+        "No local account information found.";
+
+      return;
+
+    }
+
+
+    const fullName =
+      getFullName(user);
+
+
+    const firstName =
+      user.firstName ||
+      user.first_name ||
+      "";
+
+
+    const lastName =
+      user.lastName ||
+      user.last_name ||
+      "";
+
+
+    const email =
+      user.email ||
+      "";
+
+
+    const phone =
+      user.phone ||
+      "";
+
+
+    const country =
+      user.country ||
+      "Kenya";
+
+
+    document.getElementById(
+      "profileName"
+    ).textContent =
+      fullName;
+
+
+    document.getElementById(
+      "profileEmail"
+    ).textContent =
+      email || "—";
+
+
+    document.getElementById(
+      "avatar"
+    ).textContent =
+      getInitials(fullName);
+
+
+    document.getElementById(
+      "firstName"
+    ).textContent =
+      firstName || "—";
+
+
+    document.getElementById(
+      "lastName"
+    ).textContent =
+      lastName || "—";
+
+
+    document.getElementById(
+      "email"
+    ).textContent =
+      email || "—";
+
+
+    document.getElementById(
+      "phone"
+    ).textContent =
+      phone || "—";
+
+
+    document.getElementById(
+      "country"
+    ).textContent =
+      country;
+
+
+    document.getElementById(
+      "memberSince"
+    ).textContent =
+      formatDate(
+        user.createdAt ||
+        user.created_at ||
+        user.dateJoined ||
+        user.registeredAt
+      );
+
+  }
+
+
+  function loadPackage() {
+
+    const packageData =
+      readJSON(
+        "nexaLearnPackage",
+        null
+      );
+
+
+    const area =
+      document.getElementById(
+        "packageArea"
+      );
+
+
+    if (!packageData) {
+
+      area.innerHTML = `
+
+        <div class="package-box">
+
+          <div class="no-package">
+            You currently have no active package.
+            Fund your wallet first, then choose a package.
+          </div>
+
+          <a
+            href="packages.html"
+            class="action-btn">
+            View Packages
+          </a>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const name =
+      packageData.name ||
+      packageData.packageName ||
+      "NexaLearn Package";
+
+
+    const price =
+      Number(
+        packageData.price || 0
+      );
+
+
+    const tasks =
+      Number(
+        packageData.tasks ||
+        packageData.taskCount ||
+        0
+      );
+
+
+    const completed =
+      Number(
+        packageData.completed ||
+        packageData.completedTasks ||
+        0
+      );
+
+
+    area.innerHTML = `
+
+      <div class="package-box">
+
+        <div class="package-name">
+          ${escapeHtml(name)}
+        </div>
+
+        <div class="package-status">
+          ACTIVE
+        </div>
+
+
+        <div class="package-grid">
+
+          <div class="package-item">
+
+            <div class="package-label">
+              Price
+            </div>
+
+            <div class="package-value">
+              ${money(price)}
+            </div>
+
+          </div>
+
+
+          <div class="package-item">
+
+            <div class="package-label">
+              Tasks
+            </div>
+
+            <div class="package-value">
+              ${tasks}
+            </div>
+
+          </div>
+
+
+          <div class="package-item">
+
+            <div class="package-label">
+              Completed
+            </div>
+
+            <div class="package-value">
+              ${completed}
+            </div>
+
+          </div>
+
+
+          <div class="package-item">
+
+            <div class="package-label">
+              Activated
+            </div>
+
+            <div class="package-value">
+              ${formatDate(
+                packageData.activatedAt ||
+                packageData.date ||
+                packageData.createdAt
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function loadSummary() {
+
+    const balance =
+      Number(
+        localStorage.getItem(
+          "nexaLearnBalance"
+        ) || 0
+      );
+
+
+    const totalEarned =
+      Number(
+        localStorage.getItem(
+          "nexaLearnTotalEarned"
+        ) || 0
+      );
+
+
+    const completedTasks =
+      Number(
+        localStorage.getItem(
+          "nexaLearnCompletedTasks"
+        ) || 0
+      );
+
+
+    const deposits =
+      readJSON(
+        "nexaLearnDepositRequests",
+        []
+      );
+
+
+    const approvedDeposits =
+      deposits
+        .filter(
+          item =>
+            String(
+              item.status || ""
+            ).toLowerCase() ===
+            "approved"
+        )
+        .reduce(
+          (sum, item) =>
+            sum +
+            Number(item.amount || 0),
+          0
+        );
+
+
+    document.getElementById(
+      "walletBalance"
+    ).textContent =
+      money(balance);
+
+
+    document.getElementById(
+      "totalEarned"
+    ).textContent =
+      money(totalEarned);
+
+
+    document.getElementById(
+      "completedTasks"
+    ).textContent =
+      completedTasks.toLocaleString();
+
+
+    document.getElementById(
+      "approvedDeposits"
+    ).textContent =
+      money(
+        approvedDeposits
+      );
+
+  }
+
+
+  function logout() {
+
+    localStorage.removeItem(
+      "nexaLearnLoggedIn"
+    );
+
+    window.location.href =
+      "login.html";
+
+  }
+
+
+  function refresh() {
+
+    loadProfile();
+    loadPackage();
+    loadSummary();
+
+  }
+
+
+  refresh();
+
+
+  window.addEventListener(
+    "storage",
+    refresh
+  );
+
+
+  document.addEventListener(
+    "visibilitychange",
+    function() {
+
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+        refresh();
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
+```
