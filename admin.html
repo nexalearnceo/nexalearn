@@ -364,215 +364,128 @@
 <body>
 
   <aside class="sidebar">
-
-    <div class="logo">
-      NexaLearn
-    </div>
+    <div class="logo">NexaLearn</div>
 
     <div class="tagline">
       LEARN • COMPLETE • EARN
     </div>
 
-    <a href="admin.html" class="active">
-      Dashboard
-    </a>
-
-    <a href="admin-audio.html">
-      Audio Uploads
-    </a>
-
-    <a href="admin-images.html">
-      Image Uploads
-    </a>
-
-    <a href="tasks.html">
-      Manage Tasks
-    </a>
+    <a href="admin.html" class="active">Dashboard</a>
+    <a href="admin-audio.html">Audio Uploads</a>
+    <a href="admin-images.html">Image Uploads</a>
+    <a href="tasks.html">Manage Tasks</a>
 
     <div class="sidebar-divider"></div>
 
-    <a href="dashboard.html">
-      User Dashboard
-    </a>
+    <a href="dashboard.html">User Dashboard</a>
 
     <button class="logout-btn" id="logoutBtn">
       Logout
     </button>
-
   </aside>
-
 
   <main class="main">
 
     <div class="topbar">
-
       <h1>Admin Dashboard</h1>
 
       <p>
         Manage NexaLearn accounts, deposits, withdrawals and transactions.
       </p>
 
-      <div class="admin-badge">
-        Administrator
-      </div>
-
+      <div class="admin-badge">Administrator</div>
     </div>
 
-
     <div id="message" class="message"></div>
-
 
     <section class="stats">
 
       <div class="stat-card">
         <div class="stat-label">Pending Deposits</div>
-
-        <div class="stat-value" id="pendingDeposits">
-          0
-        </div>
-
-        <div class="stat-note">
-          Awaiting approval
-        </div>
+        <div class="stat-value" id="pendingDeposits">0</div>
+        <div class="stat-note">Awaiting approval</div>
       </div>
-
 
       <div class="stat-card">
         <div class="stat-label">Pending Withdrawals</div>
-
-        <div class="stat-value" id="pendingWithdrawals">
-          0
-        </div>
-
-        <div class="stat-note">
-          Awaiting approval
-        </div>
+        <div class="stat-value" id="pendingWithdrawals">0</div>
+        <div class="stat-note">Awaiting approval</div>
       </div>
-
 
       <div class="stat-card">
         <div class="stat-label">Total Deposited</div>
-
-        <div class="stat-value" id="totalDeposited">
-          KSh 0.00
-        </div>
-
-        <div class="stat-note">
-          Approved deposits
-        </div>
+        <div class="stat-value" id="totalDeposited">KSh 0.00</div>
+        <div class="stat-note">Approved deposits</div>
       </div>
-
 
       <div class="stat-card">
         <div class="stat-label">Total Withdrawn</div>
-
-        <div class="stat-value" id="totalWithdrawn">
-          KSh 0.00
-        </div>
-
-        <div class="stat-note">
-          Approved withdrawals
-        </div>
+        <div class="stat-value" id="totalWithdrawn">KSh 0.00</div>
+        <div class="stat-note">Approved withdrawals</div>
       </div>
 
     </section>
 
-
     <section class="section">
 
-      <h2 class="section-title">
-        Quick Management
-      </h2>
+      <h2 class="section-title">Quick Management</h2>
 
       <div class="management-grid">
 
         <div class="management-card">
           <h3>Deposit Approvals</h3>
-
-          <p>
-            Review and approve or reject user deposit requests.
-          </p>
-
+          <p>Review and approve or reject user deposit requests.</p>
           <a href="#deposits" class="management-btn green">
             Review Deposits
           </a>
         </div>
 
-
         <div class="management-card">
           <h3>Withdrawal Approvals</h3>
-
-          <p>
-            Review user withdrawal requests and process them.
-          </p>
-
+          <p>Review user withdrawal requests and process them.</p>
           <a href="#withdrawals" class="management-btn red">
             Review Withdrawals
           </a>
         </div>
 
-
         <div class="management-card">
           <h3>Manage Tasks</h3>
-
-          <p>
-            Create, edit and manage NexaLearn tasks.
-          </p>
-
+          <p>Create, edit and manage NexaLearn tasks.</p>
           <a href="tasks.html" class="management-btn">
             Manage Tasks
           </a>
         </div>
 
-
         <div class="management-card">
           <h3>Audio Uploads</h3>
-
-          <p>
-            Upload and manage audio content for NexaLearn tasks.
-          </p>
-
+          <p>Upload and manage audio content for NexaLearn tasks.</p>
           <a href="admin-audio.html" class="management-btn">
             Manage Audio
           </a>
         </div>
 
-
         <div class="management-card">
           <h3>Image Uploads</h3>
-
-          <p>
-            Upload and manage image content for NexaLearn tasks.
-          </p>
-
+          <p>Upload and manage image content for NexaLearn tasks.</p>
           <a href="admin-images.html" class="management-btn">
             Manage Images
           </a>
         </div>
 
       </div>
-
     </section>
-
 
     <section class="section" id="deposits">
 
       <div class="table-card">
 
         <div class="table-header">
-
           <h2>Deposit Requests</h2>
-
-          <p>
-            Review and process user deposit requests.
-          </p>
-
+          <p>Review and process user deposit requests.</p>
         </div>
 
         <div class="table-wrapper">
-
           <table>
-
             <thead>
               <tr>
                 <th>User</th>
@@ -586,42 +499,29 @@
             </thead>
 
             <tbody id="depositTable">
-
               <tr>
                 <td colspan="7" class="empty">
                   Loading deposit requests...
                 </td>
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
 
       </div>
-
     </section>
-
 
     <section class="section" id="withdrawals">
 
       <div class="table-card">
 
         <div class="table-header">
-
           <h2>Withdrawal Requests</h2>
-
-          <p>
-            Review and process user withdrawal requests.
-          </p>
-
+          <p>Review and process user withdrawal requests.</p>
         </div>
 
         <div class="table-wrapper">
-
           <table>
-
             <thead>
               <tr>
                 <th>User</th>
@@ -635,28 +535,21 @@
             </thead>
 
             <tbody id="withdrawalTable">
-
               <tr>
                 <td colspan="7" class="empty">
                   Loading withdrawal requests...
                 </td>
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
 
       </div>
-
     </section>
 
   </main>
 
-
 <script>
-
   /* =====================================================
      SUPABASE
   ====================================================== */
@@ -666,16 +559,6 @@
 
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
-
-
-  /*
-    IMPORTANT:
-    No custom storageKey here.
-
-    This allows admin.html to use the same
-    Supabase authentication session as the
-    rest of NexaLearn.
-  */
 
   const supabaseClient =
     window.supabase.createClient(
@@ -696,27 +579,15 @@
   ====================================================== */
 
   function money(amount) {
-
-    return new Intl.NumberFormat(
-      "en-KE",
-      {
-        style: "currency",
-        currency: "KES",
-        minimumFractionDigits: 2
-      }
-    ).format(
-      Number(amount || 0)
-    );
-
+    return new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency: "KES",
+      minimumFractionDigits: 2
+    }).format(Number(amount || 0));
   }
 
-
   function escapeHtml(value) {
-
-    if (
-      value === null ||
-      value === undefined
-    ) {
+    if (value === null || value === undefined) {
       return "";
     }
 
@@ -726,36 +597,29 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-
   }
 
-
   function formatDate(date) {
-
     if (!date) {
       return "-";
     }
 
-    return new Date(date)
-      .toLocaleString(
-        "en-KE",
-        {
-          dateStyle: "medium",
-          timeStyle: "short"
-        }
-      );
+    const parsedDate = new Date(date);
 
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
+    return parsedDate.toLocaleString("en-KE", {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
   }
 
-
   function showMessage(message) {
-
-    const box =
-      document.getElementById("message");
-
+    const box = document.getElementById("message");
     box.style.display = "block";
     box.textContent = message;
-
   }
 
 
@@ -764,87 +628,40 @@
   ====================================================== */
 
   async function checkAdmin() {
-
     try {
-
       const {
         data,
         error
-      } =
-        await supabaseClient.auth.getUser();
-
+      } = await supabaseClient.auth.getUser();
 
       const user = data?.user;
 
-
-      console.log(
-        "ADMIN CHECK - USER:",
-        user
-      );
-
+      console.log("ADMIN CHECK - USER:", user);
 
       if (error) {
-
-        console.error(
-          "ADMIN CHECK - USER ERROR:",
-          error
-        );
-
-        window.location.href =
-          "login.html";
-
+        console.error("ADMIN CHECK - USER ERROR:", error);
+        window.location.href = "login.html";
         return false;
       }
-
 
       if (!user) {
-
-        console.log(
-          "ADMIN CHECK - NO USER"
-        );
-
-        window.location.href =
-          "login.html";
-
+        window.location.href = "login.html";
         return false;
       }
-
-
-      console.log(
-        "ADMIN CHECK - USER ID:",
-        user.id
-      );
-
 
       const {
         data: profile,
         error: profileError
-      } =
-        await supabaseClient
-          .from("profiles")
-          .select("id, role")
-          .eq("id", user.id)
-          .maybeSingle();
+      } = await supabaseClient
+        .from("profiles")
+        .select("id, role")
+        .eq("id", user.id)
+        .maybeSingle();
 
-
-      console.log(
-        "ADMIN CHECK - PROFILE:",
-        profile
-      );
-
-
-      console.log(
-        "ADMIN CHECK - PROFILE ERROR:",
-        profileError
-      );
-
+      console.log("ADMIN CHECK - PROFILE:", profile);
 
       if (profileError) {
-
-        console.error(
-          "PROFILE QUERY FAILED:",
-          profileError
-        );
+        console.error("PROFILE QUERY FAILED:", profileError);
 
         alert(
           "Profile check failed: " +
@@ -854,68 +671,41 @@
         return false;
       }
 
-
       if (!profile) {
-
-        alert(
-          "No profile was found for this account."
-        );
-
+        alert("No profile was found for this account.");
         return false;
       }
 
+      const role = String(profile.role || "")
+        .trim()
+        .toLowerCase();
 
-      const role =
-        String(
-          profile.role || ""
-        ).trim().toLowerCase();
-
-
-      console.log(
-        "ADMIN CHECK - ROLE:",
-        role
-      );
-
+      console.log("ADMIN CHECK - ROLE:", role);
 
       if (role !== "admin") {
-
         alert(
           "Administrator access required. Role found: " +
-          profile.role
+          (profile.role || "none")
         );
 
-        window.location.href =
-          "dashboard.html";
-
+        window.location.href = "dashboard.html";
         return false;
       }
 
-
-      console.log(
-        "ADMIN CHECK - ADMIN VERIFIED"
-      );
-
+      console.log("ADMIN CHECK - ADMIN VERIFIED");
 
       return true;
 
     } catch (error) {
-
-      console.error(
-        "ADMIN CHECK - UNEXPECTED ERROR:",
-        error
-      );
+      console.error("ADMIN CHECK - UNEXPECTED ERROR:", error);
 
       alert(
         "Admin verification failed: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
+        (error.message || "Unknown error")
       );
 
       return false;
     }
-
   }
 
 
@@ -924,131 +714,77 @@
   ====================================================== */
 
   async function loadStatistics() {
-
     try {
-
       const {
         data: deposits,
         error: depositError
-      } =
-        await supabaseClient
-          .from("deposit_requests")
-          .select("amount,status");
-
+      } = await supabaseClient
+        .from("deposit_requests")
+        .select("amount,status");
 
       if (depositError) {
         throw depositError;
       }
 
-
       const {
         data: withdrawals,
         error: withdrawalError
-      } =
-        await supabaseClient
-          .from("withdrawal_requests")
-          .select("amount,status");
-
+      } = await supabaseClient
+        .from("withdrawal_requests")
+        .select("amount,status");
 
       if (withdrawalError) {
         throw withdrawalError;
       }
 
+      const pendingDeposits = (deposits || [])
+        .filter(item =>
+          String(item.status).toLowerCase() === "pending"
+        ).length;
 
-      const pendingDeposits =
-        (deposits || [])
-          .filter(
-            item =>
-              String(item.status)
-                .toLowerCase() ===
-              "pending"
-          )
-          .length;
+      const pendingWithdrawals = (withdrawals || [])
+        .filter(item =>
+          String(item.status).toLowerCase() === "pending"
+        ).length;
 
+      const totalDeposited = (deposits || [])
+        .filter(item =>
+          String(item.status).toLowerCase() === "approved"
+        )
+        .reduce(
+          (sum, item) => sum + Number(item.amount || 0),
+          0
+        );
 
-      const pendingWithdrawals =
-        (withdrawals || [])
-          .filter(
-            item =>
-              String(item.status)
-                .toLowerCase() ===
-              "pending"
-          )
-          .length;
+      const totalWithdrawn = (withdrawals || [])
+        .filter(item =>
+          String(item.status).toLowerCase() === "approved"
+        )
+        .reduce(
+          (sum, item) => sum + Number(item.amount || 0),
+          0
+        );
 
-
-      const totalDeposited =
-        (deposits || [])
-          .filter(
-            item =>
-              String(item.status)
-                .toLowerCase() ===
-              "approved"
-          )
-          .reduce(
-            (sum, item) =>
-              sum +
-              Number(item.amount || 0),
-            0
-          );
-
-
-      const totalWithdrawn =
-        (withdrawals || [])
-          .filter(
-            item =>
-              String(item.status)
-                .toLowerCase() ===
-              "approved"
-          )
-          .reduce(
-            (sum, item) =>
-              sum +
-              Number(item.amount || 0),
-            0
-          );
-
-
-      document.getElementById(
-        "pendingDeposits"
-      ).textContent =
+      document.getElementById("pendingDeposits").textContent =
         pendingDeposits;
 
-
-      document.getElementById(
-        "pendingWithdrawals"
-      ).textContent =
+      document.getElementById("pendingWithdrawals").textContent =
         pendingWithdrawals;
 
-
-      document.getElementById(
-        "totalDeposited"
-      ).textContent =
+      document.getElementById("totalDeposited").textContent =
         money(totalDeposited);
 
-
-      document.getElementById(
-        "totalWithdrawn"
-      ).textContent =
+      document.getElementById("totalWithdrawn").textContent =
         money(totalWithdrawn);
 
     } catch (error) {
-
-      console.error(
-        "Statistics error:",
-        error
-      );
+      console.error("Statistics error:", error);
 
       showMessage(
         "Unable to load dashboard statistics: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
+        (error.message || "Unknown error")
       );
-
     }
-
   }
 
 
@@ -1057,34 +793,20 @@
   ====================================================== */
 
   async function loadDeposits() {
-
-    const table =
-      document.getElementById(
-        "depositTable"
-      );
-
+    const table = document.getElementById("depositTable");
 
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("deposit_requests")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
-
+    } = await supabaseClient
+      .from("deposit_requests")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
 
     if (error) {
-
-      console.error(
-        "Deposit error:",
-        error
-      );
+      console.error("Deposit error:", error);
 
       table.innerHTML =
         '<tr><td colspan="7" class="empty">' +
@@ -1095,12 +817,7 @@
       return;
     }
 
-
-    if (
-      !data ||
-      data.length === 0
-    ) {
-
+    if (!data || data.length === 0) {
       table.innerHTML =
         '<tr><td colspan="7" class="empty">' +
         "No deposit requests found." +
@@ -1109,93 +826,50 @@
       return;
     }
 
-
     table.innerHTML = "";
 
-
     for (const item of data) {
+      const status = String(item.status || "pending")
+        .toLowerCase();
 
-      const status =
-        String(
-          item.status ||
-          "pending"
-        ).toLowerCase();
-
-
-      const row =
-        document.createElement("tr");
-
+      const row = document.createElement("tr");
 
       row.innerHTML = `
-
+        <td>${escapeHtml(item.user_id || "-")}</td>
+        <td>${money(item.amount)}</td>
+        <td>${escapeHtml(item.method || "-")}</td>
+        <td>${escapeHtml(
+          item.reference ||
+          item.transaction_code ||
+          "-"
+        )}</td>
         <td>
-          ${escapeHtml(
-            item.user_id || "-"
-          )}
-        </td>
-
-        <td>
-          ${money(item.amount)}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            item.method || "-"
-          )}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            item.reference ||
-            item.transaction_code ||
-            "-"
-          )}
-        </td>
-
-        <td>
-          <span class="status ${status}">
-            ${escapeHtml(
-              item.status ||
-              "Pending"
-            )}
+          <span class="status ${escapeHtml(status)}">
+            ${escapeHtml(item.status || "pending")}
           </span>
         </td>
-
-        <td>
-          ${formatDate(
-            item.created_at
-          )}
-        </td>
-
+        <td>${formatDate(item.created_at)}</td>
         <td>
           ${
             status === "pending"
-            ? `
-              <button
-                class="action-btn approve-btn"
-                onclick="approveDeposit('${item.id}')"
-              >
-                Approve
-              </button>
+              ? `
+                <button
+                  class="action-btn approve-btn"
+                  onclick="approveDeposit('${escapeHtml(item.id)}')"
+                >Approve</button>
 
-              <button
-                class="action-btn reject-btn"
-                onclick="rejectDeposit('${item.id}')"
-              >
-                Reject
-              </button>
-            `
-            : "-"
+                <button
+                  class="action-btn reject-btn"
+                  onclick="rejectDeposit('${escapeHtml(item.id)}')"
+                >Reject</button>
+              `
+              : "-"
           }
         </td>
-
       `;
 
-
       table.appendChild(row);
-
     }
-
   }
 
 
@@ -1204,34 +878,20 @@
   ====================================================== */
 
   async function loadWithdrawals() {
-
-    const table =
-      document.getElementById(
-        "withdrawalTable"
-      );
-
+    const table = document.getElementById("withdrawalTable");
 
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("withdrawal_requests")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
-
+    } = await supabaseClient
+      .from("withdrawal_requests")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
 
     if (error) {
-
-      console.error(
-        "Withdrawal error:",
-        error
-      );
+      console.error("Withdrawal error:", error);
 
       table.innerHTML =
         '<tr><td colspan="7" class="empty">' +
@@ -1242,12 +902,7 @@
       return;
     }
 
-
-    if (
-      !data ||
-      data.length === 0
-    ) {
-
+    if (!data || data.length === 0) {
       table.innerHTML =
         '<tr><td colspan="7" class="empty">' +
         "No withdrawal requests found." +
@@ -1256,165 +911,99 @@
       return;
     }
 
-
     table.innerHTML = "";
 
-
     for (const item of data) {
+      const status = String(item.status || "pending")
+        .toLowerCase();
 
-      const status =
-        String(
-          item.status ||
-          "pending"
-        ).toLowerCase();
-
-
-      const row =
-        document.createElement("tr");
-
+      const row = document.createElement("tr");
 
       row.innerHTML = `
-
+        <td>${escapeHtml(item.user_id || "-")}</td>
+        <td>${money(item.amount)}</td>
+        <td>${escapeHtml(item.method || "-")}</td>
+        <td>${escapeHtml(
+          item.account_number ||
+          item.phone_number ||
+          item.account ||
+          "-"
+        )}</td>
         <td>
-          ${escapeHtml(
-            item.user_id || "-"
-          )}
-        </td>
-
-        <td>
-          ${money(item.amount)}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            item.method || "-"
-          )}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            item.account_number ||
-            item.phone_number ||
-            item.account ||
-            "-"
-          )}
-        </td>
-
-        <td>
-          <span class="status ${status}">
-            ${escapeHtml(
-              item.status ||
-              "Pending"
-            )}
+          <span class="status ${escapeHtml(status)}">
+            ${escapeHtml(item.status || "pending")}
           </span>
         </td>
-
-        <td>
-          ${formatDate(
-            item.created_at
-          )}
-        </td>
-
+        <td>${formatDate(item.created_at)}</td>
         <td>
           ${
             status === "pending"
-            ? `
-              <button
-                class="action-btn approve-btn"
-                onclick="approveWithdrawal('${item.id}')"
-              >
-                Approve
-              </button>
+              ? `
+                <button
+                  class="action-btn approve-btn"
+                  onclick="approveWithdrawal('${escapeHtml(item.id)}')"
+                >Approve</button>
 
-              <button
-                class="action-btn reject-btn"
-                onclick="rejectWithdrawal('${item.id}')"
-              >
-                Reject
-              </button>
-            `
-            : "-"
+                <button
+                  class="action-btn reject-btn"
+                  onclick="rejectWithdrawal('${escapeHtml(item.id)}')"
+                >Reject</button>
+              `
+              : "-"
           }
         </td>
-
       `;
 
-
       table.appendChild(row);
-
     }
-
   }
 
 
   /* =====================================================
      APPROVE DEPOSIT
+     FIXED RPC ARGUMENT NAMES
   ====================================================== */
 
   async function approveDeposit(requestId) {
-
     if (!confirm("Approve this deposit?")) {
       return;
     }
 
-
     try {
-
-      showMessage(
-        "Approving deposit..."
-      );
-
+      showMessage("Approving deposit...");
 
       const {
         data,
         error
-      } =
-        await supabaseClient
-          .rpc(
-            "approve_deposit",
-            {
-              p_request_id:
-                requestId
-            }
-          );
-
+      } = await supabaseClient.rpc(
+        "approve_deposit",
+        {
+          deposit_id: requestId,
+          note: "Approved by admin"
+        }
+      );
 
       if (error) {
         throw error;
       }
 
-
-      console.log(
-        "Deposit approved:",
-        data
-      );
-
+      console.log("Deposit approval response:", data);
 
       showMessage(
-        "Deposit approved successfully."
+        "Deposit approval request completed. Check the deposit status and user wallet to confirm the result."
       );
-
 
       await loadStatistics();
       await loadDeposits();
 
     } catch (error) {
-
-      console.error(
-        "Approve deposit error:",
-        error
-      );
+      console.error("Approve deposit error:", error);
 
       alert(
         "Unable to approve deposit: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
+        (error.message || "Unknown error")
       );
-
     }
-
   }
 
 
@@ -1423,58 +1012,38 @@
   ====================================================== */
 
   async function rejectDeposit(requestId) {
-
     if (!confirm("Reject this deposit?")) {
       return;
     }
 
-
     try {
-
       const {
         error
-      } =
-        await supabaseClient
-          .from("deposit_requests")
-          .update({
-            status: "rejected"
-          })
-          .eq(
-            "id",
-            requestId
-          );
-
+      } = await supabaseClient
+        .from("deposit_requests")
+        .update({
+          status: "rejected"
+        })
+        .eq("id", requestId)
+        .eq("status", "pending");
 
       if (error) {
         throw error;
       }
 
-
-      showMessage(
-        "Deposit rejected."
-      );
-
+      showMessage("Deposit rejected.");
 
       await loadStatistics();
       await loadDeposits();
 
     } catch (error) {
-
-      console.error(
-        "Reject deposit error:",
-        error
-      );
+      console.error("Reject deposit error:", error);
 
       alert(
         "Unable to reject deposit: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
+        (error.message || "Unknown error")
       );
-
     }
-
   }
 
 
@@ -1483,69 +1052,44 @@
   ====================================================== */
 
   async function approveWithdrawal(requestId) {
-
     if (!confirm("Approve this withdrawal?")) {
       return;
     }
 
-
     try {
-
-      showMessage(
-        "Approving withdrawal..."
-      );
-
+      showMessage("Approving withdrawal...");
 
       const {
         data,
         error
-      } =
-        await supabaseClient
-          .rpc(
-            "approve_withdrawal",
-            {
-              p_request_id:
-                requestId
-            }
-          );
-
+      } = await supabaseClient.rpc(
+        "approve_withdrawal",
+        {
+          p_request_id: requestId
+        }
+      );
 
       if (error) {
         throw error;
       }
 
-
-      console.log(
-        "Withdrawal approved:",
-        data
-      );
-
+      console.log("Withdrawal approval response:", data);
 
       showMessage(
-        "Withdrawal approved successfully."
+        "Withdrawal approval request completed. Verify its status and wallet balance."
       );
-
 
       await loadStatistics();
       await loadWithdrawals();
 
     } catch (error) {
-
-      console.error(
-        "Approve withdrawal error:",
-        error
-      );
+      console.error("Approve withdrawal error:", error);
 
       alert(
         "Unable to approve withdrawal: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
+        (error.message || "Unknown error")
       );
-
     }
-
   }
 
 
@@ -1554,58 +1098,38 @@
   ====================================================== */
 
   async function rejectWithdrawal(requestId) {
-
     if (!confirm("Reject this withdrawal?")) {
       return;
     }
 
-
     try {
-
       const {
         error
-      } =
-        await supabaseClient
-          .from("withdrawal_requests")
-          .update({
-            status: "rejected"
-          })
-          .eq(
-            "id",
-            requestId
-          );
-
+      } = await supabaseClient
+        .from("withdrawal_requests")
+        .update({
+          status: "rejected"
+        })
+        .eq("id", requestId)
+        .eq("status", "pending");
 
       if (error) {
         throw error;
       }
 
-
-      showMessage(
-        "Withdrawal rejected."
-      );
-
+      showMessage("Withdrawal rejected.");
 
       await loadStatistics();
       await loadWithdrawals();
 
     } catch (error) {
-
-      console.error(
-        "Reject withdrawal error:",
-        error
-      );
+      console.error("Reject withdrawal error:", error);
 
       alert(
         "Unable to reject withdrawal: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
+        (error.message || "Unknown error")
       );
-
     }
-
   }
 
 
@@ -1615,29 +1139,22 @@
 
   document
     .getElementById("logoutBtn")
-    .addEventListener(
-      "click",
-      async function () {
+    .addEventListener("click", async function () {
+      const {
+        error
+      } = await supabaseClient.auth.signOut();
 
-        await supabaseClient.auth.signOut();
-
-        localStorage.removeItem(
-          "nexaLearnLoggedIn"
-        );
-
-        localStorage.removeItem(
-          "nexaLearnUser"
-        );
-
-        localStorage.removeItem(
-          "nexaLearnUserId"
-        );
-
-        window.location.href =
-          "login.html";
-
+      if (error) {
+        alert("Unable to log out: " + error.message);
+        return;
       }
-    );
+
+      localStorage.removeItem("nexaLearnLoggedIn");
+      localStorage.removeItem("nexaLearnUser");
+      localStorage.removeItem("nexaLearnUserId");
+
+      window.location.href = "login.html";
+    });
 
 
   /* =====================================================
@@ -1645,42 +1162,26 @@
   ====================================================== */
 
   async function startAdmin() {
+    console.log("Starting NexaLearn Admin Dashboard...");
 
-    console.log(
-      "Starting NexaLearn Admin Dashboard..."
-    );
-
-
-    const isAdmin =
-      await checkAdmin();
-
+    const isAdmin = await checkAdmin();
 
     if (!isAdmin) {
       return;
     }
 
-
-    console.log(
-      "Admin verified. Loading dashboard..."
-    );
-
+    console.log("Admin verified. Loading dashboard...");
 
     await loadStatistics();
-
     await loadDeposits();
-
     await loadWithdrawals();
-
 
     console.log(
       "NexaLearn Admin Dashboard loaded successfully."
     );
-
   }
 
-
   startAdmin();
-
 </script>
 
 </body>
