@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -298,7 +299,6 @@ button {
                 <span>Task Progress</span>
                 <span id="progressText">0 / 0</span>
             </div>
-
             <div class="progress-bar">
                 <div id="progressFill" class="progress-fill"></div>
             </div>
@@ -306,9 +306,7 @@ button {
 
         <div class="item-card">
 
-            <div id="itemTitle" class="item-title">
-                Item
-            </div>
+            <div id="itemTitle" class="item-title">Item</div>
 
             <div id="wordContainer" class="word-box hidden"></div>
 
@@ -380,31 +378,25 @@ let currentItemIndex = 0;
 let currentAttempt = null;
 let monitoringTimer = null;
 let mediaFailureBeingHandled = false;
+let submissionInProgress = false;
 
-
-/* =========================================================
-   BASIC HELPERS
-========================================================= */
+/* BASIC HELPERS */
 
 function redirectToTasks() {
     localStorage.removeItem("nexaLearnCurrentTaskId");
     localStorage.removeItem("nexaLearnCurrentTask");
-
     window.location.replace("tasks.html");
 }
-
 
 function showError(message) {
     document.getElementById("loadingBox").classList.add("hidden");
 
     const box = document.getElementById("errorBox");
-
     box.textContent = message;
     box.classList.remove("hidden");
 
     document.getElementById("workspace").style.display = "none";
 }
-
 
 function formatMoney(value) {
     return Number(value || 0).toLocaleString("en-KE", {
@@ -413,20 +405,15 @@ function formatMoney(value) {
     });
 }
 
-
 function getStorageBucket(item) {
+    if (!item) return null;
 
-    if (!item) {
-        return null;
-    }
-
-    if (item.content_type === "image") {
-        return "images";
-    }
+    if (item.content_type === "image") return "images";
+    if (item.content_type === "audio") return "audio";
 
     if (
-        item.content_type === "audio" ||
-        currentTask?.category === "Audio"
+        currentTask?.category === "Audio" &&
+        item.storage_path
     ) {
         return "audio";
     }
@@ -434,79 +421,40 @@ function getStorageBucket(item) {
     return null;
 }
 
-
-/* =========================================================
-   MEDIA VALIDATION
-========================================================= */
+/* MEDIA VALIDATION */
 
 async function validateMediaItem(item) {
-
     const bucket = getStorageBucket(item);
 
-    // Normal text item
-    if (!bucket) {
-        return true;
-    }
+    if (!bucket) return true;
 
-    // Media item without a storage path is invalid
     if (!item.storage_path) {
-        console.warn(
-            "Skipping media item with no storage_path:",
-            item
-        );
-
+        console.warn("Media item has no storage_path:", item);
         return false;
     }
 
     try {
-
-        const {
-            data,
-            error
-        } = await supabaseClient
+        const { data, error } = await supabaseClient
             .storage
             .from(bucket)
-            .createSignedUrl(
-                item.storage_path,
-                60
-            );
+            .createSignedUrl(item.storage_path, 60);
 
         if (error || !data?.signedUrl) {
-
-            console.warn(
-                "Skipping deleted/missing media:",
-                item.storage_path,
-                error
-            );
-
+            console.warn("Media validation failed:", item.storage_path, error);
             return false;
         }
 
         return true;
-
     } catch (error) {
-
-        console.warn(
-            "Media validation failed:",
-            item.storage_path,
-            error
-        );
-
+        console.warn("Media validation failed:", error);
         return false;
     }
 }
 
-
-/* =========================================================
-   LOAD TASK
-========================================================= */
+/* LOAD TASK */
 
 async function loadTask(taskId) {
-
-    const {
-        data,
-        error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("tasks")
         .select("*")
         .eq("id", taskId)
@@ -519,14 +467,9 @@ async function loadTask(taskId) {
     }
 
     if (!data) {
-
-        const error = new Error(
-            "TASK_UNAVAILABLE"
-        );
-
-        error.code = "TASK_UNAVAILABLE";
-
-        throw error;
+        const unavailable = new Error("TASK_UNAVAILABLE");
+        unavailable.code = "TASK_UNAVAILABLE";
+        throw unavailable;
     }
 
     currentTask = data;
@@ -541,154 +484,87 @@ async function loadTask(taskId) {
         `KSh ${formatMoney(data.reward || 50)} / task`;
 }
 
-
-/* =========================================================
-   LOAD AND FILTER ITEMS
-========================================================= */
+/* LOAD ITEMS */
 
 async function loadItems() {
-
-    const {
-        data,
-        error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("task_items")
         .select("*")
         .eq("task_id", currentTask.id)
-        .order("item_number", {
-            ascending: true
-        });
+        .order("item_number", { ascending: true });
 
     if (error) {
         console.error("Item loading error:", error);
         throw error;
     }
 
-    const rawItems = data || [];
-
     const validItems = [];
 
-    for (const item of rawItems) {
+    for (const item of (data || [])) {
+        const valid = await validateMediaItem(item);
 
-        const valid =
-            await validateMediaItem(item);
-
-        if (!valid) {
-
-            console.warn(
-                "Deleted/missing item skipped:",
-                item.id
-            );
-
-            continue;
+        if (valid) {
+            validItems.push(item);
+        } else {
+            console.warn("Unavailable media item skipped:", item.id);
         }
-
-        validItems.push(item);
     }
 
     currentItems = validItems;
 
-    /*
-       If every item has been deleted or every
-       media file has been deleted, this task
-       should not remain open.
-    */
-
     if (currentItems.length === 0) {
-
-        const error = new Error(
-            "TASK_UNAVAILABLE"
-        );
-
-        error.code = "TASK_UNAVAILABLE";
-
-        throw error;
+        const unavailable = new Error("TASK_UNAVAILABLE");
+        unavailable.code = "TASK_UNAVAILABLE";
+        throw unavailable;
     }
 }
 
-
-/* =========================================================
-   LOAD USER
-========================================================= */
+/* LOAD USER */
 
 async function loadUser() {
-
-    const {
-        data,
-        error
-    } = await supabaseClient.auth.getUser();
+    const { data, error } = await supabaseClient.auth.getUser();
 
     if (error || !data?.user) {
-
         window.location.href = "login.html";
-
         throw new Error("USER_NOT_AUTHENTICATED");
     }
 
     currentUser = data.user;
 }
 
-
-/* =========================================================
-   LOAD EARNING BALANCE
-========================================================= */
+/* LOAD WALLET BALANCE */
 
 async function loadBalance() {
-
-    const {
-        data,
-        error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("wallets")
         .select("balance")
         .eq("user_id", currentUser.id)
         .maybeSingle();
 
     if (error) {
-
-        console.warn(
-            "Could not load wallet balance:",
-            error
-        );
-
+        console.warn("Could not load wallet balance:", error);
         return;
     }
 
-    document.getElementById(
-        "earningBalance"
-    ).textContent =
+    document.getElementById("earningBalance").textContent =
         `KSh ${formatMoney(data?.balance || 0)}`;
 }
 
-
-/* =========================================================
-   LOAD / RESUME ATTEMPT
-========================================================= */
+/* LOAD / RESUME ATTEMPT */
 
 async function loadAttempt() {
-
-    const {
-        data,
-        error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("task_attempts")
         .select("*")
         .eq("task_id", currentTask.id)
         .eq("user_id", currentUser.id)
         .eq("status", "active")
-        .order("created_at", {
-            ascending: false
-        })
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
     if (error) {
-
-        console.warn(
-            "Attempt loading error:",
-            error
-        );
-
+        console.warn("Attempt loading error:", error);
         currentAttempt = null;
         return;
     }
@@ -696,123 +572,63 @@ async function loadAttempt() {
     currentAttempt = data || null;
 
     if (currentAttempt) {
-
-        console.log(
-            "Resuming active attempt:",
-            currentAttempt.id,
-            "saved item:",
-            currentAttempt.current_item_number
-        );
-
-        const savedNumber =
-            Number(
-                currentAttempt.current_item_number
-            );
+        const savedNumber = Number(currentAttempt.current_item_number);
 
         if (savedNumber > 0) {
+            const index = currentItems.findIndex(
+                item => Number(item.item_number) === savedNumber
+            );
 
-            const index =
-                currentItems.findIndex(
-                    item =>
-                        Number(item.item_number) === savedNumber
-                );
-
-            if (index >= 0) {
-                currentItemIndex = index;
-            }
+            if (index >= 0) currentItemIndex = index;
         }
     }
 }
 
-
-/* =========================================================
-   CREATE ATTEMPT IF NEEDED
-========================================================= */
+/* CREATE ATTEMPT */
 
 async function createAttempt() {
+    if (currentAttempt) return;
 
-    if (currentAttempt) {
-        return;
-    }
-
-    const {
-        data,
-        error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("task_attempts")
         .insert({
             user_id: currentUser.id,
             task_id: currentTask.id,
             status: "active",
-            current_item_number:
-                currentItems[0]?.item_number || 1
+            current_item_number: currentItems[0]?.item_number || 1
         })
         .select()
         .single();
 
     if (error) {
-
-        console.error(
-            "Could not create attempt:",
-            error
-        );
-
+        console.error("Could not create attempt:", error);
         throw error;
     }
 
     currentAttempt = data;
 }
 
-
-/* =========================================================
-   FIND NEXT UNCOMPLETED ITEM
-========================================================= */
+/* FIND NEXT UNCOMPLETED ITEM */
 
 async function findNextItem() {
+    if (!currentAttempt) return currentItemIndex;
 
-    if (!currentAttempt) {
-        return currentItemIndex;
-    }
-
-    const {
-        data,
-        error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("task_completions")
         .select("item_id")
-        .eq(
-            "attempt_id",
-            currentAttempt.id
-        );
+        .eq("attempt_id", currentAttempt.id);
 
     if (error) {
-
-        console.warn(
-            "Could not load completions:",
-            error
-        );
-
+        console.warn("Could not load completions:", error);
         return currentItemIndex;
     }
 
-    const completedIds =
-        new Set(
-            (data || []).map(
-                row => row.item_id
-            )
-        );
+    const completedIds = new Set(
+        (data || []).map(row => row.item_id)
+    );
 
-    for (
-        let i = 0;
-        i < currentItems.length;
-        i++
-    ) {
-
-        if (
-            !completedIds.has(
-                currentItems[i].id
-            )
-        ) {
+    for (let i = 0; i < currentItems.length; i++) {
+        if (!completedIds.has(currentItems[i].id)) {
             return i;
         }
     }
@@ -820,260 +636,139 @@ async function findNextItem() {
     return currentItems.length;
 }
 
-
-/* =========================================================
-   SAVE CURRENT ITEM
-========================================================= */
+/* SAVE CURRENT ITEM */
 
 async function saveCurrentItemNumber() {
+    if (!currentAttempt) return;
 
-    if (!currentAttempt) {
-        return;
-    }
+    const item = currentItems[currentItemIndex];
+    if (!item) return;
 
-    const item =
-        currentItems[currentItemIndex];
-
-    if (!item) {
-        return;
-    }
-
-    const {
-        error
-    } = await supabaseClient
+    const { error } = await supabaseClient
         .from("task_attempts")
-        .update({
-            current_item_number:
-                item.item_number
-        })
-        .eq(
-            "id",
-            currentAttempt.id
-        );
+        .update({ current_item_number: item.item_number })
+        .eq("id", currentAttempt.id);
 
     if (error) {
-
-        console.warn(
-            "Could not save current item:",
-            error
-        );
-
-    } else {
-
-        console.log(
-            "Saved current item number:",
-            item.item_number
-        );
+        console.warn("Could not save current item number:", error);
     }
 }
 
-
-/* =========================================================
-   DISPLAY ITEM
-========================================================= */
+/* DISPLAY ITEM */
 
 async function displayItem() {
-
-    if (
-        currentItemIndex >=
-        currentItems.length
-    ) {
-
+    if (currentItemIndex >= currentItems.length) {
         await finishAttempt();
-
         return;
     }
 
-    const item =
-        currentItems[currentItemIndex];
+    const item = currentItems[currentItemIndex];
 
     if (!item) {
-
         redirectToTasks();
-
         return;
     }
 
-    const visibleNumber =
-        currentItemIndex + 1;
+    const visibleNumber = currentItemIndex + 1;
+    const total = currentItems.length;
 
-    const total =
-        currentItems.length;
-
-    document.getElementById(
-        "progressText"
-    ).textContent =
+    document.getElementById("progressText").textContent =
         `${visibleNumber} / ${total}`;
 
-    document.getElementById(
-        "progressFill"
-    ).style.width =
+    document.getElementById("progressFill").style.width =
         `${(visibleNumber / total) * 100}%`;
 
-    document.getElementById(
-        "itemTitle"
-    ).textContent =
+    document.getElementById("itemTitle").textContent =
         `Item ${visibleNumber} of ${total}`;
 
-    document.getElementById(
-        "answerInput"
-    ).value = "";
+    document.getElementById("answerInput").value = "";
 
-    document.getElementById(
-        "wordContainer"
-    ).classList.add("hidden");
+    document.getElementById("wordContainer").classList.add("hidden");
+    document.getElementById("imageContainer").classList.add("hidden");
+    document.getElementById("audioContainer").classList.add("hidden");
 
-    document.getElementById(
-        "imageContainer"
-    ).classList.add("hidden");
-
-    document.getElementById(
-        "audioContainer"
-    ).classList.add("hidden");
-
-    const image =
-        document.getElementById("taskImage");
-
+    const image = document.getElementById("taskImage");
+    image.onerror = null;
     image.removeAttribute("src");
 
-    const audio =
-        document.getElementById("taskAudio");
-
+    const audio = document.getElementById("taskAudio");
+    audio.onerror = null;
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
 
     /*
-       TEXT ITEM
+       FIX: Text is stored in source_text,
+       not content, in public.task_items.
     */
+    if (item.content_type === "text") {
+        const word = String(item.source_text || "").trim();
 
-    if (
-        !getStorageBucket(item) &&
-        item.content
-    ) {
-
-        document.getElementById(
-            "wordContainer"
-        ).textContent =
-            item.content;
-
-        document.getElementById(
-            "wordContainer"
-        ).classList.remove("hidden");
+        if (word) {
+            document.getElementById("wordContainer").textContent = word;
+            document.getElementById("wordContainer").classList.remove("hidden");
+        } else {
+            console.warn("Text item has no source_text:", item.id);
+        }
     }
 
-    /*
-       IMAGE ITEM
-    */
+    /* IMAGE ITEM */
 
-    if (
-        getStorageBucket(item) === "images"
-    ) {
-
+    if (getStorageBucket(item) === "images") {
         try {
-
-            const {
-                data,
-                error
-            } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .storage
                 .from("images")
-                .createSignedUrl(
-                    item.storage_path,
-                    3600
-                );
+                .createSignedUrl(item.storage_path, 3600);
 
-            if (
-                error ||
-                !data?.signedUrl
-            ) {
-
-                await handleMissingMediaItem(
-                    item
-                );
-
+            if (error || !data?.signedUrl) {
+                await handleMissingMediaItem(item);
                 return;
             }
 
             image.onerror = async () => {
-
-                await handleMissingMediaItem(
-                    item
-                );
+                await handleMissingMediaItem(item);
             };
 
-            image.src =
-                data.signedUrl;
+            image.src = data.signedUrl;
 
-            document.getElementById(
-                "imageContainer"
-            ).classList.remove("hidden");
+            document.getElementById("imageContainer")
+                .classList.remove("hidden");
 
         } catch (error) {
-
-            await handleMissingMediaItem(
-                item
-            );
-
+            console.error("Unable to load image:", error);
+            await handleMissingMediaItem(item);
             return;
         }
     }
 
-    /*
-       AUDIO ITEM
-    */
+    /* AUDIO ITEM */
 
-    if (
-        getStorageBucket(item) === "audio"
-    ) {
-
+    if (getStorageBucket(item) === "audio") {
         try {
-
-            const {
-                data,
-                error
-            } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .storage
                 .from("audio")
-                .createSignedUrl(
-                    item.storage_path,
-                    3600
-                );
+                .createSignedUrl(item.storage_path, 3600);
 
-            if (
-                error ||
-                !data?.signedUrl
-            ) {
-
-                await handleMissingMediaItem(
-                    item
-                );
-
+            if (error || !data?.signedUrl) {
+                await handleMissingMediaItem(item);
                 return;
             }
 
             audio.onerror = async () => {
-
-                await handleMissingMediaItem(
-                    item
-                );
+                await handleMissingMediaItem(item);
             };
 
-            audio.src =
-                data.signedUrl;
-
+            audio.src = data.signedUrl;
             audio.load();
 
-            document.getElementById(
-                "audioContainer"
-            ).classList.remove("hidden");
+            document.getElementById("audioContainer")
+                .classList.remove("hidden");
 
         } catch (error) {
-
-            await handleMissingMediaItem(
-                item
-            );
-
+            console.error("Unable to load audio:", error);
+            await handleMissingMediaItem(item);
             return;
         }
     }
@@ -1081,230 +776,108 @@ async function displayItem() {
     await saveCurrentItemNumber();
 }
 
-
-/* =========================================================
-   HANDLE DELETED/MISSING MEDIA
-========================================================= */
+/* HANDLE MISSING MEDIA */
 
 async function handleMissingMediaItem(item) {
-
-    if (mediaFailureBeingHandled) {
-        return;
-    }
+    if (mediaFailureBeingHandled) return;
 
     mediaFailureBeingHandled = true;
 
-    console.warn(
-        "Removing unavailable item:",
-        item.id,
-        item.storage_path
-    );
-
-    const index =
-        currentItems.findIndex(
-            x => x.id === item.id
-        );
+    const index = currentItems.findIndex(x => x.id === item.id);
 
     if (index === -1) {
-
         mediaFailureBeingHandled = false;
-
         return;
     }
 
-    /*
-       Remove it from the local workspace
-       immediately.
-    */
+    currentItems.splice(index, 1);
 
-    currentItems.splice(
-        index,
-        1
-    );
-
-    /*
-       If the deleted item was before
-       the current position, adjust index.
-    */
-
-    if (
-        index < currentItemIndex
-    ) {
-
+    if (index < currentItemIndex) {
         currentItemIndex--;
-
-    } else if (
-        index === currentItemIndex
-    ) {
-
-        /*
-           Keep the same index because
-           the next item moves into it.
-        */
     }
 
-    /*
-       No valid items remain.
-    */
-
-    if (
-        currentItems.length === 0
-    ) {
-
+    if (currentItems.length === 0) {
         mediaFailureBeingHandled = false;
-
         redirectToTasks();
-
         return;
     }
 
-    if (
-        currentItemIndex >=
-        currentItems.length
-    ) {
-
-        currentItemIndex =
-            currentItems.length - 1;
+    if (currentItemIndex >= currentItems.length) {
+        currentItemIndex = currentItems.length - 1;
     }
 
     mediaFailureBeingHandled = false;
-
     await displayItem();
 }
 
-
-/* =========================================================
-   SUBMIT ANSWER
-========================================================= */
+/* SUBMIT ANSWER */
 
 async function submitAnswer() {
+    if (submissionInProgress) return;
 
-    const answer =
-        document.getElementById(
-            "answerInput"
-        ).value.trim();
+    const answer = document.getElementById("answerInput").value.trim();
 
     if (!answer) {
-
-        alert(
-            "Please enter your answer first."
-        );
-
+        alert("Please enter your answer first.");
         return;
     }
 
     if (!currentAttempt) {
-
-        alert(
-            "Your task session is not ready. Please reload the page."
-        );
-
+        alert("Your task session is not ready. Please reload the page.");
         return;
     }
 
-    const item =
-        currentItems[currentItemIndex];
+    const item = currentItems[currentItemIndex];
 
     if (!item) {
-
         redirectToTasks();
-
         return;
     }
 
-    const button =
-        document.getElementById(
-            "submitBtn"
-        );
+    const button = document.getElementById("submitBtn");
 
+    submissionInProgress = true;
     button.disabled = true;
-
-    button.textContent =
-        "Submitting...";
+    button.textContent = "Submitting...";
 
     try {
-
-        /*
-           Record attempt
-        */
-
-        const {
-            error: attemptError
-        } = await supabaseClient
+        const { error: attemptError } = await supabaseClient
             .from("task_attempts")
-            .update({
-                current_item_number:
-                    item.item_number
-            })
-            .eq(
-                "id",
-                currentAttempt.id
-            );
+            .update({ current_item_number: item.item_number })
+            .eq("id", currentAttempt.id);
 
-        if (attemptError) {
-            throw attemptError;
-        }
+        if (attemptError) throw attemptError;
 
         /*
-           Complete item and reward user.
+           Keep the existing server-side reward function.
+           Wallet credit must be handled by Supabase.
         */
-
-        const {
-            data,
-            error
-        } = await supabaseClient
-            .rpc(
-                "complete_task_and_reward",
-                {
-                    p_task_id:
-                        currentTask.id,
-
-                    p_item_id:
-                        item.id,
-
-                    p_attempt_id:
-                        currentAttempt.id,
-
-                    p_answer:
-                        answer
-                }
-            );
+        const { data, error } = await supabaseClient.rpc(
+            "complete_task_and_reward",
+            {
+                p_task_id: currentTask.id,
+                p_item_id: item.id,
+                p_attempt_id: currentAttempt.id,
+                p_answer: answer
+            }
+        );
 
         if (error) {
-
-            console.error(
-                "Reward RPC error:",
-                error
-            );
-
+            console.error("Reward RPC error:", error);
             throw error;
         }
 
-        console.log(
-            "Task completion result:",
-            data
-        );
+        console.log("Task completion result:", data);
 
-        document.getElementById(
-            "answerInput"
-        ).value = "";
+        document.getElementById("answerInput").value = "";
 
         await loadBalance();
 
-        document.getElementById(
-            "submitBtn"
-        ).classList.add("hidden");
-
-        document.getElementById(
-            "nextBtn"
-        ).classList.remove("hidden");
+        button.classList.add("hidden");
+        document.getElementById("nextBtn").classList.remove("hidden");
 
     } catch (error) {
-
-        console.error(
-            "Submit error:",
-            error
-        );
+        console.error("Submit error:", error);
 
         alert(
             error?.message ||
@@ -1312,386 +885,165 @@ async function submitAnswer() {
         );
 
         button.disabled = false;
+        button.textContent = "Submit & Earn KSh 50";
 
-        button.textContent =
-            "Submit & Earn KSh 50";
+    } finally {
+        submissionInProgress = false;
     }
 }
 
-
-/* =========================================================
-   NEXT ITEM
-========================================================= */
+/* NEXT ITEM */
 
 async function nextItem() {
+    document.getElementById("submitBtn").classList.remove("hidden");
+    document.getElementById("nextBtn").classList.add("hidden");
 
-    document.getElementById(
-        "submitBtn"
-    ).classList.remove("hidden");
-
-    document.getElementById(
-        "nextBtn"
-    ).classList.add("hidden");
-
-    document.getElementById(
-        "submitBtn"
-    ).disabled = false;
-
-    document.getElementById(
-        "submitBtn"
-    ).textContent =
+    document.getElementById("submitBtn").disabled = false;
+    document.getElementById("submitBtn").textContent =
         "Submit & Earn KSh 50";
 
-    /*
-       Find next unfinished item.
-    */
+    const next = await findNextItem();
 
-    const next =
-        await findNextItem();
-
-    if (
-        next >= currentItems.length
-    ) {
-
+    if (next >= currentItems.length) {
         await finishAttempt();
-
         return;
     }
 
     currentItemIndex = next;
-
     await displayItem();
 }
 
-
-/* =========================================================
-   FINISH ATTEMPT
-========================================================= */
+/* FINISH ATTEMPT */
 
 async function finishAttempt() {
+    if (monitoringTimer) {
+        clearInterval(monitoringTimer);
+        monitoringTimer = null;
+    }
 
     if (currentAttempt) {
-
-        const {
-            error
-        } = await supabaseClient
+        const { error } = await supabaseClient
             .from("task_attempts")
-            .update({
-                status: "completed"
-            })
-            .eq(
-                "id",
-                currentAttempt.id
-            );
+            .update({ status: "completed" })
+            .eq("id", currentAttempt.id);
 
         if (error) {
-
-            console.warn(
-                "Could not mark attempt completed:",
-                error
-            );
+            console.warn("Could not mark attempt completed:", error);
         }
     }
 
-    document.getElementById(
-        "workspace"
-    ).style.display = "block";
-
-    document.querySelector(
-        ".item-card"
-    ).classList.add("hidden");
-
-    document.getElementById(
-        "successBox"
-    ).classList.remove("hidden");
+    document.getElementById("workspace").style.display = "block";
+    document.querySelector(".item-card").classList.add("hidden");
+    document.getElementById("successBox").classList.remove("hidden");
 
     await loadBalance();
 }
 
-
-/* =========================================================
-   MONITOR TASK FOR ADMIN DELETION
-========================================================= */
+/* MONITOR TASK FOR ADMIN DELETION */
 
 function startTaskMonitor() {
+    if (monitoringTimer) clearInterval(monitoringTimer);
 
-    if (monitoringTimer) {
-        clearInterval(
-            monitoringTimer
-        );
-    }
+    monitoringTimer = setInterval(async () => {
+        if (!currentTask?.id) return;
 
-    monitoringTimer =
-        setInterval(
-            async () => {
+        try {
+            const { data: task, error: taskError } = await supabaseClient
+                .from("tasks")
+                .select("id,status")
+                .eq("id", currentTask.id)
+                .maybeSingle();
 
-                if (!currentTask?.id) {
+            if (!taskError && (!task || task.status !== "active")) {
+                redirectToTasks();
+                return;
+            }
+
+            const item = currentItems[currentItemIndex];
+            if (!item) return;
+
+            const { data: freshItem, error: itemError } = await supabaseClient
+                .from("task_items")
+                .select("id,storage_path,content_type")
+                .eq("id", item.id)
+                .maybeSingle();
+
+            if (!itemError) {
+                if (!freshItem) {
+                    await handleMissingMediaItem(item);
                     return;
                 }
 
-                try {
+                if (getStorageBucket(freshItem)) {
+                    const valid = await validateMediaItem(freshItem);
 
-                    /*
-                       Check whether the task
-                       itself still exists.
-                    */
-
-                    const {
-                        data: task,
-                        error: taskError
-                    } = await supabaseClient
-                        .from("tasks")
-                        .select("id,status")
-                        .eq(
-                            "id",
-                            currentTask.id
-                        )
-                        .maybeSingle();
-
-                    if (!taskError) {
-
-                        if (
-                            !task ||
-                            task.status !== "active"
-                        ) {
-
-                            redirectToTasks();
-
-                            return;
-                        }
+                    if (!valid) {
+                        await handleMissingMediaItem(item);
                     }
-
-                    /*
-                       Check the current item.
-                    */
-
-                    const item =
-                        currentItems[
-                            currentItemIndex
-                        ];
-
-                    if (!item) {
-                        return;
-                    }
-
-                    const {
-                        data: freshItem,
-                        error: itemError
-                    } = await supabaseClient
-                        .from("task_items")
-                        .select(
-                            "id,storage_path,content_type"
-                        )
-                        .eq(
-                            "id",
-                            item.id
-                        )
-                        .maybeSingle();
-
-                    if (!itemError) {
-
-                        /*
-                           Admin deleted the
-                           task item.
-                        */
-
-                        if (!freshItem) {
-
-                            await handleMissingMediaItem(
-                                item
-                            );
-
-                            return;
-                        }
-
-                        /*
-                           Admin deleted the
-                           media file.
-                        */
-
-                        if (
-                            getStorageBucket(
-                                freshItem
-                            )
-                        ) {
-
-                            const valid =
-                                await validateMediaItem(
-                                    freshItem
-                                );
-
-                            if (!valid) {
-
-                                await handleMissingMediaItem(
-                                    item
-                                );
-                            }
-                        }
-                    }
-
-                } catch (error) {
-
-                    /*
-                       Do not kick the user out because
-                       of a temporary network error.
-                    */
-
-                    console.warn(
-                        "Task monitor error:",
-                        error
-                    );
                 }
-
-            },
-            10000
-        );
+            }
+        } catch (error) {
+            console.warn("Task monitor error:", error);
+        }
+    }, 10000);
 }
 
-
-/* =========================================================
-   INITIALIZE
-========================================================= */
+/* INITIALIZE */
 
 async function initialize() {
-
     try {
-
-        /*
-           Get task ID.
-        */
-
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
+        const params = new URLSearchParams(window.location.search);
 
         const taskId =
             params.get("id") ||
-            localStorage.getItem(
-                "nexaLearnCurrentTaskId"
-            );
+            localStorage.getItem("nexaLearnCurrentTaskId");
 
         if (!taskId) {
-
             redirectToTasks();
-
             return;
         }
 
-        /*
-           Check authentication.
-        */
-
         await loadUser();
-
-        /*
-           Load task.
-        */
-
-        await loadTask(
-            taskId
-        );
-
-        /*
-           Load only valid items.
-        */
-
+        await loadTask(taskId);
         await loadItems();
-
-        /*
-           Load/resume attempt.
-        */
-
         await loadAttempt();
-
-        /*
-           Create attempt if none exists.
-        */
-
         await createAttempt();
 
-        /*
-           Find first unfinished item.
-        */
+        const next = await findNextItem();
 
-        const next =
-            await findNextItem();
-
-        if (
-            next >= currentItems.length
-        ) {
-
+        if (next >= currentItems.length) {
+            document.getElementById("loadingBox").classList.add("hidden");
+            document.getElementById("workspace").style.display = "block";
             await finishAttempt();
-
         } else {
-
             currentItemIndex = next;
 
-            document.getElementById(
-                "loadingBox"
-            ).classList.add("hidden");
-
-            document.getElementById(
-                "workspace"
-            ).style.display = "block";
+            document.getElementById("loadingBox").classList.add("hidden");
+            document.getElementById("workspace").style.display = "block";
 
             await displayItem();
-
             await loadBalance();
-
             startTaskMonitor();
         }
 
-        console.log(
-            "Workspace initialized:",
-            {
-                task: currentTask,
-                items: currentItems.length,
-                attempt: currentAttempt
-            }
-        );
+        console.log("Workspace initialized:", {
+            task: currentTask,
+            items: currentItems.length,
+            attempt: currentAttempt
+        });
 
     } catch (error) {
-
-        console.error(
-            "Workspace initialization error:",
-            error
-        );
-
-        /*
-           Missing/deleted/inactive task:
-           silently leave the workspace.
-        */
+        console.error("Workspace initialization error:", error);
 
         if (
-            error?.code ===
-            "TASK_UNAVAILABLE" ||
-            error?.message ===
-            "TASK_UNAVAILABLE"
+            error?.code === "TASK_UNAVAILABLE" ||
+            error?.message === "TASK_UNAVAILABLE"
         ) {
-
             redirectToTasks();
-
             return;
         }
 
-        /*
-           Authentication errors are handled
-           by loadUser().
-        */
-
-        if (
-            error?.message ===
-            "USER_NOT_AUTHENTICATED"
-        ) {
-
-            return;
-        }
-
-        /*
-           Only show this for genuine
-           connection/application errors.
-        */
+        if (error?.message === "USER_NOT_AUTHENTICATED") return;
 
         showError(
             "The task workspace could not connect to Supabase. Please check your internet connection and reload the page."
@@ -1699,13 +1051,7 @@ async function initialize() {
     }
 }
 
-
-/* =========================================================
-   START
-========================================================= */
-
 initialize();
-
 </script>
 
 </body>
