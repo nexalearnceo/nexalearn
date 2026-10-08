@@ -9,9 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -50,31 +48,17 @@ header {
     padding: 0 20px;
 }
 
-.loading,
-.error,
-.success {
+.loading, .error, .success {
     padding: 25px;
     border-radius: 12px;
     text-align: center;
 }
 
-.loading {
-    background: #0d1c2e;
-}
+.loading { background: #0d1c2e; }
+.error { background: #3a1515; color: #ffb4b4; }
+.success { background: #0c3020; color: #7ff0ae; }
 
-.error {
-    background: #3a1515;
-    color: #ffb4b4;
-}
-
-.success {
-    background: #0c3020;
-    color: #7ff0ae;
-}
-
-.workspace {
-    display: none;
-}
+.workspace { display: none; }
 
 .task-header {
     background: #0d1c2e;
@@ -171,9 +155,7 @@ header {
     padding: 20px;
 }
 
-audio {
-    width: 100%;
-}
+audio { width: 100%; }
 
 textarea {
     width: 100%;
@@ -188,9 +170,7 @@ textarea {
     outline: none;
 }
 
-textarea:focus {
-    border-color: #4ade80;
-}
+textarea:focus { border-color: #4ade80; }
 
 .buttons {
     display: flex;
@@ -213,23 +193,15 @@ button {
     color: #03120a;
 }
 
-.submit-btn:hover {
-    background: #22c55e;
-}
-
-.submit-btn:disabled {
-    opacity: .5;
-    cursor: not-allowed;
-}
+.submit-btn:hover { background: #22c55e; }
+.submit-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .next-btn {
     background: #2563eb;
     color: white;
 }
 
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
 .balance-box {
     margin-top: 20px;
@@ -250,23 +222,14 @@ button {
         margin-top: 20px;
     }
 
-    header {
-        padding: 0 15px;
-    }
+    header { padding: 0 15px; }
 
-    .task-header,
-    .item-card,
-    .progress-box {
+    .task-header, .item-card, .progress-box {
         padding: 18px;
     }
 
-    .buttons {
-        flex-direction: column;
-    }
-
-    button {
-        width: 100%;
-    }
+    .buttons { flex-direction: column; }
+    button { width: 100%; }
 }
 </style>
 </head>
@@ -280,10 +243,7 @@ button {
 
 <div class="container">
 
-    <div id="loadingBox" class="loading">
-        Loading task...
-    </div>
-
+    <div id="loadingBox" class="loading">Loading task...</div>
     <div id="errorBox" class="error hidden"></div>
 
     <div id="workspace" class="workspace">
@@ -320,23 +280,14 @@ button {
                 </div>
             </div>
 
-            <textarea
-                id="answerInput"
-                placeholder="Enter your answer here..."
-            ></textarea>
+            <textarea id="answerInput" placeholder="Enter your answer here..."></textarea>
 
             <div class="buttons">
-                <button
-                    id="submitBtn"
-                    class="submit-btn"
-                    onclick="submitAnswer()">
+                <button id="submitBtn" class="submit-btn" onclick="submitAnswer()">
                     Submit & Earn KSh 50
                 </button>
 
-                <button
-                    id="nextBtn"
-                    class="next-btn hidden"
-                    onclick="nextItem()">
+                <button id="nextBtn" class="next-btn hidden" onclick="nextItem()">
                     Next Item →
                 </button>
             </div>
@@ -362,9 +313,7 @@ button {
 
 <script>
 const SUPABASE_URL = "https://vzgrzzesquqnftfhchwt.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+const SUPABASE_KEY = "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
 const supabaseClient = supabase.createClient(
     SUPABASE_URL,
@@ -408,11 +357,13 @@ function formatMoney(value) {
 function getStorageBucket(item) {
     if (!item) return null;
 
-    if (item.content_type === "image") return "images";
-    if (item.content_type === "audio") return "audio";
+    const type = String(item.content_type || "").toLowerCase();
+
+    if (type === "image") return "images";
+    if (type === "audio") return "audio";
 
     if (
-        currentTask?.category === "Audio" &&
+        String(currentTask?.category || "").toLowerCase() === "audio" &&
         item.storage_path
     ) {
         return "audio";
@@ -511,6 +462,8 @@ async function loadItems() {
     }
 
     currentItems = validItems;
+
+    console.log("Loaded task items:", currentItems);
 
     if (currentItems.length === 0) {
         const unavailable = new Error("TASK_UNAVAILABLE");
@@ -654,7 +607,7 @@ async function saveCurrentItemNumber() {
     }
 }
 
-/* DISPLAY ITEM */
+/* DISPLAY ITEM — FIXED TEXT DISPLAY */
 
 async function displayItem() {
     if (currentItemIndex >= currentItems.length) {
@@ -668,6 +621,8 @@ async function displayItem() {
         redirectToTasks();
         return;
     }
+
+    console.log("Displaying current item:", item);
 
     const visibleNumber = currentItemIndex + 1;
     const total = currentItems.length;
@@ -683,9 +638,14 @@ async function displayItem() {
 
     document.getElementById("answerInput").value = "";
 
-    document.getElementById("wordContainer").classList.add("hidden");
-    document.getElementById("imageContainer").classList.add("hidden");
-    document.getElementById("audioContainer").classList.add("hidden");
+    const wordContainer = document.getElementById("wordContainer");
+    const imageContainer = document.getElementById("imageContainer");
+    const audioContainer = document.getElementById("audioContainer");
+
+    wordContainer.textContent = "";
+    wordContainer.classList.add("hidden");
+    imageContainer.classList.add("hidden");
+    audioContainer.classList.add("hidden");
 
     const image = document.getElementById("taskImage");
     image.onerror = null;
@@ -698,18 +658,17 @@ async function displayItem() {
     audio.load();
 
     /*
-       FIX: Text is stored in source_text,
-       not content, in public.task_items.
+      FIX:
+      The database column is source_text.
+      Display it whenever it contains text, regardless of
+      the exact content_type value.
     */
-    if (item.content_type === "text") {
-        const word = String(item.source_text || "").trim();
+    const word = String(item.source_text || item.content || "").trim();
+    const type = String(item.content_type || "").toLowerCase();
 
-        if (word) {
-            document.getElementById("wordContainer").textContent = word;
-            document.getElementById("wordContainer").classList.remove("hidden");
-        } else {
-            console.warn("Text item has no source_text:", item.id);
-        }
+    if (word && type !== "image" && type !== "audio") {
+        wordContainer.textContent = word;
+        wordContainer.classList.remove("hidden");
     }
 
     /* IMAGE ITEM */
@@ -731,9 +690,7 @@ async function displayItem() {
             };
 
             image.src = data.signedUrl;
-
-            document.getElementById("imageContainer")
-                .classList.remove("hidden");
+            imageContainer.classList.remove("hidden");
 
         } catch (error) {
             console.error("Unable to load image:", error);
@@ -762,9 +719,7 @@ async function displayItem() {
 
             audio.src = data.signedUrl;
             audio.load();
-
-            document.getElementById("audioContainer")
-                .classList.remove("hidden");
+            audioContainer.classList.remove("hidden");
 
         } catch (error) {
             console.error("Unable to load audio:", error);
@@ -792,9 +747,7 @@ async function handleMissingMediaItem(item) {
 
     currentItems.splice(index, 1);
 
-    if (index < currentItemIndex) {
-        currentItemIndex--;
-    }
+    if (index < currentItemIndex) currentItemIndex--;
 
     if (currentItems.length === 0) {
         mediaFailureBeingHandled = false;
@@ -848,10 +801,6 @@ async function submitAnswer() {
 
         if (attemptError) throw attemptError;
 
-        /*
-           Keep the existing server-side reward function.
-           Wallet credit must be handled by Supabase.
-        */
         const { data, error } = await supabaseClient.rpc(
             "complete_task_and_reward",
             {
