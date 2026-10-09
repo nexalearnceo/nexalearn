@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -143,6 +143,7 @@
     .row {
       display: flex;
       justify-content: space-between;
+      gap: 12px;
       padding: 11px 0;
     }
 
@@ -153,6 +154,7 @@
     .row span:last-child {
       color: #fff;
       font-weight: bold;
+      text-align: right;
     }
 
     .balance {
@@ -173,6 +175,7 @@
       color: #38bdf8;
       font-size: 25px;
       font-weight: bold;
+      overflow-wrap: anywhere;
     }
 
     .message {
@@ -266,7 +269,6 @@
     }
 
     @media (max-width: 750px) {
-
       .sidebar {
         position: relative;
         width: 100%;
@@ -281,7 +283,6 @@
       .grid {
         grid-template-columns: 1fr;
       }
-
     }
   </style>
 </head>
@@ -289,50 +290,22 @@
 <body>
 
   <aside class="sidebar">
-
     <div class="logo">
       <h2>NexaLearn</h2>
       <p>LEARN • COMPLETE • EARN</p>
     </div>
 
     <nav class="nav">
-
-      <a href="dashboard.html">
-        Dashboard
-      </a>
-
-      <a href="tasks.html">
-        Tasks
-      </a>
-
-      <a href="packages.html" class="active">
-        Packages
-      </a>
-
-      <a href="wallet.html">
-        Wallet
-      </a>
-
-      <a href="history.html">
-        History
-      </a>
-
-      <a href="profile.html">
-        Profile
-      </a>
-
-      <a href="support.html">
-        Support
-      </a>
-
-      <a href="#" id="logoutBtn">
-        Logout
-      </a>
-
+      <a href="dashboard.html">Dashboard</a>
+      <a href="tasks.html">Tasks</a>
+      <a href="packages.html" class="active">Packages</a>
+      <a href="wallet.html">Wallet</a>
+      <a href="history.html">History</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" id="logoutBtn">Logout</a>
     </nav>
-
   </aside>
-
 
   <main class="main">
 
@@ -341,26 +314,14 @@
     </a>
 
     <div class="header">
-
-      <h1>
-        Activate Package
-      </h1>
-
-      <p>
-        Review your package before activation.
-      </p>
-
+      <h1>Activate Package</h1>
+      <p>Review your package before activation.</p>
     </div>
-
 
     <div id="loading" class="loading">
-
       <div class="spinner"></div>
-
       Loading package...
-
     </div>
-
 
     <div id="content" style="display:none;">
 
@@ -368,643 +329,352 @@
 
       <div class="grid">
 
-        <!-- SELECTED PACKAGE -->
-
         <div class="card">
+          <h2>Selected Package</h2>
 
-          <h2>
-            Selected Package
-          </h2>
+          <div id="packageName" class="package-name">--</div>
 
-          <div
-            id="packageName"
-            class="package-name">
-            --
-          </div>
+          <div id="packageDescription" class="package-description">--</div>
 
-          <div
-            id="packageDescription"
-            class="package-description">
-            --
-          </div>
-
-          <div
-            id="packagePrice"
-            class="price">
-            KSh 0
-          </div>
-
+          <div id="packagePrice" class="price">KSh 0.00</div>
 
           <div class="info">
-
             <div class="row">
-
-              <span>
-                Task Access
-              </span>
-
-              <span id="taskCount">
-                0 tasks
-              </span>
-
+              <span>Task Access</span>
+              <span id="taskCount">0 tasks</span>
             </div>
 
-
             <div class="row">
-
-              <span>
-                Reward Per Task
-              </span>
-
-              <span id="reward">
-                KSh 50
-              </span>
-
+              <span>Reward Per Task</span>
+              <span id="reward">KSh 50.00</span>
             </div>
 
-
             <div class="row">
-
-              <span>
-                Potential Task Rewards
-              </span>
-
-              <span id="potential">
-                KSh 0
-              </span>
-
+              <span>Potential Task Rewards</span>
+              <span id="potential">KSh 0.00</span>
             </div>
-
           </div>
-
         </div>
 
-
-        <!-- WALLET -->
-
         <div class="card">
-
-          <h2>
-            Wallet
-          </h2>
+          <h2>Wallet</h2>
 
           <div class="balance">
-
             <div class="balance-label">
-              Available Wallet Balance
+              Available Deposit Balance
             </div>
 
-            <div
-              id="walletBalance"
-              class="balance-value">
+            <div id="walletBalance" class="balance-value">
               KSh 0.00
             </div>
-
           </div>
 
-
-          <button
-            id="activateBtn"
-            class="activate"
-            type="button">
-
+          <button id="activateBtn" class="activate" type="button">
             Activate Package
-
           </button>
 
-
-          <a
-            href="deposit.html"
-            class="deposit">
-
+          <a href="deposit.html" class="deposit">
             Deposit Funds
-
           </a>
-
         </div>
 
       </div>
-
     </div>
-
   </main>
 
-
 <script>
-
-/* =========================
-   SUPABASE
-========================= */
-
 const SUPABASE_URL =
   "https://vzgrzzesquqnftfhchwt.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
-
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
     }
-  );
-
+  }
+);
 
 let currentUser = null;
 let selectedPackage = null;
-let walletBalance = 0;
-
-
-/* =========================
-   HELPERS
-========================= */
+let depositBalance = 0;
+let activationInProgress = false;
 
 function formatMoney(amount) {
-
-  return "KSh " +
-    Number(amount || 0).toLocaleString(
-      "en-KE",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    );
-
+  return "KSh " + Number(amount || 0).toLocaleString(
+    "en-KE",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  );
 }
-
 
 function showMessage(text, type) {
-
-  const message =
-    document.getElementById("message");
-
+  const message = document.getElementById("message");
   message.textContent = text;
-
-  message.className =
-    "message " + type;
-
+  message.className = "message " + type;
 }
 
-
-/* =========================
-   LOAD PAGE
-========================= */
+function setLoadingError(text) {
+  document.getElementById("loading").innerHTML = `
+    <div class="error-page">
+      ${text}
+      <br><br>
+      <a href="packages.html" style="color:#38bdf8;">
+        Return to Packages
+      </a>
+    </div>
+  `;
+}
 
 async function loadPage() {
-
   try {
-
     const {
       data: sessionData,
       error: sessionError
-    } =
-      await supabaseClient.auth.getSession();
+    } = await supabaseClient.auth.getSession();
 
-
-    if (sessionError) {
-      throw sessionError;
-    }
-
+    if (sessionError) throw sessionError;
 
     if (!sessionData.session) {
-
-      window.location.href =
-        "login.html";
-
+      window.location.href = "login.html";
       return;
     }
 
+    currentUser = sessionData.session.user;
 
-    currentUser =
-      sessionData.session.user;
-
-
-    /* GET PACKAGE ID */
-
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
-
-    const packageId =
-      params.get("package_id");
-
+    const params = new URLSearchParams(window.location.search);
+    const packageId = params.get("package_id");
 
     if (!packageId) {
-
-      window.location.href =
-        "packages.html";
-
+      window.location.href = "packages.html";
       return;
     }
-
-
-    /* GET PACKAGE */
 
     const {
       data: packageData,
       error: packageError
-    } =
-      await supabaseClient
-        .from("packages")
-        .select(
-          "id,name,price,task_limit,reward_per_task,currency,description"
-        )
-        .eq(
-          "id",
-          packageId
-        )
-        .maybeSingle();
+    } = await supabaseClient
+      .from("packages")
+      .select(
+        "id,name,price,task_limit,reward_per_task,currency,description"
+      )
+      .eq("id", packageId)
+      .maybeSingle();
 
-
-    if (packageError) {
-      throw packageError;
-    }
-
+    if (packageError) throw packageError;
 
     if (!packageData) {
-
-      document.getElementById("loading")
-        .innerHTML = `
-          <div class="error-page">
-
-            The selected package could not be found.
-
-            <br><br>
-
-            <a
-              href="packages.html"
-              style="color:#38bdf8;">
-              Return to Packages
-            </a>
-
-          </div>
-        `;
-
+      setLoadingError("The selected package could not be found.");
       return;
     }
 
+    selectedPackage = packageData;
 
-    selectedPackage =
-      packageData;
-
-
-    /* GET WALLET */
-
+    // Read the deposit balance, not the earning balance.
     const {
       data: wallet,
       error: walletError
-    } =
-      await supabaseClient
-        .from("wallets")
-        .select("balance,deposit_balance")
-        .eq(
-          "user_id",
-          currentUser.id
-        )
-        .maybeSingle();
+    } = await supabaseClient
+      .from("wallets")
+      .select("deposit_balance")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
 
+    if (walletError) throw walletError;
 
-    if (walletError) {
-      throw walletError;
+    if (!wallet) {
+      setLoadingError("Your wallet could not be found.");
+      return;
     }
 
-
-    walletBalance =
-      Number(
-        wallet?.balance || 0
-      );
-
+    depositBalance = Number(wallet.deposit_balance || 0);
 
     renderPackage();
 
-
-    document.getElementById("loading")
-      .style.display = "none";
-
-
-    document.getElementById("content")
-      .style.display = "block";
-
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("content").style.display = "block";
 
   } catch (error) {
+    console.error("Package loading error:", error);
 
-    console.error(
-      "Package loading error:",
-      error
+    setLoadingError(
+      "Unable to load the package or deposit balance. Please refresh and try again."
     );
-
-
-    document.getElementById("loading")
-      .innerHTML = `
-        <div class="error-page">
-
-          Unable to load the package.
-
-          <br><br>
-
-          Please refresh the page and try again.
-
-        </div>
-      `;
-
   }
-
 }
 
-
-/* =========================
-   RENDER PACKAGE
-========================= */
-
 function renderPackage() {
+  const pkg = selectedPackage;
+  const price = Number(pkg.price || 0);
+  const taskCount = Number(pkg.task_limit || 0);
+  const reward = Number(pkg.reward_per_task || 50);
+  const potential = taskCount * reward;
 
-  const pkg =
-    selectedPackage;
-
-
-  const price =
-    Number(pkg.price || 0);
-
-
-  const taskCount =
-    Number(pkg.task_limit || 0);
-
-
-  const reward =
-    Number(pkg.reward_per_task || 50);
-
-
-  const potential =
-    taskCount * reward;
-
-
-  document.getElementById(
-    "packageName"
-  ).textContent =
-    pkg.name;
-
-
-  document.getElementById(
-    "packageDescription"
-  ).textContent =
+  document.getElementById("packageName").textContent = pkg.name;
+  document.getElementById("packageDescription").textContent =
     pkg.description ||
     "Access verified NexaLearn tasks and earn rewards.";
 
-
-  document.getElementById(
-    "packagePrice"
-  ).textContent =
+  document.getElementById("packagePrice").textContent =
     formatMoney(price);
 
-
-  document.getElementById(
-    "taskCount"
-  ).textContent =
+  document.getElementById("taskCount").textContent =
     taskCount + " tasks";
 
-
-  document.getElementById(
-    "reward"
-  ).textContent =
+  document.getElementById("reward").textContent =
     formatMoney(reward);
 
-
-  document.getElementById(
-    "potential"
-  ).textContent =
+  document.getElementById("potential").textContent =
     formatMoney(potential);
 
+  document.getElementById("walletBalance").textContent =
+    formatMoney(depositBalance);
 
-  document.getElementById(
-    "walletBalance"
-  ).textContent =
-    formatMoney(walletBalance);
+  const button = document.getElementById("activateBtn");
 
-
-  const button =
-    document.getElementById(
-      "activateBtn"
-    );
-
-
-  if (walletBalance < price) {
-
+  // This check uses deposit funds only.
+  if (depositBalance < price) {
     button.disabled = true;
-
-    button.textContent =
-      "Insufficient Wallet Balance";
-
+    button.textContent = "Insufficient Deposit Balance";
   } else {
-
     button.disabled = false;
-
-    button.textContent =
-      "Activate Package";
-
+    button.textContent = "Activate Package";
   }
-
 }
 
-
-/* =========================
-   ACTIVATE PACKAGE
-========================= */
-
 async function activatePackage() {
-
-  if (
-    !currentUser ||
-    !selectedPackage
-  ) {
+  if (!currentUser || !selectedPackage || activationInProgress) {
     return;
   }
 
+  const button = document.getElementById("activateBtn");
+  const price = Number(selectedPackage.price || 0);
 
-  const button =
-    document.getElementById(
-      "activateBtn"
+  if (depositBalance < price) {
+    showMessage(
+      "Insufficient deposit balance. Please deposit funds before activating this package.",
+      "error"
     );
+    return;
+  }
 
-
+  activationInProgress = true;
   button.disabled = true;
-
-  button.textContent =
-    "Activating...";
-
+  button.textContent = "Activating...";
 
   try {
-
-    /*
-      IMPORTANT:
-
-      We are NOT directly changing the
-      wallet from JavaScript.
-
-      The secure Supabase RPC will handle:
-
-      1. Checking wallet balance
-      2. Checking active package
-      3. Deducting package fee
-      4. Creating user_packages record
-      5. Creating transaction
-      6. Updating wallet
-    */
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.rpc(
-        "activate_package",
-        {
-          p_package_id:
-            selectedPackage.id
-        }
-      );
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    console.log(
-      "Activation result:",
-      data
+    const { data, error } = await supabaseClient.rpc(
+      "activate_package",
+      {
+        p_package_id: selectedPackage.id
+      }
     );
 
+    if (error) throw error;
+
+    if (!data || data.success !== true) {
+      throw new Error(
+        data?.message || "The package activation could not be confirmed."
+      );
+    }
+
+    // Refresh the deposit balance from the database after activation.
+    const {
+      data: updatedWallet,
+      error: updatedWalletError
+    } = await supabaseClient
+      .from("wallets")
+      .select("deposit_balance")
+      .eq("user_id", currentUser.id)
+      .single();
+
+    if (updatedWalletError) {
+      console.error(
+        "Could not refresh deposit balance:",
+        updatedWalletError
+      );
+    } else {
+      depositBalance = Number(updatedWallet.deposit_balance || 0);
+      document.getElementById("walletBalance").textContent =
+        formatMoney(depositBalance);
+    }
 
     showMessage(
-      "Package activated successfully.",
+      "Package activated successfully!",
       "success"
     );
 
+    button.textContent = "Package Activated";
 
-    button.textContent =
-      "Package Activated";
-
-
-    button.disabled = true;
-
-
-    setTimeout(
-      function() {
-
-        window.location.href =
-          "dashboard.html";
-
-      },
-      2000
-    );
-
+    // A new activation is allowed; return to packages to choose again.
+    setTimeout(() => {
+      window.location.href = "packages.html";
+    }, 1800);
 
   } catch (error) {
+    console.error("Activation error:", error);
 
-    console.error(
-      "Activation error:",
-      error
-    );
+    let errorMessage = error.message ||
+      "Unable to activate package. Please try again.";
 
+    const lower = errorMessage.toLowerCase();
 
-    let errorMessage =
-      error.message ||
-      "Unable to activate package.";
-
-
-    const lower =
-      errorMessage.toLowerCase();
-
-
-    if (
-      lower.includes("insufficient")
-    ) {
-
+    if (lower.includes("insufficient")) {
       errorMessage =
-        "Insufficient wallet balance. Please deposit funds before activating this package.";
-
+        "Insufficient deposit balance. Please deposit funds before activating this package.";
+    } else if (lower.includes("already have an active package") ||
+               lower.includes("active package")) {
+      errorMessage =
+        "Your Supabase activation function still blocks another active package. Update the activate_package SQL function and try again.";
     }
 
-
-    if (
-      lower.includes("active package")
-    ) {
-
-      errorMessage =
-        "You already have an active package.";
-
-    }
-
-
-    showMessage(
-      errorMessage,
-      "error"
-    );
-
+    showMessage(errorMessage, "error");
 
     button.disabled = false;
+    button.textContent = "Activate Package";
 
-    button.textContent =
-      "Activate Package";
+  } finally {
+    activationInProgress = false;
 
+    if (button.textContent === "Activating...") {
+      button.disabled = false;
+      button.textContent = "Activate Package";
+    }
   }
-
 }
 
+document.getElementById("logoutBtn").addEventListener(
+  "click",
+  async function(event) {
+    event.preventDefault();
 
-/* =========================
-   LOGOUT
-========================= */
+    const { error } = await supabaseClient.auth.signOut();
 
-document
-  .getElementById("logoutBtn")
-  .addEventListener(
-    "click",
-    async function(event) {
-
-      event.preventDefault();
-
-
-      await supabaseClient
-        .auth
-        .signOut();
-
-
-      window.location.href =
-        "login.html";
-
+    if (error) {
+      showMessage("Unable to log out. Please try again.", "error");
+      console.error("Logout error:", error);
+      return;
     }
-  );
 
+    window.location.href = "login.html";
+  }
+);
 
-/* =========================
-   ACTIVATE BUTTON
-========================= */
-
-document
-  .getElementById("activateBtn")
-  .addEventListener(
-    "click",
-    activatePackage
-  );
-
-
-/* =========================
-   START
-========================= */
+document.getElementById("activateBtn").addEventListener(
+  "click",
+  activatePackage
+);
 
 loadPage();
-
 </script>
 
 </body>
 </html>
-```
