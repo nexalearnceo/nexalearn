@@ -641,6 +641,78 @@ async function saveCurrentItemNumber() {
 }
 
 /* =========================================
+   SHOW ALL ITEMS IN THE WORKSPACE
+   The gallery is a preview only; the existing
+   one-at-a-time submission and reward flow stays intact.
+========================================= */
+
+async function renderItemGallery() {
+    const gallery = document.getElementById("itemGallery");
+    gallery.replaceChildren();
+
+    if (!currentItems.length) {
+        gallery.textContent = "No items are available for this task.";
+        return;
+    }
+
+    for (let i = 0; i < currentItems.length; i++) {
+        const item = currentItems[i];
+        const card = document.createElement("div");
+        card.className = "gallery-card" + (i === currentItemIndex ? " current" : "");
+
+        const label = document.createElement("div");
+        label.className = "gallery-label";
+        label.textContent = `Item ${i + 1}`;
+        card.appendChild(label);
+
+        const type = String(item.content_type || "").toLowerCase();
+        const bucket = getStorageBucket(item);
+        const word = String(item.source_text ?? item.content ?? "").trim();
+
+        if (bucket === "images" && item.storage_path) {
+            const img = document.createElement("img");
+            img.alt = `Task image ${i + 1}`;
+            img.loading = "lazy";
+            const { data, error } = await supabaseClient.storage
+                .from("images")
+                .createSignedUrl(item.storage_path, 3600);
+            if (!error && data?.signedUrl) {
+                img.src = data.signedUrl;
+                card.appendChild(img);
+            } else {
+                const note = document.createElement("div");
+                note.className = "gallery-text";
+                note.textContent = "Image unavailable";
+                card.appendChild(note);
+            }
+        } else if (bucket === "audio" && item.storage_path) {
+            const { data, error } = await supabaseClient.storage
+                .from("audio")
+                .createSignedUrl(item.storage_path, 3600);
+            if (!error && data?.signedUrl) {
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.preload = "none";
+                audio.src = data.signedUrl;
+                card.appendChild(audio);
+            } else {
+                const note = document.createElement("div");
+                note.className = "gallery-text";
+                note.textContent = "Audio unavailable";
+                card.appendChild(note);
+            }
+        } else {
+            const text = document.createElement("div");
+            text.className = "gallery-text";
+            text.textContent = word || "Text item";
+            card.appendChild(text);
+        }
+
+        gallery.appendChild(card);
+    }
+}
+
+/* =========================================
    DISPLAY CURRENT ITEM
 ========================================= */
 
@@ -795,6 +867,7 @@ async function handleMissingMediaItem(item) {
     }
 
     mediaFailureBeingHandled = false;
+    await renderItemGallery();
     await displayItem();
 }
 
@@ -1074,6 +1147,7 @@ async function initialize() {
             document.getElementById("loadingBox").classList.add("hidden");
             document.getElementById("workspace").style.display = "block";
 
+            await renderItemGallery();
             await displayItem();
             await loadBalance();
             startTaskMonitor();
