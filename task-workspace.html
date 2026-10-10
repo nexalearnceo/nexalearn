@@ -6,71 +6,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#06101d">
 <title>NexaLearn - Task Workspace</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root {
     --bg: #06101d;
     --panel: #0d1c2e;
-    --panel2: #10243a;
-    --border: #203750;
-    --text: #f3f7fc;
-    --muted: #9fb0c4;
+    --panel2: #102740;
+    --border: #233b54;
     --green: #4ade80;
-    --blue: #60a5fa;
+    --text: #f5f8fc;
+    --muted: #a8b8ca;
     --red: #fca5a5;
 }
 * { box-sizing: border-box; }
 
 body {
     margin: 0;
-    font-family: Inter, Arial, sans-serif;
-    background:
-        radial-gradient(ellipse at top right, #112b43 0%, transparent 42%),
-        var(--bg);
-    color: var(--text);
     min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(ellipse at top right, #122c44 0%, transparent 45%),
+        var(--bg);
 }
 
 header {
-    min-height: 72px;
+    min-height: 70px;
+    padding: 14px max(18px, calc((100% - 1080px)/2));
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px max(18px, calc((100% - 1120px)/2));
-    background: rgba(8, 22, 38, .94);
-    border-bottom: 1px solid var(--border);
     gap: 15px;
+    background: #091728;
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
-    z-index: 10;
-    backdrop-filter: blur(12px);
+    z-index: 5;
 }
 
-.logo { font-size: 23px; font-weight: 800; letter-spacing: -.7px; }
+.logo {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
 .logo span { color: var(--green); }
 
 .back-btn {
     text-decoration: none;
-    color: var(--text);
+    color: white;
     background: var(--panel2);
     border: 1px solid var(--border);
-    padding: 10px 15px;
+    padding: 11px 15px;
     border-radius: 10px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: bold;
 }
 
-.back-btn:hover { border-color: var(--green); }
-
 .container {
-    width: min(100% - 32px, 1000px);
-    margin: 30px auto 60px;
+    width: min(100% - 30px, 1000px);
+    margin: 28px auto 60px;
 }
 
 .loading, .error, .success {
-    padding: 28px;
-    border-radius: 16px;
+    padding: 25px;
+    border-radius: 15px;
     text-align: center;
     line-height: 1.7;
 }
@@ -84,71 +85,54 @@ header {
 .spinner {
     width: 30px;
     height: 30px;
-    border: 3px solid #284059;
+    margin: 0 auto 12px;
+    border: 3px solid #29425b;
     border-top-color: var(--green);
     border-radius: 50%;
-    margin: 0 auto 13px;
     animation: spin .8s linear infinite;
 }
-
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .error {
-    background: #30171d;
-    border: 1px solid #71313b;
+    background: #32171d;
+    border: 1px solid #743540;
     color: var(--red);
+    overflow-wrap: anywhere;
 }
-
 .success {
-    background: #0b2c20;
-    border: 1px solid #176744;
+    background: #0c3021;
+    border: 1px solid #1d744b;
     color: #a7f3c5;
 }
 
 .workspace { display: none; }
 
+.task-header {
+    background: linear-gradient(125deg, #112c44, #0d1c2e);
+    border: 1px solid #28455f;
+    padding: 28px;
+    border-radius: 19px;
+    margin-bottom: 18px;
+}
+
 .eyebrow {
     color: var(--green);
-    text-transform: uppercase;
-    letter-spacing: 1.7px;
     font-size: 11px;
-    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    font-weight: bold;
     margin-bottom: 10px;
-}
-
-.task-header {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(125deg, #102b42, #0d1c2e 65%);
-    border: 1px solid #25435c;
-    padding: 30px;
-    border-radius: 20px;
-    margin-bottom: 18px;
-    box-shadow: 0 16px 45px rgba(0,0,0,.14);
-}
-
-.task-header::after {
-    content: "";
-    position: absolute;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    background: rgba(74,222,128,.055);
-    right: -65px;
-    top: -80px;
-    pointer-events: none;
 }
 
 .header-row {
     display: flex;
-    align-items: flex-start;
     justify-content: space-between;
+    align-items: flex-start;
     gap: 20px;
 }
 
 .task-header h1 {
     font-size: clamp(25px, 4vw, 34px);
-    letter-spacing: -.8px;
     margin: 0 0 10px;
     overflow-wrap: anywhere;
 }
@@ -156,34 +140,30 @@ header {
 .description {
     color: var(--muted);
     line-height: 1.75;
-    max-width: 650px;
-    overflow-wrap: anywhere;
 }
 
 .reward-badge {
     flex-shrink: 0;
-    padding: 12px 15px;
+    padding: 13px 16px;
+    border: 1px solid #286345;
     border-radius: 13px;
-    background: rgba(74,222,128,.1);
-    border: 1px solid rgba(74,222,128,.27);
+    background: #0b2b20;
     color: var(--green);
-    font-weight: 800;
+    font-weight: bold;
     white-space: nowrap;
 }
-
 .reward-badge small {
     display: block;
-    color: #b7d9c5;
     font-size: 10px;
-    margin-bottom: 5px;
+    color: #b8d8c5;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-bottom: 5px;
 }
 
 .progress-box, .item-card {
-    background: rgba(13,28,46,.94);
+    background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: 17px;
     padding: 23px;
     margin-bottom: 18px;
 }
@@ -193,81 +173,76 @@ header {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 14px;
 }
-
-.progress-top strong { font-size: 15px; }
-.progress-top span { font-size: 13px; color: var(--muted); }
+.progress-top span {
+    color: var(--muted);
+    font-size: 13px;
+}
 
 .progress-bar {
     height: 9px;
-    background: #1b3047;
-    border-radius: 30px;
+    background: #1a3047;
+    border-radius: 20px;
     overflow: hidden;
 }
-
 .progress-fill {
     height: 100%;
     width: 0;
     background: linear-gradient(90deg, #22c55e, #86efac);
-    border-radius: inherit;
     transition: width .3s ease;
 }
-
 .progress-note {
     color: var(--muted);
     font-size: 12px;
-    margin-top: 11px;
+    margin-top: 10px;
 }
 
 .item-top {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 17px;
 }
-
-.item-title { font-size: 19px; font-weight: 800; }
+.item-title { font-size: 19px; font-weight: bold; }
 
 .item-chip {
+    background: #132c45;
+    border: 1px solid #2b4968;
     color: #b9d7ff;
-    background: #132b46;
-    border: 1px solid #284769;
-    border-radius: 20px;
     padding: 6px 10px;
+    border-radius: 20px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: bold;
 }
 
 .instruction {
     color: var(--muted);
-    font-size: 14px;
     line-height: 1.7;
-    margin: -5px 0 18px;
+    font-size: 14px;
 }
 
 .word-box {
+    min-height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 125px;
-    padding: 25px;
-    margin-bottom: 22px;
     text-align: center;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     background: #071522;
     border: 1px solid #29415b;
-    border-radius: 14px;
-    font-size: clamp(22px, 4vw, 30px);
-    font-weight: 700;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
+    border-radius: 13px;
+    padding: 24px;
+    margin: 18px 0;
+    font-size: clamp(21px, 4vw, 29px);
+    line-height: 1.6;
 }
 
 .media-container {
-    margin: 18px 0 22px;
+    margin: 20px 0;
     text-align: center;
 }
 
@@ -277,26 +252,25 @@ header {
     max-height: 480px;
     object-fit: contain;
     margin: 0 auto;
-    border-radius: 13px;
     border: 1px solid var(--border);
+    border-radius: 13px;
     background: #071522;
 }
 
 .audio-box {
-    padding: 24px;
-    border-radius: 14px;
+    padding: 22px;
+    border-radius: 13px;
+    border: 1px solid var(--border);
     background: #071522;
-    border: 1px solid #29415b;
 }
-
-.audio-icon { font-size: 30px; margin-bottom: 12px; }
-audio { width: 100%; }
+.audio-icon { font-size: 34px; margin-bottom: 10px; }
+audio { display: block; width: 100%; margin-top: 15px; }
 
 .field-label {
     display: block;
-    font-weight: 700;
+    margin: 22px 0 10px;
+    font-weight: bold;
     font-size: 14px;
-    margin: 20px 0 10px;
 }
 
 textarea {
@@ -304,26 +278,31 @@ textarea {
     width: 100%;
     min-height: 140px;
     resize: vertical;
-    padding: 16px;
+    padding: 15px;
     border-radius: 12px;
     border: 1px solid #29415b;
     background: #071522;
     color: white;
     font: inherit;
-    font-size: 15px;
-    line-height: 1.7;
+    line-height: 1.6;
     outline: none;
-    transition: border-color .2s, box-shadow .2s;
 }
-
 textarea:focus {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(74,222,128,.09);
+    box-shadow: 0 0 0 3px #4ade8018;
 }
-
 textarea::placeholder { color: #71869c; }
 
-.field-hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.hint, .status-message {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+    margin-top: 10px;
+    overflow-wrap: anywhere;
+}
+
+.status-message:empty { display: none; }
+.status-message.problem { color: #fbbf24; }
 
 .buttons {
     display: flex;
@@ -332,66 +311,52 @@ textarea::placeholder { color: #71869c; }
 }
 
 button {
-    min-height: 48px;
-    border: 0;
-    cursor: pointer;
+    min-height: 47px;
     padding: 13px 20px;
-    border-radius: 11px;
+    border: 0;
+    border-radius: 10px;
     font-size: 14px;
-    font-weight: 800;
-    transition: transform .15s, filter .15s, opacity .15s;
+    font-weight: bold;
+    cursor: pointer;
 }
-
-button:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
 button:disabled { opacity: .55; cursor: wait; }
 
 .submit-btn {
     flex: 1;
-    color: #04140a;
     background: linear-gradient(100deg, #4ade80, #86efac);
+    color: #06140b;
 }
-
 .next-btn {
     flex: 1;
-    color: white;
     background: linear-gradient(100deg, #2563eb, #3b82f6);
+    color: white;
+}
+.retry-btn {
+    background: #20364d;
+    color: white;
+    margin-top: 12px;
 }
 
 .balance-box {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     gap: 15px;
     margin-top: 22px;
     padding: 18px;
     background: #071522;
     border: 1px solid #1e344a;
-    border-radius: 13px;
+    border-radius: 12px;
 }
-
 .balance-box span { color: var(--muted); font-size: 13px; }
 .balance-box strong { color: var(--green); font-size: 22px; }
 
-.status-message {
-    margin-top: 14px;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.6;
-}
-
 .hidden { display: none !important; }
 
-.retry-btn {
-    margin-top: 10px;
-    background: #20354b;
-    color: white;
-}
-
 @media(max-width: 650px) {
-    header { padding: 13px 16px; min-height: 64px; }
-    .logo { font-size: 20px; }
+    header { padding: 13px 15px; }
     .container { width: calc(100% - 22px); margin-top: 18px; }
-    .task-header, .item-card, .progress-box { padding: 18px; border-radius: 15px; }
+    .task-header, .item-card, .progress-box { padding: 18px; }
     .header-row { flex-direction: column; }
     .reward-badge { align-self: flex-start; }
     .buttons { flex-direction: column; }
@@ -410,7 +375,7 @@ button:disabled { opacity: .55; cursor: wait; }
     <div id="loadingBox" class="loading">
         <div class="spinner"></div>
         <strong>Preparing your workspace</strong>
-        <div>Loading your task and first item...</div>
+        <div>Loading task information...</div>
     </div>
 
     <div id="errorBox" class="error hidden" role="alert"></div>
@@ -420,7 +385,7 @@ button:disabled { opacity: .55; cursor: wait; }
             <div class="eyebrow">NexaLearn Task Workspace</div>
             <div class="header-row">
                 <div>
-                    <h1 id="taskTitle">Your Task</h1>
+                    <h1 id="taskTitle">Task</h1>
                     <div id="taskDescription" class="description"></div>
                 </div>
                 <div class="reward-badge">
@@ -438,7 +403,7 @@ button:disabled { opacity: .55; cursor: wait; }
             <div class="progress-bar">
                 <div id="progressFill" class="progress-fill"></div>
             </div>
-            <div id="progressNote" class="progress-note">Let's get started.</div>
+            <div id="progressNote" class="progress-note"></div>
         </div>
 
         <div id="itemCard" class="item-card">
@@ -448,28 +413,28 @@ button:disabled { opacity: .55; cursor: wait; }
             </div>
 
             <p id="instruction" class="instruction">
-                Review the item and provide your answer below.
+                Review the item and enter your answer below.
             </p>
 
             <div id="wordContainer" class="word-box hidden"></div>
 
             <div id="imageContainer" class="media-container hidden">
-                <img id="taskImage" alt="Image annotation item">
+                <img id="taskImage" alt="Image annotation task">
             </div>
 
             <div id="audioContainer" class="media-container hidden">
                 <div class="audio-box">
                     <div class="audio-icon">🎧</div>
-                    <p>Listen carefully to the audio before answering.</p>
-                    <audio id="taskAudio" controls preload="none"></audio>
+                    <strong>Listen to the audio</strong>
+                    <audio id="taskAudio" controls preload="metadata"></audio>
                 </div>
             </div>
 
-            <label class="field-label" for="answerInput">Your answer</label>
+            <label for="answerInput" class="field-label">Your answer</label>
             <textarea id="answerInput"
                 placeholder="Type your answer here..."
                 autocomplete="off"></textarea>
-            <div class="field-hint">Check your answer before submitting.</div>
+            <div class="hint">Check your answer before submitting.</div>
 
             <div class="buttons">
                 <button id="submitBtn" class="submit-btn" type="button">
@@ -491,9 +456,9 @@ button:disabled { opacity: .55; cursor: wait; }
         <div id="successBox" class="success hidden">
             <div style="font-size:42px">🎉</div>
             <h2>Workspace Completed!</h2>
-            <p>You have worked through all available items in this task.</p>
-            <p>Your final wallet balance: <strong id="finalBalance">KSh 0.00</strong></p>
-            <p style="font-size:13px">Rewards are subject to the result confirmed by NexaLearn's server.</p>
+            <p>You have worked through all items in this task.</p>
+            <p>Current wallet balance: <strong id="finalBalance">KSh 0.00</strong></p>
+            <p>Rewards are subject to confirmation by the server.</p>
             <button id="backToTasksBtn" class="next-btn" type="button">
                 Back to Tasks
             </button>
@@ -502,9 +467,9 @@ button:disabled { opacity: .55; cursor: wait; }
 </main>
 
 <script>
-/* ================================
+/* =========================================
    SUPABASE CONFIGURATION
-================================ */
+========================================= */
 const SUPABASE_URL = "https://vzgrzzesquqnftfhchwt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
@@ -512,6 +477,8 @@ const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+const $ = id => document.getElementById(id);
 
 let currentUser = null;
 let currentTask = null;
@@ -521,17 +488,21 @@ let currentAttempt = null;
 let monitoringTimer = null;
 let submissionInProgress = false;
 let mediaLoadToken = 0;
+let skippingMedia = false;
 
-/* Cache signed URLs for the current page session. */
 const mediaUrlCache = new Map();
-
-const $ = id => document.getElementById(id);
 
 function formatMoney(value) {
     return Number(value || 0).toLocaleString("en-KE", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
+}
+
+function redirectToTasks() {
+    localStorage.removeItem("nexaLearnCurrentTaskId");
+    localStorage.removeItem("nexaLearnCurrentTask");
+    window.location.replace("tasks.html");
 }
 
 function showError(message) {
@@ -541,37 +512,53 @@ function showError(message) {
     $("errorBox").classList.remove("hidden");
 }
 
-function redirectToTasks() {
-    localStorage.removeItem("nexaLearnCurrentTaskId");
-    localStorage.removeItem("nexaLearnCurrentTask");
-    window.location.replace("tasks.html");
+function showStatus(message, problem = false) {
+    $("statusMessage").textContent = message;
+    $("statusMessage").classList.toggle("problem", problem);
 }
 
-function getTaskId() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("id") ||
-        localStorage.getItem("nexaLearnCurrentTaskId");
-}
+/* =========================================
+   IDENTIFY MEDIA TYPE AND STORAGE BUCKET
 
+   Expected bucket names: images and audio.
+   storage_path should be the path inside that
+   bucket, not a complete URL.
+========================================= */
 function getStorageBucket(item) {
     if (!item) return null;
 
-    const type = String(item.content_type || "").toLowerCase();
+    const type = String(
+        item.content_type || item.media_type || item.type || ""
+    ).trim().toLowerCase();
 
-    if (type === "image") return "images";
-    if (type === "audio") return "audio";
+    const category = String(
+        currentTask?.category || ""
+    ).trim().toLowerCase();
 
-    if (
-        String(currentTask?.category || "").toLowerCase().includes("audio") &&
-        item.storage_path
-    ) return "audio";
+    const title = String(
+        currentTask?.title || ""
+    ).trim().toLowerCase();
+
+    const combined = `${type} ${category} ${title}`;
+
+    if (/\b(image|images|photo|picture|visual)\b/.test(combined)) {
+        return "images";
+    }
+
+    if (/\b(audio|sound|speech|recording|transcription)\b/.test(combined)) {
+        return "audio";
+    }
 
     return null;
 }
 
-/* ================================
+function isHttpUrl(value) {
+    return /^https?:\/\//i.test(String(value || "").trim());
+}
+
+/* =========================================
    AUTHENTICATION
-================================ */
+========================================= */
 async function loadUser() {
     const { data, error } = await supabaseClient.auth.getUser();
 
@@ -583,9 +570,9 @@ async function loadUser() {
     currentUser = data.user;
 }
 
-/* ================================
+/* =========================================
    LOAD TASK
-================================ */
+========================================= */
 async function loadTask(taskId) {
     const { data, error } = await supabaseClient
         .from("tasks")
@@ -597,7 +584,7 @@ async function loadTask(taskId) {
     if (error) throw error;
 
     if (!data) {
-        const err = new Error("This task is no longer available.");
+        const err = new Error("This task is not available or is no longer active.");
         err.code = "TASK_UNAVAILABLE";
         throw err;
     }
@@ -605,8 +592,9 @@ async function loadTask(taskId) {
     currentTask = data;
 
     $("taskTitle").textContent = data.title || "NexaLearn Task";
-    $("taskDescription").textContent = data.description ||
-        "Complete the item below and submit your answer.";
+    $("taskDescription").textContent =
+        data.description || "Complete the item below and submit your answer.";
+
     $("taskReward").textContent =
         `KSh ${formatMoney(data.reward ?? 50)}`;
 
@@ -614,25 +602,24 @@ async function loadTask(taskId) {
 
     if (category.includes("image")) {
         $("instruction").textContent =
-            "Study the image and identify or describe what you see.";
+            "Study the image and provide an accurate annotation describing what is shown.";
     } else if (category.includes("audio")) {
         $("instruction").textContent =
-            "Listen to the audio and enter the requested transcription or label.";
+            "Listen carefully to the audio and enter the requested transcription or annotation.";
     } else if (category.includes("translation")) {
         $("instruction").textContent =
-            "Read the source text and enter your requested translation.";
+            "Read the source text and provide the requested translation.";
     } else {
         $("instruction").textContent =
-            "Read the displayed content and provide the requested label or answer.";
+            "Review the displayed content and provide the requested answer.";
     }
 }
 
-/* ================================
-   LOAD ITEM LIST QUICKLY
+/* =========================================
+   LOAD ITEM METADATA QUICKLY
 
-   Do not sign or validate every media file
-   before displaying the first item.
-================================ */
+   No upfront Storage checks for every item.
+========================================= */
 async function loadItems() {
     const { data, error } = await supabaseClient
         .from("task_items")
@@ -645,15 +632,15 @@ async function loadItems() {
     currentItems = data || [];
 
     if (!currentItems.length) {
-        const err = new Error("This task currently has no available items.");
+        const err = new Error("This task currently has no items in task_items.");
         err.code = "TASK_UNAVAILABLE";
         throw err;
     }
 }
 
-/* ================================
+/* =========================================
    LOAD OR RESUME ATTEMPT
-================================ */
+========================================= */
 async function loadAttempt() {
     const { data, error } = await supabaseClient
         .from("task_attempts")
@@ -670,12 +657,12 @@ async function loadAttempt() {
     currentAttempt = data || null;
 
     if (currentAttempt) {
-        const savedNumber = Number(currentAttempt.current_item_number);
-        const savedIndex = currentItems.findIndex(
-            item => Number(item.item_number) === savedNumber
+        const number = Number(currentAttempt.current_item_number);
+        const index = currentItems.findIndex(
+            item => Number(item.item_number) === number
         );
 
-        if (savedIndex >= 0) currentItemIndex = savedIndex;
+        if (index >= 0) currentItemIndex = index;
     }
 }
 
@@ -698,9 +685,9 @@ async function createAttempt() {
     currentAttempt = data;
 }
 
-/* ================================
+/* =========================================
    FIND NEXT UNCOMPLETED ITEM
-================================ */
+========================================= */
 async function findNextItem() {
     if (!currentAttempt) return 0;
 
@@ -730,12 +717,12 @@ async function saveCurrentItemNumber() {
         .eq("id", currentAttempt.id)
         .eq("user_id", currentUser.id);
 
-    if (error) console.warn("Progress save warning:", error);
+    if (error) console.warn("Progress save error:", error);
 }
 
-/* ================================
-   WALLET
-================================ */
+/* =========================================
+   WALLET BALANCE
+========================================= */
 async function loadBalance() {
     const { data, error } = await supabaseClient
         .from("wallets")
@@ -755,17 +742,37 @@ async function loadBalance() {
     }
 }
 
-/* ================================
-   MEDIA URL LOADING
-================================ */
+/* =========================================
+   CREATE SIGNED URL ONLY WHEN NEEDED
+========================================= */
 async function getMediaUrl(item) {
     const bucket = getStorageBucket(item);
 
-    if (!bucket || !item.storage_path) {
-        throw new Error("The media file path is missing.");
+    if (!bucket) {
+        throw new Error(
+            `Could not identify the media type. content_type="${item.content_type || ""}", category="${currentTask?.category || ""}".`
+        );
     }
 
-    const cached = mediaUrlCache.get(item.id);
+    const path = String(item.storage_path || "").trim();
+
+    if (!path) {
+        throw new Error(
+            "This task item has no storage_path. Add the file's path inside the Supabase Storage bucket."
+        );
+    }
+
+    /*
+     * If storage_path is already a complete URL,
+     * use it directly. Private bucket URLs may still
+     * require a signed URL instead.
+     */
+    if (isHttpUrl(path)) {
+        return path;
+    }
+
+    const cacheKey = `${bucket}:${path}`;
+    const cached = mediaUrlCache.get(cacheKey);
 
     if (cached && cached.expiresAt > Date.now() + 60000) {
         return cached.url;
@@ -774,13 +781,25 @@ async function getMediaUrl(item) {
     const { data, error } = await supabaseClient
         .storage
         .from(bucket)
-        .createSignedUrl(item.storage_path, 3600);
+        .createSignedUrl(path, 3600);
 
-    if (error || !data?.signedUrl) {
-        throw error || new Error("Unable to access this media file.");
+    if (error) {
+        console.error("Supabase Storage error:", {
+            bucket,
+            storage_path: path,
+            error
+        });
+
+        throw new Error(
+            `Storage bucket "${bucket}" could not open "${path}": ${error.message}`
+        );
     }
 
-    mediaUrlCache.set(item.id, {
+    if (!data?.signedUrl) {
+        throw new Error("Supabase did not return a signed media URL.");
+    }
+
+    mediaUrlCache.set(cacheKey, {
         url: data.signedUrl,
         expiresAt: Date.now() + 3500000
     });
@@ -788,26 +807,26 @@ async function getMediaUrl(item) {
     return data.signedUrl;
 }
 
-/* ================================
+/* =========================================
    PROGRESS DISPLAY
-================================ */
-function updateProgress(completedCount) {
+========================================= */
+function updateProgress(completed) {
     const total = currentItems.length;
-    const completed = Math.min(Math.max(completedCount, 0), total);
-    const percentage = total ? (completed / total) * 100 : 0;
+    const count = Math.max(0, Math.min(completed, total));
 
-    $("progressText").textContent = `${completed} of ${total} completed`;
-    $("progressFill").style.width = `${percentage}%`;
+    $("progressText").textContent = `${count} of ${total} completed`;
+    $("progressFill").style.width =
+        `${total ? count / total * 100 : 0}%`;
 
-    const remaining = Math.max(total - completed, 0);
+    const remaining = total - count;
     $("progressNote").textContent = remaining
         ? `${remaining} item${remaining === 1 ? "" : "s"} remaining. Keep going!`
         : "All items completed.";
 }
 
-/* ================================
-   DISPLAY ONE ITEM
-================================ */
+/* =========================================
+   DISPLAY CURRENT ITEM
+========================================= */
 async function displayItem() {
     if (currentItemIndex >= currentItems.length) {
         await finishAttempt();
@@ -819,118 +838,147 @@ async function displayItem() {
 
     $("itemTitle").textContent =
         `Item ${currentItemIndex + 1} of ${currentItems.length}`;
+
     $("itemChip").textContent = "IN PROGRESS";
     $("answerInput").value = "";
-    $("statusMessage").textContent = "";
+    $("answerInput").disabled = false;
+    $("submitBtn").disabled = false;
+    $("submitBtn").textContent = "Submit Answer";
+    $("submitBtn").classList.remove("hidden");
+    $("nextBtn").classList.add("hidden");
 
+    showStatus("");
     updateProgress(currentItemIndex);
 
-    $("wordContainer").classList.add("hidden");
-    $("imageContainer").classList.add("hidden");
-    $("audioContainer").classList.add("hidden");
-
+    const wordBox = $("wordContainer");
+    const imageContainer = $("imageContainer");
+    const audioContainer = $("audioContainer");
     const image = $("taskImage");
+    const audio = $("taskAudio");
+
+    wordBox.textContent = "";
+    wordBox.classList.add("hidden");
+    imageContainer.classList.add("hidden");
+    audioContainer.classList.add("hidden");
+
+    image.onload = null;
     image.onerror = null;
     image.removeAttribute("src");
 
-    const audio = $("taskAudio");
     audio.onerror = null;
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
 
-    const type = String(item.content_type || "").toLowerCase();
-    const text = String(item.source_text ?? item.content ?? "").trim();
+    const type = String(
+        item.content_type || item.media_type || item.type || ""
+    ).toLowerCase();
+
+    const text = String(
+        item.source_text ?? item.content ?? item.text_content ?? ""
+    ).trim();
+
     const bucket = getStorageBucket(item);
 
-    if (text && type !== "image" && type !== "audio") {
-        $("wordContainer").textContent = text;
-        $("wordContainer").classList.remove("hidden");
+    /* Display a text item when appropriate. */
+    if (text && bucket !== "images" && bucket !== "audio") {
+        wordBox.textContent = text;
+        wordBox.classList.remove("hidden");
     }
 
-    if (bucket === "images" || bucket === "audio") {
-        $("statusMessage").textContent = "Loading media...";
-
-        try {
-            const url = await getMediaUrl(item);
-
-            /* Ignore late results if the user has moved to another item. */
-            if (token !== mediaLoadToken) return;
-
-            if (bucket === "images") {
-                image.onerror = () => handleMissingMediaItem(item);
-                image.src = url;
-                $("imageContainer").classList.remove("hidden");
-            } else {
-                audio.onerror = () => handleMissingMediaItem(item);
-                audio.src = url;
-                audio.load();
-                $("audioContainer").classList.remove("hidden");
-            }
-
-            $("statusMessage").textContent = "";
-        } catch (error) {
-            if (token !== mediaLoadToken) return;
-
-            console.warn("Media could not load:", error);
-            await handleMissingMediaItem(item);
+    /* Text-only item: no Storage request required. */
+    if (!bucket) {
+        if (text) {
+            showStatus("");
+            await saveCurrentItemNumber();
             return;
         }
-    } else if (!text) {
-        $("statusMessage").textContent =
-            "This item has no displayable content. Skipping to the next item.";
-        await handleMissingMediaItem(item);
+
+        showStatus(
+            `Cannot determine the content type for item ${item.item_number ?? item.id}. Check the task_items content_type and storage_path fields.`,
+            true
+        );
         return;
     }
 
-    await saveCurrentItemNumber();
-}
-
-/* ================================
-   SKIP UNAVAILABLE MEDIA
-================================ */
-let skippingMedia = false;
-
-async function handleMissingMediaItem(item) {
-    if (skippingMedia) return;
-    skippingMedia = true;
+    showStatus("Connecting to Supabase Storage...");
 
     try {
-        const index = currentItems.findIndex(row => row.id === item.id);
+        const url = await getMediaUrl(item);
 
-        if (index !== -1) {
-            currentItems.splice(index, 1);
-            mediaUrlCache.delete(item.id);
+        /* Ignore stale responses if the item has changed. */
+        if (token !== mediaLoadToken) return;
 
-            if (index < currentItemIndex) currentItemIndex--;
-            if (currentItemIndex > currentItems.length) {
-                currentItemIndex = currentItems.length;
-            }
+        if (bucket === "images") {
+            image.onload = () => {
+                if (token !== mediaLoadToken) return;
+                showStatus("");
+            };
+
+            image.onerror = () => {
+                if (token !== mediaLoadToken) return;
+
+                showStatus(
+                    "The image URL was returned, but the browser could not load the file. Check that the file exists and the storage_path is correct.",
+                    true
+                );
+            };
+
+            image.src = url;
+            imageContainer.classList.remove("hidden");
+            showStatus("Loading image file...");
+
+        } else if (bucket === "audio") {
+            audio.onloadedmetadata = () => {
+                if (token !== mediaLoadToken) return;
+                showStatus("Audio is ready. Press Play to listen.");
+            };
+
+            audio.onerror = () => {
+                if (token !== mediaLoadToken) return;
+
+                showStatus(
+                    "The audio URL was returned, but the browser could not play the file. Check the file path, format, and Storage access.",
+                    true
+                );
+            };
+
+            audio.src = url;
+            audio.load();
+            audioContainer.classList.remove("hidden");
+            showStatus("Loading audio file...");
         }
 
-        if (!currentItems.length) {
-            showError(
-                "No accessible items remain in this task. Please return to the task list or contact support."
-            );
-            return;
-        }
+        await saveCurrentItemNumber();
 
-        if (currentItemIndex >= currentItems.length) {
-            currentItemIndex = currentItems.length - 1;
-        }
+    } catch (error) {
+        if (token !== mediaLoadToken) return;
 
-        await displayItem();
-    } finally {
-        skippingMedia = false;
+        console.error("Media loading failed:", error);
+        showStatus(
+            `Media error: ${error.message || "Unknown error"}`,
+            true
+        );
     }
 }
 
-/* ================================
-   SUBMIT ANSWER
+/* =========================================
+   RETRY MEDIA
+========================================= */
+async function retryMedia() {
+    const item = currentItems[currentItemIndex];
+    if (!item) return;
 
-   The server RPC remains responsible for
-   confirming completion and crediting rewards.
-================================ */
+    mediaUrlCache.delete(
+        `${getStorageBucket(item)}:${item.storage_path}`
+    );
+
+    await displayItem();
+}
+
+/* =========================================
+   SUBMIT ANSWER AND REWARD
+========================================= */
 async function submitAnswer() {
     if (submissionInProgress) return;
 
@@ -953,11 +1001,9 @@ async function submitAnswer() {
     submissionInProgress = true;
 
     const button = $("submitBtn");
-    const nextButton = $("nextBtn");
-
     button.disabled = true;
-    button.textContent = "Submitting answer...";
-    $("statusMessage").textContent = "Saving your answer securely...";
+    button.textContent = "Submitting...";
+    showStatus("Submitting your answer securely...");
 
     try {
         const { error: attemptError } = await supabaseClient
@@ -993,39 +1039,40 @@ async function submitAnswer() {
 
         $("answerInput").disabled = true;
         $("itemChip").textContent = "SUBMITTED";
-        $("statusMessage").textContent =
-            "✓ Answer submitted and confirmed by the server.";
-
         button.classList.add("hidden");
-        nextButton.classList.remove("hidden");
+        $("nextBtn").classList.remove("hidden");
+
+        showStatus("✓ Your submission has been confirmed by the server.");
+
         await loadBalance();
 
     } catch (error) {
         console.error("Task submission error:", error);
 
-        $("statusMessage").textContent =
-            "Submission failed. Your answer has not been confirmed. Please try again.";
+        showStatus(
+            `Submission failed: ${error.message || "Please try again."}`,
+            true
+        );
 
-        alert(error?.message || "Unable to submit your answer. Please try again.");
+        alert(error?.message || "Unable to submit your answer.");
 
         button.disabled = false;
         button.textContent = "Submit Answer";
-        nextButton.classList.add("hidden");
+
     } finally {
         submissionInProgress = false;
     }
 }
 
-/* ================================
+/* =========================================
    NEXT ITEM
-================================ */
+========================================= */
 async function nextItem() {
     if (submissionInProgress) return;
 
     $("nextBtn").classList.add("hidden");
     $("submitBtn").classList.remove("hidden");
     $("submitBtn").disabled = false;
-    $("submitBtn").textContent = "Submit Answer";
     $("answerInput").disabled = false;
 
     try {
@@ -1041,16 +1088,18 @@ async function nextItem() {
 
     } catch (error) {
         console.error("Next item error:", error);
-        $("statusMessage").textContent =
-            "Could not load the next item. Please try again.";
+        showStatus(
+            `Could not load the next item: ${error.message || "Please try again."}`,
+            true
+        );
         $("nextBtn").classList.remove("hidden");
         $("submitBtn").classList.add("hidden");
     }
 }
 
-/* ================================
+/* =========================================
    FINISH ATTEMPT
-================================ */
+========================================= */
 async function finishAttempt() {
     if (monitoringTimer) {
         clearInterval(monitoringTimer);
@@ -1065,7 +1114,7 @@ async function finishAttempt() {
             .eq("user_id", currentUser.id);
 
         if (error) {
-            console.warn("Attempt status update warning:", error);
+            console.warn("Could not update attempt status:", error);
         }
     }
 
@@ -1077,9 +1126,9 @@ async function finishAttempt() {
     await loadBalance();
 }
 
-/* ================================
+/* =========================================
    MONITOR TASK STATUS
-================================ */
+========================================= */
 function startTaskMonitor() {
     if (monitoringTimer) clearInterval(monitoringTimer);
 
@@ -1102,28 +1151,23 @@ function startTaskMonitor() {
     }, 20000);
 }
 
-/* ================================
-   INITIALIZE
-================================ */
+/* =========================================
+   INITIALIZE WORKSPACE
+========================================= */
 async function initialize() {
-    const startedAt = performance.now();
+    const params = new URLSearchParams(window.location.search);
+    const taskId =
+        params.get("id") ||
+        localStorage.getItem("nexaLearnCurrentTaskId");
+
+    if (!taskId) {
+        redirectToTasks();
+        return;
+    }
 
     try {
-        const taskId = getTaskId();
-
-        if (!taskId) {
-            redirectToTasks();
-            return;
-        }
-
         await loadUser();
         await loadTask(taskId);
-
-        /*
-         * Fetch item metadata and active attempt together.
-         * The item list is no longer blocked by signed URL
-         * checks for every image/audio file.
-         */
         await loadItems();
         await loadAttempt();
         await createAttempt();
@@ -1142,40 +1186,34 @@ async function initialize() {
             startTaskMonitor();
         }
 
-        console.log(
-            `NexaLearn workspace initialized in ${Math.round(performance.now() - startedAt)} ms`
-        );
+        console.log("Workspace ready", {
+            taskId: currentTask.id,
+            itemCount: currentItems.length,
+            category: currentTask.category
+        });
 
     } catch (error) {
         console.error("Workspace initialization error:", error);
 
         if (error?.message === "USER_NOT_AUTHENTICATED") return;
 
-        if (
-            error?.code === "TASK_UNAVAILABLE" ||
-            error?.message === "TASK_UNAVAILABLE"
-        ) {
-            showError(error.message || "This task is not available.");
-            const back = document.createElement("button");
-            back.className = "retry-btn";
-            back.textContent = "Back to Tasks";
-            back.onclick = redirectToTasks;
-            $("errorBox").appendChild(document.createElement("br"));
-            $("errorBox").appendChild(back);
-            return;
-        }
-
         showError(
-            "The workspace could not load. Check your connection and Supabase settings, then try again. " +
-            (error?.message || "")
+            error?.message ||
+            "The workspace could not connect to Supabase."
         );
 
-        const retry = document.createElement("button");
-        retry.className = "retry-btn";
-        retry.textContent = "Reload Workspace";
-        retry.onclick = () => window.location.reload();
+        const button = document.createElement("button");
+        button.className = "retry-btn";
+        button.textContent = "Reload Workspace";
+        button.onclick = () => window.location.reload();
         $("errorBox").appendChild(document.createElement("br"));
-        $("errorBox").appendChild(retry);
+        $("errorBox").appendChild(button);
+
+        const back = document.createElement("button");
+        back.className = "retry-btn";
+        back.textContent = "Back to Tasks";
+        back.onclick = redirectToTasks;
+        $("errorBox").appendChild(back);
     }
 }
 
