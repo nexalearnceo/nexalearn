@@ -303,9 +303,17 @@ button {
         <div id="successBox" class="success hidden">
             <h2>🎉 Task Completed!</h2>
             <p>Your earnings have been added to your wallet.</p>
-            <button class="next-btn" onclick="window.location.href='tasks.html'">
-                Back to Tasks
-            </button>
+            <p>You can redo this task as many times as you want while your package remains active.</p>
+
+            <div class="buttons">
+                <button class="submit-btn" onclick="redoTask()">
+                    ↻ Redo This Task
+                </button>
+
+                <button class="next-btn" onclick="window.location.href='tasks.html'">
+                    Back to Tasks
+                </button>
+            </div>
         </div>
 
     </div>
@@ -1036,6 +1044,23 @@ function startTaskMonitor() {
             console.warn("Task monitor error:", error);
         }
     }, 10000);
+}
+
+/* =========================================
+   REDO THE SAME TASK
+   Reloading the task creates a fresh attempt because
+   loadAttempt() only resumes attempts whose status is active.
+========================================= */
+
+function redoTask() {
+    if (!currentTask?.id) {
+        alert("Task information is unavailable. Please reload the page.");
+        return;
+    }
+
+    const taskId = currentTask.id;
+    window.location.href =
+        window.location.pathname + "?id=" + encodeURIComponent(taskId);
 }
 
 /* =========================================
