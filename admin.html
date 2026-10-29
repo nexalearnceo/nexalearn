@@ -1,3 +1,4 @@
+```html
 
 <!DOCTYPE html>
 
@@ -877,33 +878,65 @@
     </section>
 
     <section class="section" id="withdrawals">
+
       <div class="table-card">
+
         <div class="table-header">
+
           <h2>Withdrawal Requests</h2>
+
           <p>Review and process user withdrawal requests.</p>
+
         </div>
+
         <div class="table-wrapper">
+
           <table>
+
             <thead>
+
               <tr>
+
+                <th>User</th>
+
                 <th>Amount</th>
+
                 <th>Method</th>
+
+                <th>Account</th>
+
                 <th>Status</th>
+
                 <th>Date</th>
+
                 <th>Action</th>
+
               </tr>
+
             </thead>
+
             <tbody id="withdrawalTable">
+
               <tr>
-                <td colspan="5" class="empty">
+
+                <td colspan="7" class="empty">
+
                   Loading withdrawal requests...
+
                 </td>
+
               </tr>
+
             </tbody>
+
           </table>
+
         </div>
+
       </div>
+
     </section>
+
 
     <!-- Added: send a manual notification to one specific user -->
     <section class="section" id="notifications">
@@ -1455,66 +1488,139 @@
   ====================================================== */
 
   async function loadWithdrawals() {
+
     const table = document.getElementById("withdrawalTable");
 
-    const { data, error } = await supabaseClient
+    const {
+
+      data,
+
+      error
+
+    } = await supabaseClient
+
       .from("withdrawal_requests")
+
       .select("*")
-      .order("created_at", { ascending: false });
+
+      .order("created_at", {
+
+        ascending: false
+
+      });
 
     if (error) {
+
       console.error("Withdrawal error:", error);
+
       table.innerHTML =
-        '<tr><td colspan="5" class="empty">' +
+
+        '<tr><td colspan="7" class="empty">' +
+
         "Unable to load withdrawals: " +
+
         escapeHtml(error.message) +
+
         "</td></tr>";
+
       return;
+
     }
 
     if (!data || data.length === 0) {
+
       table.innerHTML =
-        '<tr><td colspan="5" class="empty">' +
+
+        '<tr><td colspan="7" class="empty">' +
+
         "No withdrawal requests found." +
+
         "</td></tr>";
+
       return;
+
     }
 
     table.innerHTML = "";
 
     for (const item of data) {
-      const status = String(item.status || "pending").toLowerCase();
+
+      const status = String(item.status || "pending")
+
+        .toLowerCase();
+
       const row = document.createElement("tr");
 
       row.innerHTML = `
+
+        <td>${escapeHtml(item.user_id || "-")}</td>
+
         <td>${money(item.amount)}</td>
+
         <td>${escapeHtml(item.method || "-")}</td>
+
+        <td>${escapeHtml(
+
+          item.account_number ||
+
+          item.phone_number ||
+
+          item.account ||
+
+          "-"
+
+        )}</td>
+
         <td>
+
           <span class="status ${escapeHtml(status)}">
+
             ${escapeHtml(item.status || "pending")}
+
           </span>
+
         </td>
+
         <td>${formatDate(item.created_at)}</td>
+
         <td>
+
           ${
+
             status === "pending"
+
               ? `
+
                 <button
+
                   class="action-btn approve-btn"
+
                   onclick="approveWithdrawal('${escapeHtml(item.id)}')"
+
                 >Approve</button>
+
                 <button
+
                   class="action-btn reject-btn"
+
                   onclick="rejectWithdrawal('${escapeHtml(item.id)}')"
+
                 >Reject</button>
+
               `
+
               : "-"
+
           }
+
         </td>
+
       `;
 
       table.appendChild(row);
+
     }
+
   }
 
   /* =====================================================
@@ -1924,3 +2030,5 @@
 </body>
 
 </html>
+
+```
