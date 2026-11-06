@@ -253,7 +253,6 @@
 <body>
 
 <div class="topbar">
-
     <div class="logo">
         Nexa<span>Learn</span>
     </div>
@@ -261,20 +260,17 @@
     <a href="dashboard.html" class="back-link">
         ← Dashboard
     </a>
-
 </div>
 
 <div class="container">
 
     <div class="page-header">
-
         <h1>Available Tasks</h1>
 
         <p>
             Complete available tasks and earn KSh 50 for every verified submission.
             Rewards are credited immediately.
         </p>
-
     </div>
 
     <div class="filters">
@@ -332,7 +328,7 @@ const supabaseClient =
                 persistSession: true,
                 autoRefreshToken: true,
                 detectSessionInUrl: true,
-                storageKey: "nexaLearn-auth"
+                storageKey: "nexalearn-auth"
             }
         }
     );
@@ -343,15 +339,10 @@ const supabaseClient =
    ========================================================= */
 
 let currentUser = null;
-
 let allTasks = [];
-
 let currentCategory = "All";
-
 let userPackages = [];
-
 let redirectingToLogin = false;
-
 let loadingTasks = false;
 
 
@@ -375,10 +366,7 @@ const tasksGrid =
 
 function escapeHtml(value) {
 
-    if (
-        value === null ||
-        value === undefined
-    ) {
+    if (value === null || value === undefined) {
         return "";
     }
 
@@ -418,10 +406,6 @@ function redirectToLogin() {
 
 async function getCurrentUser() {
 
-    /*
-     * First check the existing authenticated session.
-     */
-
     const {
         data: sessionData,
         error: sessionError
@@ -431,23 +415,12 @@ async function getCurrentUser() {
         throw sessionError;
     }
 
-    /*
-     * If there is no session, return to login.
-     */
-
-    if (
-        !sessionData ||
-        !sessionData.session
-    ) {
+    if (!sessionData?.session) {
 
         redirectToLogin();
 
         return null;
     }
-
-    /*
-     * Verify the authenticated user.
-     */
 
     const {
         data,
@@ -458,10 +431,7 @@ async function getCurrentUser() {
         throw error;
     }
 
-    if (
-        !data ||
-        !data.user
-    ) {
+    if (!data?.user) {
 
         redirectToLogin();
 
@@ -536,11 +506,6 @@ function getPackageAccessStatus(taskCategory) {
                 return false;
             }
 
-            /*
-             * Category-specific packages must match.
-             * Legacy general packages have category NULL.
-             */
-
             return (
                 packageDetails.category === taskCategory ||
                 packageDetails.category === null
@@ -568,9 +533,7 @@ function getPackageAccessStatus(taskCategory) {
                 );
 
             const completedTasks =
-                Number(
-                    up.completed_tasks || 0
-                );
+                Number(up.completed_tasks || 0);
 
             return completedTasks < allowedTasks;
 
@@ -590,24 +553,15 @@ function getPackageAccessStatus(taskCategory) {
 async function startTask(taskId) {
 
     if (!taskId) {
-
         alert("Task ID is missing.");
-
         return;
     }
 
     if (!currentUser) {
-
         alert("Please sign in again.");
-
         redirectToLogin();
-
         return;
     }
-
-    /*
-     * Refresh package access before opening a task.
-     */
 
     try {
 
@@ -615,10 +569,7 @@ async function startTask(taskId) {
 
     } catch (error) {
 
-        console.error(
-            "Package access error:",
-            error
-        );
+        console.error("Package access error:", error);
 
         alert(
             "Unable to verify your package access. Please try again."
@@ -629,21 +580,16 @@ async function startTask(taskId) {
 
     const selectedTask =
         allTasks.find(
-            task =>
-                String(task.id) === String(taskId)
+            task => String(task.id) === String(taskId)
         );
 
     if (!selectedTask) {
-
         alert("This task is no longer available.");
-
         return;
     }
 
     const accessStatus =
-        getPackageAccessStatus(
-            selectedTask.category
-        );
+        getPackageAccessStatus(selectedTask.category);
 
     if (accessStatus !== "allowed") {
 
@@ -655,10 +601,6 @@ async function startTask(taskId) {
 
         return;
     }
-
-    /*
-     * Verify task is still active in Supabase.
-     */
 
     const {
         data: task,
@@ -683,9 +625,7 @@ async function startTask(taskId) {
 
     if (!task) {
 
-        localStorage.removeItem(
-            "nexaLearnCurrentTaskId"
-        );
+        localStorage.removeItem("nexaLearnCurrentTaskId");
 
         alert("This task is no longer available.");
 
@@ -694,23 +634,13 @@ async function startTask(taskId) {
         return;
     }
 
-    /*
-     * Save current task.
-     */
-
     localStorage.setItem(
         "nexaLearnCurrentTaskId",
         taskId
     );
 
-    /*
-     * Verify saved task ID.
-     */
-
     const savedTaskId =
-        localStorage.getItem(
-            "nexaLearnCurrentTaskId"
-        );
+        localStorage.getItem("nexaLearnCurrentTaskId");
 
     if (savedTaskId !== String(taskId)) {
 
@@ -719,12 +649,7 @@ async function startTask(taskId) {
         return;
     }
 
-    /*
-     * Open workspace.
-     */
-
-    window.location.href =
-        "/task-workspace";
+    window.location.href = "/task-workspace";
 
 }
 
@@ -752,25 +677,13 @@ async function loadTasks() {
 
         tasksGrid.innerHTML = "";
 
-        /*
-         * Get logged-in user.
-         */
-
         currentUser = await getCurrentUser();
 
         if (!currentUser) {
             return;
         }
 
-        /*
-         * Load package allowances.
-         */
-
         await loadUserPackages(currentUser.id);
-
-        /*
-         * ONLY ACTIVE TASKS ARE LOADED.
-         */
 
         const {
             data,
@@ -796,35 +709,23 @@ async function loadTasks() {
             throw error;
         }
 
-        allTasks =
-            (data || []).filter(
-                task =>
-                    String(task.status || "").toLowerCase() === "active"
-            );
-
-        /*
-         * Remove saved task ID if no longer active.
-         */
+        allTasks = (data || []).filter(
+            task =>
+                String(task.status || "").toLowerCase() === "active"
+        );
 
         const savedTaskId =
-            localStorage.getItem(
-                "nexaLearnCurrentTaskId"
-            );
+            localStorage.getItem("nexaLearnCurrentTaskId");
 
         if (savedTaskId) {
 
             const stillActive =
                 allTasks.some(
-                    task =>
-                        String(task.id) === String(savedTaskId)
+                    task => String(task.id) === String(savedTaskId)
                 );
 
             if (!stillActive) {
-
-                localStorage.removeItem(
-                    "nexaLearnCurrentTaskId"
-                );
-
+                localStorage.removeItem("nexaLearnCurrentTaskId");
             }
         }
 
@@ -834,10 +735,7 @@ async function loadTasks() {
 
     } catch (error) {
 
-        console.error(
-            "Task loading error:",
-            error
-        );
+        console.error("Task loading error:", error);
 
         loadingArea.classList.add("hidden");
 
@@ -845,13 +743,9 @@ async function loadTasks() {
 
         messageArea.textContent =
             "Unable to load tasks: " +
-            (
-                error?.message ||
-                "Unknown error"
-            );
+            (error?.message || "Unknown error");
 
-        messageArea.className =
-            "message error";
+        messageArea.className = "message error";
 
         messageArea.classList.remove("hidden");
 
@@ -875,8 +769,7 @@ function renderTasks() {
 
         filteredTasks =
             allTasks.filter(
-                task =>
-                    task.category === currentCategory
+                task => task.category === currentCategory
             );
 
     }
@@ -886,14 +779,10 @@ function renderTasks() {
     if (filteredTasks.length === 0) {
 
         tasksGrid.innerHTML = `
-
             <div class="message empty">
-
                 No tasks are currently available
                 in this category.
-
             </div>
-
         `;
 
         return;
@@ -901,30 +790,18 @@ function renderTasks() {
 
     filteredTasks.forEach(task => {
 
-        /*
-         * Never render inactive tasks.
-         */
-
         if (
             String(task.status || "").toLowerCase() !== "active"
         ) {
             return;
         }
 
-        const reward =
-            Number(task.reward || 50);
+        const reward = Number(task.reward || 50);
 
-        const currency =
-            task.currency || "KES";
+        const currency = task.currency || "KES";
 
         const currencyDisplay =
-            currency === "KES"
-                ? "KSh"
-                : currency;
-
-        /*
-         * Check package access.
-         */
+            currency === "KES" ? "KSh" : currency;
 
         const accessStatus =
             getPackageAccessStatus(task.category);
@@ -939,8 +816,7 @@ function renderTasks() {
                     ? "Allowance Used"
                     : "Package Required";
 
-        const card =
-            document.createElement("div");
+        const card = document.createElement("div");
 
         card.className = "task-card";
 
@@ -964,12 +840,9 @@ function renderTasks() {
             <div class="task-footer">
 
                 <div class="reward">
-
                     ${escapeHtml(currencyDisplay)}
                     ${reward.toLocaleString("en-KE")}
-
                     / task
-
                 </div>
 
                 <button
@@ -1004,25 +877,18 @@ function renderTasks() {
 
     });
 
-    /*
-     * Attach Start Task events.
-     */
-
     document
         .querySelectorAll(".start-btn:not(:disabled)")
         .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                function() {
+            button.addEventListener("click", function() {
 
-                    const taskId =
-                        this.getAttribute("data-task-id");
+                const taskId =
+                    this.getAttribute("data-task-id");
 
-                    startTask(taskId);
+                startTask(taskId);
 
-                }
-            );
+            });
 
         });
 
@@ -1037,27 +903,22 @@ document
     .querySelectorAll(".filter-btn")
     .forEach(button => {
 
-        button.addEventListener(
-            "click",
-            function() {
+        button.addEventListener("click", function() {
 
-                document
-                    .querySelectorAll(".filter-btn")
-                    .forEach(btn => {
+            document
+                .querySelectorAll(".filter-btn")
+                .forEach(btn => {
+                    btn.classList.remove("active");
+                });
 
-                        btn.classList.remove("active");
+            this.classList.add("active");
 
-                    });
+            currentCategory =
+                this.getAttribute("data-category") || "All";
 
-                this.classList.add("active");
+            renderTasks();
 
-                currentCategory =
-                    this.getAttribute("data-category") || "All";
-
-                renderTasks();
-
-            }
-        );
+        });
 
     });
 
@@ -1066,16 +927,13 @@ document
    REFRESH WHEN USER RETURNS TO PAGE
    ========================================================= */
 
-window.addEventListener(
-    "pageshow",
-    function(event) {
+window.addEventListener("pageshow", function(event) {
 
-        if (event.persisted) {
-            loadTasks();
-        }
-
+    if (event.persisted) {
+        loadTasks();
     }
-);
+
+});
 
 
 /* =========================================================
@@ -1085,13 +943,8 @@ window.addEventListener(
 supabaseClient.auth.onAuthStateChange(
     (event, session) => {
 
-        if (
-            event === "SIGNED_OUT" &&
-            !session
-        ) {
-
+        if (event === "SIGNED_OUT" && !session) {
             redirectToLogin();
-
         }
 
     }
