@@ -12,7 +12,6 @@
     :root {
       --bg: #06101d;
       --panel: #0d1b2a;
-      --panel-light: #122438;
       --blue: #38a9ff;
       --green: #22d3a3;
       --text: #f2f7fc;
@@ -34,9 +33,7 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    button {
-      font: inherit;
-    }
+    button { font: inherit; }
 
     .layout {
       display: flex;
@@ -185,7 +182,7 @@
       max-width: 720px;
     }
 
-    /* CATEGORY SCREEN */
+    /* CATEGORIES */
 
     .section-heading {
       margin-bottom: 18px;
@@ -213,7 +210,7 @@
       border-radius: 14px;
       padding: 22px;
       cursor: pointer;
-      transition: transform .2s, border-color .2s, background .2s;
+      transition: .2s;
       min-height: 220px;
       display: flex;
       flex-direction: column;
@@ -403,11 +400,6 @@
       transform: translateY(-1px);
     }
 
-    .purchase-button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
     /* MESSAGES */
 
     .message {
@@ -568,7 +560,12 @@
 
       <div class="category-grid">
 
-        <div class="category-card" onclick="openCategory('Audio')">
+        <div class="category-card"
+             role="button"
+             tabindex="0"
+             onclick="openCategory('Audio')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCategory('Audio')}">
+
           <div class="category-icon">🎧</div>
           <h3>Audio Packages</h3>
           <p>
@@ -581,7 +578,12 @@
           </div>
         </div>
 
-        <div class="category-card" onclick="openCategory('Image Annotation')">
+        <div class="category-card"
+             role="button"
+             tabindex="0"
+             onclick="openCategory('Image Annotation')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCategory('Image Annotation')}">
+
           <div class="category-icon">🖼️</div>
           <h3>Image Annotation</h3>
           <p>
@@ -594,7 +596,12 @@
           </div>
         </div>
 
-        <div class="category-card" onclick="openCategory('Language Translation')">
+        <div class="category-card"
+             role="button"
+             tabindex="0"
+             onclick="openCategory('Language Translation')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCategory('Language Translation')}">
+
           <div class="category-icon">🌍</div>
           <h3>Language Translation</h3>
           <p>
@@ -626,7 +633,7 @@
       </div>
 
       <div id="packageGrid" class="package-grid">
-        <div class="loading">Loading packages...</div>
+        <div class="loading">Select a category to view packages.</div>
       </div>
 
       <div id="packageMessage"></div>
@@ -639,7 +646,8 @@
 <script>
   // SUPABASE CONNECTION
 
-  const SUPABASE_URL = "https://vzgrzzesquqnftfhchwt.supabase.co";
+  const SUPABASE_URL =
+    "https://vzgrzzesquqnftfhchwt.supabase.co";
 
   const SUPABASE_ANON_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
@@ -661,96 +669,173 @@
   let selectedCategory = null;
 
   const categoryDescriptions = {
-    "Audio": "Explore packages for audio transcription and audio annotation tasks.",
-    "Image Annotation": "Explore packages for image identification and annotation tasks.",
-    "Language Translation": "Explore packages for language translation tasks."
+    "Audio":
+      "Explore packages for audio transcription and audio annotation tasks.",
+
+    "Image Annotation":
+      "Explore packages for image identification and annotation tasks.",
+
+    "Language Translation":
+      "Explore packages for language translation tasks."
   };
+
+  const validCategories = [
+    "Audio",
+    "Image Annotation",
+    "Language Translation"
+  ];
 
   // PAGE INITIALIZATION
 
   document.addEventListener("DOMContentLoaded", async () => {
-    document.getElementById("menuToggle").addEventListener("click", toggleSidebar);
-    document.getElementById("overlay").addEventListener("click", closeSidebar);
-    document.getElementById("logoutLink").addEventListener("click", logout);
+
+    document.getElementById("menuToggle")
+      .addEventListener("click", toggleSidebar);
+
+    document.getElementById("overlay")
+      .addEventListener("click", closeSidebar);
+
+    document.getElementById("logoutLink")
+      .addEventListener("click", logout);
 
     await initializePage();
+
   });
 
-  async function initializePage() {
-    try {
-      const { data, error } = await supabaseClient.auth.getUser();
+  // IMPORTANT:
+  // This page no longer redirects users to Dashboard
+  // or Login simply because session retrieval fails.
 
-      if (error || !data.user) {
-        window.location.href = "login.html";
-        return;
+  async function initializePage() {
+
+    try {
+
+      const { data, error } =
+        await supabaseClient.auth.getSession();
+
+      if (error) {
+        console.error("Session retrieval error:", error);
       }
 
-      currentUser = data.user;
+      currentUser = data?.session?.user || null;
 
-      await loadWalletBalance();
+      if (currentUser) {
+        await loadWalletBalance();
+      } else {
+        document.getElementById("walletBalance").textContent =
+          "Login required";
+      }
 
     } catch (error) {
+
       console.error("Page initialization error:", error);
-      showMessage("Unable to load your account. Please refresh the page.", true);
+
+      document.getElementById("walletBalance").textContent =
+        "Unavailable";
+
     }
   }
+
+  // KEEP USER SESSION UPDATED
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+
+    currentUser = session?.user || null;
+
+    if (currentUser) {
+      loadWalletBalance();
+    } else {
+      document.getElementById("walletBalance").textContent =
+        "Login required";
+    }
+
+  });
 
   // LOAD WALLET BALANCE
 
   async function loadWalletBalance() {
+
     if (!currentUser) return;
 
-    const { data, error } = await supabaseClient
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
+    try {
 
-    if (error) {
-      console.error("Wallet error:", error);
-      document.getElementById("walletBalance").textContent = "Unavailable";
+      const { data, error } = await supabaseClient
+        .from("wallets")
+        .select("balance")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Wallet error:", error);
+
+        document.getElementById("walletBalance").textContent =
+          "Unavailable";
+
+        return;
+      }
+
+      const balance = Number(data?.balance || 0);
+
+      document.getElementById("walletBalance").textContent =
+        "KSh " + balance.toLocaleString("en-KE", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+
+    } catch (error) {
+
+      console.error("Wallet loading error:", error);
+
+    }
+  }
+
+  // OPEN CATEGORY
+
+  async function openCategory(category) {
+
+    if (!validCategories.includes(category)) {
       return;
     }
 
-    const balance = Number(data?.balance || 0);
-
-    document.getElementById("walletBalance").textContent =
-      "KSh " + balance.toLocaleString("en-KE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-  }
-
-  // OPEN A CATEGORY
-
-  async function openCategory(category) {
     selectedCategory = category;
 
-    document.getElementById("categoryScreen").classList.add("hide");
-    document.getElementById("packageScreen").classList.add("show");
+    document.getElementById("categoryScreen")
+      .classList.add("hide");
+
+    document.getElementById("packageScreen")
+      .classList.add("show");
 
     document.getElementById("categoryTitle").textContent =
       category + " Packages";
 
     document.getElementById("categoryDescription").textContent =
-      categoryDescriptions[category] || "Choose a package from this category.";
+      categoryDescriptions[category];
 
     document.getElementById("packageGrid").innerHTML =
       '<div class="loading">Loading packages...</div>';
 
     document.getElementById("packageMessage").innerHTML = "";
 
+    closeSidebar();
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
     await loadPackages(category);
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  // LOAD PACKAGES FROM SUPABASE
+  // LOAD ACTIVE PACKAGES FOR SELECTED CATEGORY
 
   async function loadPackages(category) {
-    const packageGrid = document.getElementById("packageGrid");
+
+    const packageGrid =
+      document.getElementById("packageGrid");
 
     try {
+
       const { data, error } = await supabaseClient
         .from("packages")
         .select(`
@@ -768,43 +853,66 @@
         .eq("is_active", true)
         .order("price", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (!data || data.length === 0) {
+
         packageGrid.innerHTML = "";
-        showMessage("There are currently no active packages in this category.");
+
+        showMessage(
+          "There are currently no active packages in this category."
+        );
+
         return;
       }
 
-      packageGrid.innerHTML = data.map(pkg => createPackageCard(pkg)).join("");
+      packageGrid.innerHTML = data
+        .map(pkg => createPackageCard(pkg))
+        .join("");
 
     } catch (error) {
+
       console.error("Package loading error:", error);
+
       packageGrid.innerHTML = "";
+
       showMessage(
-        "Unable to load packages. Please check your internet connection and try again.",
+        "Unable to load packages. Please check your connection and try again.",
         true
       );
+
     }
   }
 
   // CREATE PACKAGE CARD
 
   function createPackageCard(pkg) {
+
     const price = Number(pkg.price || 0);
     const taskLimit = Number(pkg.task_limit || 0);
     const reward = Number(pkg.reward_per_task || 0);
-    const currency = pkg.currency || "KES";
 
-    const formattedPrice = price.toLocaleString("en-KE");
+    const formattedPrice =
+      price.toLocaleString("en-KE");
+
+    const formattedReward =
+      reward.toLocaleString("en-KE");
 
     const description = pkg.description ||
       "Complete approved tasks within this package's task allowance.";
 
+    const safeName = escapeHTML(pkg.name);
+    const safeDescription = escapeHTML(description);
+    const safeCategory = escapeHTML(pkg.category);
+
     return `
       <article class="package-card">
 
-        <h3 class="package-name">${escapeHTML(pkg.name)}</h3>
+        <h3 class="package-name">
+          ${safeName}
+        </h3>
 
         <div class="package-price">
           KSh ${formattedPrice}
@@ -812,32 +920,36 @@
         </div>
 
         <p class="package-description">
-          ${escapeHTML(description)}
+          ${safeDescription}
         </p>
 
         <div class="package-details">
 
           <div class="detail-row">
             <span>Task allowance</span>
-            <strong>${taskLimit.toLocaleString("en-KE")} Tasks</strong>
+            <strong>
+              ${taskLimit.toLocaleString("en-KE")} Tasks
+            </strong>
           </div>
 
           <div class="detail-row">
             <span>Reward per approved task</span>
-            <strong>KSh ${reward.toLocaleString("en-KE")}</strong>
+            <strong>KSh ${formattedReward}</strong>
           </div>
 
           <div class="detail-row">
             <span>Category</span>
-            <strong>${escapeHTML(pkg.category)}</strong>
+            <strong>${safeCategory}</strong>
           </div>
 
         </div>
 
         <button
           class="purchase-button"
-          onclick="selectPackage('${pkg.id}')">
+          onclick="selectPackage('${escapeHTML(pkg.id)}')">
+
           Select Package
+
         </button>
 
       </article>
@@ -846,46 +958,86 @@
 
   // SELECT PACKAGE
 
-  function selectPackage(packageId) {
+  async function selectPackage(packageId) {
+
     if (!packageId) {
       alert("Invalid package selected.");
       return;
     }
 
-    window.location.href =
-      "select-package.html?package_id=" +
-      encodeURIComponent(packageId);
+    try {
+
+      // Check the saved session again before activation.
+
+      const { data, error } =
+        await supabaseClient.auth.getSession();
+
+      if (error || !data.session?.user) {
+
+        alert("Please log in before activating a package.");
+
+        window.location.href = "login.html";
+        return;
+
+      }
+
+      currentUser = data.session.user;
+
+      window.location.href =
+        "select-package.html?package_id=" +
+        encodeURIComponent(packageId);
+
+    } catch (error) {
+
+      console.error("Package selection error:", error);
+
+      alert("Unable to verify your login. Please try again.");
+
+    }
   }
 
-  // RETURN TO CATEGORY SCREEN
+  // RETURN TO CATEGORIES
 
   function backToCategories() {
+
     selectedCategory = null;
 
-    document.getElementById("packageScreen").classList.remove("show");
-    document.getElementById("categoryScreen").classList.remove("hide");
+    document.getElementById("packageScreen")
+      .classList.remove("show");
+
+    document.getElementById("categoryScreen")
+      .classList.remove("hide");
 
     document.getElementById("packageGrid").innerHTML = "";
+
     document.getElementById("packageMessage").innerHTML = "";
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
   }
 
   // DISPLAY MESSAGES
 
   function showMessage(message, isError = false) {
-    const messageBox = document.getElementById("packageMessage");
+
+    const messageBox =
+      document.getElementById("packageMessage");
 
     messageBox.innerHTML = `
       <div class="message ${isError ? "error" : ""}">
         ${escapeHTML(message)}
       </div>
     `;
+
   }
 
-  // BASIC HTML ESCAPING
+  // HTML ESCAPING
 
   function escapeHTML(value) {
+
     return String(value ?? "").replace(/[&<>"']/g, character => ({
       "&": "&amp;",
       "<": "&lt;",
@@ -893,37 +1045,56 @@
       '"': "&quot;",
       "'": "&#039;"
     })[character]);
+
   }
 
   // SIDEBAR
 
   function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-    document.getElementById("overlay").classList.toggle("show");
+
+    document.getElementById("sidebar")
+      .classList.toggle("open");
+
+    document.getElementById("overlay")
+      .classList.toggle("show");
+
   }
 
   function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("overlay").classList.remove("show");
+
+    document.getElementById("sidebar")
+      .classList.remove("open");
+
+    document.getElementById("overlay")
+      .classList.remove("show");
+
   }
 
   // LOGOUT
 
   async function logout(event) {
+
     event.preventDefault();
 
-    const confirmed = confirm("Are you sure you want to log out?");
+    const confirmed =
+      confirm("Are you sure you want to log out?");
+
     if (!confirmed) return;
 
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } =
+      await supabaseClient.auth.signOut();
 
     if (error) {
+
       alert("Unable to log out. Please try again.");
+
       console.error(error);
+
       return;
     }
 
     window.location.href = "login.html";
+
   }
 
 </script>
