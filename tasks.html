@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,6 +166,32 @@
 
         .start-btn:hover {
             opacity: 0.9;
+        }
+
+        .start-btn:disabled {
+            background: #26384a;
+            color: #8197aa;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .start-btn:disabled:hover {
+            opacity: 0.8;
+        }
+
+        .access-note {
+            margin-top: 14px;
+            font-size: 12px;
+            color: #9db1c6;
+            line-height: 1.5;
+        }
+
+        .access-note.locked {
+            color: #ffb0b8;
+        }
+
+        .access-note.available {
+            color: #39d98a;
         }
 
         .loading {
@@ -345,6 +371,8 @@ let allTasks = [];
 
 let currentCategory = "All";
 
+let userPackages = [];
+
 
 /* =========================================================
    ELEMENTS
@@ -416,6 +444,129 @@ async function getCurrentUser() {
 
 
 /* =========================================================
+   LOAD USER PACKAGE ACCESS
+   ========================================================= */
+
+async function loadUserPackages(userId) {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("user_packages")
+        .select(`
+            id,
+            status,
+            task_count,
+            completed_tasks,
+            expires_at,
+            activated_at,
+            packages (
+                category,
+                task_limit
+            )
+        `)
+        .eq("user_id", userId)
+        .eq("status", "active");
+
+
+    if (error) {
+        throw error;
+    }
+
+
+    userPackages = (data || []).filter(pkg => {
+
+        if (
+            pkg.expires_at &&
+            new Date(pkg.expires_at) <= new Date()
+        ) {
+            return false;
+        }
+
+        return true;
+
+    });
+
+}
+
+
+/* =========================================================
+   CHECK PACKAGE ACCESS
+   ========================================================= */
+
+function getPackageAccessStatus(taskCategory) {
+
+    const matchingPackages =
+        userPackages.filter(up => {
+
+            const packageDetails =
+                Array.isArray(up.packages)
+                    ? up.packages[0]
+                    : up.packages;
+
+
+            if (!packageDetails) {
+                return false;
+            }
+
+
+            /*
+             * New packages must match the task category.
+             *
+             * Old general packages have category NULL.
+             * They retain access across categories.
+             */
+
+            return (
+                packageDetails.category === taskCategory ||
+                packageDetails.category === null
+            );
+
+        });
+
+
+    if (matchingPackages.length === 0) {
+        return "required";
+    }
+
+
+    const hasRemainingTasks =
+        matchingPackages.some(up => {
+
+            const packageDetails =
+                Array.isArray(up.packages)
+                    ? up.packages[0]
+                    : up.packages;
+
+
+            const allowedTasks =
+                Number(
+                    up.task_count ??
+                    packageDetails?.task_limit ??
+                    0
+                );
+
+
+            const completedTasks =
+                Number(
+                    up.completed_tasks || 0
+                );
+
+
+            return completedTasks < allowedTasks;
+
+        });
+
+
+    return hasRemainingTasks
+        ? "allowed"
+        : "exhausted";
+
+}
+
+
+/* =========================================================
    START TASK
    ========================================================= */
 
@@ -432,14 +583,67 @@ async function startTask(taskId) {
 
 
     /*
-     * IMPORTANT:
-     *
-     * Check Supabase again before opening
-     * the task.
-     *
-     * This prevents a task that was deleted
-     * or deactivated by the admin from being
-     * opened using an old task ID.
+     * Refresh package access before opening a task.
+     */
+
+    try {
+
+        await loadUserPackages(
+            currentUser.id
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Package access error:",
+            error
+        );
+
+        alert(
+            "Unable to verify your package access. Please try again."
+        );
+
+        return;
+    }
+
+
+    const selectedTask =
+        allTasks.find(
+            task =>
+                String(task.id) === String(taskId)
+        );
+
+
+    if (!selectedTask) {
+
+        alert(
+            "This task is no longer available."
+        );
+
+        return;
+    }
+
+
+    const accessStatus =
+        getPackageAccessStatus(
+            selectedTask.category
+        );
+
+
+    if (accessStatus !== "allowed") {
+
+        alert(
+            accessStatus === "exhausted"
+                ? "Your package allowance for this task category has been used. Activate another package to continue."
+                : "You need an active package for this task category before you can submit tasks."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Verify task is still active in Supabase.
      */
 
     const {
@@ -458,10 +662,6 @@ async function startTask(taskId) {
         !task
     ) {
 
-        /*
-         * Remove the old task from local storage.
-         */
-
         localStorage.removeItem(
             "nexaLearnCurrentTaskId"
         );
@@ -471,10 +671,6 @@ async function startTask(taskId) {
             "This task is no longer available."
         );
 
-
-        /*
-         * Reload the task list.
-         */
 
         await loadTasks();
 
@@ -493,7 +689,7 @@ async function startTask(taskId) {
 
 
     /*
-     * Verify it was saved.
+     * Verify saved task ID.
      */
 
     const savedTaskId =
@@ -503,8 +699,7 @@ async function startTask(taskId) {
 
 
     if (
-        savedTaskId !==
-        taskId
+        savedTaskId !== taskId
     ) {
 
         alert(
@@ -532,10 +727,6 @@ async function loadTasks() {
 
     try {
 
-        /*
-         * Show loading state.
-         */
-
         loadingArea.classList.remove(
             "hidden"
         );
@@ -546,8 +737,7 @@ async function loadTasks() {
         );
 
 
-        tasksGrid.innerHTML =
-            "";
+        tasksGrid.innerHTML = "";
 
 
         /*
@@ -564,12 +754,16 @@ async function loadTasks() {
 
 
         /*
+         * Load package allowances.
+         */
+
+        await loadUserPackages(
+            currentUser.id
+        );
+
+
+        /*
          * ONLY ACTIVE TASKS ARE LOADED.
-         *
-         * There are NO fallback tasks.
-         *
-         * If admin deletes a task from Supabase,
-         * it will not appear here.
          */
 
         const {
@@ -604,23 +798,17 @@ async function loadTasks() {
         }
 
 
-        /*
-         * Only keep active tasks.
-         */
-
         allTasks =
             (data || []).filter(
                 task =>
                     String(
                         task.status || ""
-                    ).toLowerCase() ===
-                    "active"
+                    ).toLowerCase() === "active"
             );
 
 
         /*
-         * Remove any saved task ID that
-         * is no longer active.
+         * Remove saved task ID if no longer active.
          */
 
         const savedTaskId =
@@ -671,8 +859,7 @@ async function loadTasks() {
         );
 
 
-        tasksGrid.innerHTML =
-            "";
+        tasksGrid.innerHTML = "";
 
 
         messageArea.textContent =
@@ -705,26 +892,22 @@ function renderTasks() {
 
 
     if (
-        currentCategory !==
-        "All"
+        currentCategory !== "All"
     ) {
 
         filteredTasks =
             allTasks.filter(
                 task =>
-                    task.category ===
-                    currentCategory
+                    task.category === currentCategory
             );
     }
 
 
-    tasksGrid.innerHTML =
-        "";
+    tasksGrid.innerHTML = "";
 
 
     if (
-        filteredTasks.length ===
-        0
+        filteredTasks.length === 0
     ) {
 
         tasksGrid.innerHTML = `
@@ -742,109 +925,129 @@ function renderTasks() {
     }
 
 
-    filteredTasks.forEach(
-        task => {
+    filteredTasks.forEach(task => {
 
-            /*
-             * Extra safety:
-             *
-             * Never render a task unless
-             * its status is active.
-             */
+        /*
+         * Never render inactive tasks.
+         */
 
-            if (
-                String(
-                    task.status || ""
-                ).toLowerCase() !==
-                "active"
-            ) {
-                return;
-            }
-
-
-            const reward =
-                Number(
-                    task.reward || 50
-                );
-
-
-            const currency =
-                task.currency ||
-                "KES";
-
-
-            const currencyDisplay =
-                currency === "KES"
-                    ? "KSh"
-                    : currency;
-
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "task-card";
-
-
-            card.innerHTML = `
-
-                <div class="task-category">
-                    ${escapeHtml(
-                        task.category ||
-                        "Task"
-                    )}
-                </div>
-
-                <h2>
-                    ${escapeHtml(
-                        task.title ||
-                        "NexaLearn Task"
-                    )}
-                </h2>
-
-                <div class="task-description">
-                    ${escapeHtml(
-                        task.description ||
-                        "Complete this task accurately."
-                    )}
-                </div>
-
-                <div class="task-footer">
-
-                    <div class="reward">
-
-                        ${currencyDisplay}
-                        ${reward.toLocaleString(
-                            "en-KE"
-                        )}
-
-                        / task
-
-                    </div>
-
-                    <button
-                        class="start-btn"
-                        type="button"
-                        data-task-id="${escapeHtml(
-                            task.id
-                        )}">
-
-                        Start Task
-
-                    </button>
-
-                </div>
-            `;
-
-
-            tasksGrid.appendChild(
-                card
-            );
+        if (
+            String(
+                task.status || ""
+            ).toLowerCase() !== "active"
+        ) {
+            return;
         }
-    );
+
+
+        const reward =
+            Number(task.reward || 50);
+
+
+        const currency =
+            task.currency || "KES";
+
+
+        const currencyDisplay =
+            currency === "KES"
+                ? "KSh"
+                : currency;
+
+
+        /*
+         * Check package access.
+         */
+
+        const accessStatus =
+            getPackageAccessStatus(
+                task.category
+            );
+
+
+        const canStartTask =
+            accessStatus === "allowed";
+
+
+        const buttonText =
+            accessStatus === "allowed"
+                ? "Start Task"
+                : accessStatus === "exhausted"
+                    ? "Allowance Used"
+                    : "Package Required";
+
+
+        const card =
+            document.createElement("div");
+
+
+        card.className =
+            "task-card";
+
+
+        card.innerHTML = `
+
+            <div class="task-category">
+                ${escapeHtml(
+                    task.category || "Task"
+                )}
+            </div>
+
+            <h2>
+                ${escapeHtml(
+                    task.title || "NexaLearn Task"
+                )}
+            </h2>
+
+            <div class="task-description">
+                ${escapeHtml(
+                    task.description ||
+                    "Complete this task accurately."
+                )}
+            </div>
+
+            <div class="task-footer">
+
+                <div class="reward">
+
+                    ${currencyDisplay}
+                    ${reward.toLocaleString("en-KE")}
+
+                    / task
+
+                </div>
+
+                <button
+                    class="start-btn"
+                    type="button"
+                    data-task-id="${escapeHtml(task.id)}"
+                    ${canStartTask ? "" : "disabled"}>
+
+                    ${buttonText}
+
+                </button>
+
+            </div>
+
+            <div class="access-note ${
+                canStartTask ? "available" : "locked"
+            }">
+
+                ${
+                    canStartTask
+                        ? "Your package allows access to this task category."
+                        : accessStatus === "exhausted"
+                            ? "Your allowance for this category has been used. Activate another package to continue."
+                            : "An active package for this category is required to submit this task."
+                }
+
+            </div>
+
+        `;
+
+
+        tasksGrid.appendChild(card);
+
+    });
 
 
     /*
@@ -852,31 +1055,24 @@ function renderTasks() {
      */
 
     document
-        .querySelectorAll(
-            ".start-btn"
-        )
-        .forEach(
-            button => {
+        .querySelectorAll(".start-btn:not(:disabled)")
+        .forEach(button => {
 
-                button.addEventListener(
-                    "click",
-                    function () {
+            button.addEventListener(
+                "click",
+                function() {
 
-                        const taskId =
-                            this.getAttribute(
-                                "data-task-id"
-                            );
+                    const taskId =
+                        this.getAttribute("data-task-id");
 
 
-                        startTask(
-                            taskId
-                        );
+                    startTask(taskId);
 
-                    }
-                );
+                }
+            );
 
-            }
-        );
+        });
+
 }
 
 
@@ -885,49 +1081,36 @@ function renderTasks() {
    ========================================================= */
 
 document
-    .querySelectorAll(
-        ".filter-btn"
-    )
-    .forEach(
-        button => {
+    .querySelectorAll(".filter-btn")
+    .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                function () {
+        button.addEventListener(
+            "click",
+            function() {
 
-                    document
-                        .querySelectorAll(
-                            ".filter-btn"
-                        )
-                        .forEach(
-                            btn => {
+                document
+                    .querySelectorAll(".filter-btn")
+                    .forEach(btn => {
 
-                                btn.classList.remove(
-                                    "active"
-                                );
+                        btn.classList.remove("active");
 
-                            }
-                        );
+                    });
 
 
-                    this.classList.add(
-                        "active"
-                    );
+                this.classList.add("active");
 
 
-                    currentCategory =
-                        this.getAttribute(
-                            "data-category"
-                        ) ||
-                        "All";
+                currentCategory =
+                    this.getAttribute("data-category") ||
+                    "All";
 
 
-                    renderTasks();
-                }
-            );
+                renderTasks();
 
-        }
-    );
+            }
+        );
+
+    });
 
 
 /* =========================================================
@@ -936,9 +1119,15 @@ document
 
 window.addEventListener(
     "pageshow",
-    function () {
+    function(event) {
 
-        loadTasks();
+        /*
+         * Avoid duplicate initial loading.
+         */
+
+        if (event.persisted) {
+            loadTasks();
+        }
 
     }
 );
@@ -954,4 +1143,3 @@ loadTasks();
 
 </body>
 </html>
-```
