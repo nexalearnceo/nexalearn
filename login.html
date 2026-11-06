@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -233,7 +233,6 @@
 
   </div>
 
-
 <script>
 
   // =========================================================
@@ -249,6 +248,7 @@
 
   // =========================================================
   // SUPABASE CLIENT
+  // IMPORTANT: SAME STORAGE KEY AS PACKAGES.HTML
   // =========================================================
 
   const supabaseClient =
@@ -259,7 +259,8 @@
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+          storageKey: "nexalearn-auth"
         }
       }
     );
@@ -313,15 +314,14 @@
 
         passwordInput.type = "text";
 
-        showPassword.textContent =
-          "Hide";
+        showPassword.textContent = "Hide";
 
       } else {
 
         passwordInput.type = "password";
 
-        showPassword.textContent =
-          "Show";
+        showPassword.textContent = "Show";
+
       }
 
     }
@@ -359,46 +359,35 @@
       }
 
 
-      loginButton.disabled =
-        true;
+      loginButton.disabled = true;
 
-      loginButton.textContent =
-        "Signing in...";
+      loginButton.textContent = "Signing in...";
 
-      message.style.display =
-        "none";
+      message.style.display = "none";
 
 
       try {
 
-        console.log(
-          "Starting NexaLearn login..."
-        );
+        console.log("Starting NexaLearn login...");
 
 
-        // ===================================================
         // SIGN IN
-        // ===================================================
 
         const {
           data,
           error
-        } =
-          await supabaseClient.auth.signInWithPassword({
+        } = await supabaseClient.auth.signInWithPassword({
 
-            email: email,
+          email: email,
 
-            password: password
+          password: password
 
-          });
+        });
 
 
         if (error) {
 
-          console.error(
-            "SUPABASE LOGIN ERROR:",
-            error
-          );
+          console.error("SUPABASE LOGIN ERROR:", error);
 
           throw error;
         }
@@ -420,47 +409,26 @@
         }
 
 
-        console.log(
-          "LOGIN SUCCESS"
-        );
-
-        console.log(
-          "USER:",
-          data.user
-        );
-
-        console.log(
-          "SESSION:",
-          data.session
-        );
+        console.log("LOGIN SUCCESS");
 
 
-        // ===================================================
         // VERIFY SESSION
-        // ===================================================
 
         const {
           data: sessionData,
           error: sessionError
-        } =
-          await supabaseClient.auth.getSession();
+        } = await supabaseClient.auth.getSession();
 
 
         if (sessionError) {
 
-          console.error(
-            "SESSION ERROR:",
-            sessionError
-          );
+          console.error("SESSION ERROR:", sessionError);
 
           throw sessionError;
         }
 
 
-        if (
-          !sessionData ||
-          !sessionData.session
-        ) {
+        if (!sessionData || !sessionData.session) {
 
           throw new Error(
             "Auth session missing after login. Please try again."
@@ -468,14 +436,10 @@
         }
 
 
-        console.log(
-          "SESSION VERIFIED SUCCESSFULLY"
-        );
+        console.log("SESSION VERIFIED SUCCESSFULLY");
 
 
-        // ===================================================
         // SAVE LOCAL USER INFORMATION
-        // ===================================================
 
         localStorage.setItem(
           "nexaLearnLoggedIn",
@@ -493,9 +457,7 @@
         );
 
 
-        // ===================================================
-        // SUCCESS
-        // ===================================================
+        // SUCCESS MESSAGE
 
         showMessage(
           "Login successful. Opening dashboard...",
@@ -503,41 +465,27 @@
         );
 
 
-        // Give Supabase time to persist the session
-        // before changing pages.
+        // REDIRECT TO DASHBOARD
 
-        setTimeout(
-          function () {
+        setTimeout(function () {
 
-            window.location.replace(
-              "dashboard.html"
-            );
+          window.location.replace("dashboard.html");
 
-          },
-          1200
-        );
+        }, 1200);
 
 
       } catch (error) {
 
-        console.error(
-          "LOGIN ERROR:",
-          error
-        );
-
+        console.error("LOGIN ERROR:", error);
 
         showMessage(
-          error.message ||
-          "Unable to sign in.",
+          error.message || "Unable to sign in.",
           "error"
         );
 
+        loginButton.disabled = false;
 
-        loginButton.disabled =
-          false;
-
-        loginButton.textContent =
-          "Sign In";
+        loginButton.textContent = "Sign In";
 
       }
 
@@ -556,49 +504,35 @@
       const {
         data,
         error
-      } =
-        await supabaseClient.auth.getSession();
+      } = await supabaseClient.auth.getSession();
 
 
       if (error) {
 
-        console.error(
-          "SESSION CHECK ERROR:",
-          error
-        );
+        console.error("SESSION CHECK ERROR:", error);
 
         return;
       }
 
 
-      if (
-        data &&
-        data.session
-      ) {
+      if (data && data.session) {
 
-        console.log(
-          "Existing session found."
-        );
+        console.log("Existing session found.");
 
-        window.location.replace(
-          "dashboard.html"
-        );
+        window.location.replace("dashboard.html");
 
       }
 
     } catch (error) {
 
-      console.error(
-        "EXISTING SESSION ERROR:",
-        error
-      );
+      console.error("EXISTING SESSION ERROR:", error);
 
     }
 
   }
 
 
-  // Run session check
+  // RUN SESSION CHECK
 
   checkExistingSession();
 
