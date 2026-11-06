@@ -1,262 +1,318 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexaLearn - Tasks</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>NexaLearn - Tasks</title>
 
-<style>
-* { box-sizing: border-box; }
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #06101d;
-    color: #fff;
-    min-height: 100vh;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-.topbar {
-    min-height: 70px;
-    background: #0b1828;
-    border-bottom: 1px solid #1c3045;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 30px;
-}
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #06101d;
+            color: #ffffff;
+            min-height: 100vh;
+        }
 
-.logo { font-size: 22px; font-weight: bold; }
-.logo span { color: #39d98a; }
+        .topbar {
+            height: 70px;
+            background: #0b1828;
+            border-bottom: 1px solid #1c3045;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+        }
 
-.back-link {
-    color: #9db1c6;
-    text-decoration: none;
-}
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
 
-.back-link:hover { color: #fff; }
+        .logo span {
+            color: #39d98a;
+        }
 
-.container {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
+        .back-link {
+            color: #9db1c6;
+            text-decoration: none;
+        }
 
-.page-header { margin-bottom: 30px; }
+        .back-link:hover {
+            color: #ffffff;
+        }
 
-.page-header h1 {
-    margin: 0 0 8px;
-    font-size: 32px;
-}
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
 
-.page-header p {
-    margin: 0;
-    color: #9db1c6;
-    line-height: 1.6;
-}
+        .page-header {
+            margin-bottom: 30px;
+        }
 
-.preview-notice {
-    background: #10243a;
-    border: 1px solid #244766;
-    border-radius: 10px;
-    padding: 15px 18px;
-    margin-bottom: 25px;
-    color: #b9d9f4;
-    line-height: 1.6;
-    font-size: 14px;
-}
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
 
-.filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 30px;
-}
+        .page-header p {
+            margin: 0;
+            color: #9db1c6;
+            line-height: 1.6;
+        }
 
-.filter-btn {
-    padding: 10px 16px;
-    background: #0b1828;
-    color: #9db1c6;
-    border: 1px solid #1c3045;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-}
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
 
-.filter-btn.active {
-    background: #39d98a;
-    color: #06101d;
-    border-color: #39d98a;
-    font-weight: bold;
-}
+        .filter-btn {
+            padding: 10px 16px;
+            background: #0b1828;
+            color: #9db1c6;
+            border: 1px solid #1c3045;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
 
-.tasks-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-}
+        .filter-btn:hover {
+            color: #ffffff;
+            border-color: #294158;
+        }
 
-.task-card {
-    background: #0b1828;
-    border: 1px solid #1c3045;
-    border-radius: 14px;
-    padding: 25px;
-    transition: .2s;
-}
+        .filter-btn.active {
+            background: #39d98a;
+            color: #06101d;
+            border-color: #39d98a;
+            font-weight: bold;
+        }
 
-.task-card:hover {
-    transform: translateY(-2px);
-    border-color: #294158;
-}
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
 
-.task-category {
-    display: inline-block;
-    padding: 6px 10px;
-    background: #16283a;
-    color: #9db1c6;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-bottom: 15px;
-}
+        .task-card {
+            background: #0b1828;
+            border: 1px solid #1c3045;
+            border-radius: 14px;
+            padding: 25px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
 
-.task-card h2 {
-    margin: 0 0 10px;
-    font-size: 22px;
-}
+        .task-card:hover {
+            transform: translateY(-2px);
+            border-color: #294158;
+        }
 
-.task-description {
-    color: #9db1c6;
-    line-height: 1.6;
-    min-height: 52px;
-    margin-bottom: 20px;
-}
+        .task-category {
+            display: inline-block;
+            padding: 6px 10px;
+            background: #16283a;
+            color: #9db1c6;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
 
-.task-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-}
+        .task-card h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+        }
 
-.reward {
-    color: #39d98a;
-    font-weight: bold;
-    font-size: 17px;
-}
+        .task-description {
+            color: #9db1c6;
+            line-height: 1.6;
+            min-height: 52px;
+            margin-bottom: 20px;
+        }
 
-.start-btn {
-    padding: 11px 18px;
-    background: #39d98a;
-    color: #06101d;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
 
-.start-btn:hover:not(:disabled) { opacity: .9; }
+        .reward {
+            color: #39d98a;
+            font-weight: bold;
+            font-size: 17px;
+        }
 
-.start-btn:disabled {
-    background: #26384a;
-    color: #8197aa;
-    cursor: not-allowed;
-}
+        .start-btn {
+            padding: 11px 18px;
+            background: #39d98a;
+            color: #06101d;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-.access-note {
-    margin-top: 14px;
-    font-size: 12px;
-    color: #9db1c6;
-    line-height: 1.5;
-}
+        .start-btn:hover {
+            opacity: 0.9;
+        }
 
-.access-note.locked { color: #ffb0b8; }
-.access-note.available { color: #39d98a; }
+        .loading {
+            text-align: center;
+            color: #9db1c6;
+            padding: 50px 20px;
+        }
 
-.loading {
-    text-align: center;
-    color: #9db1c6;
-    padding: 50px 20px;
-}
+        .message {
+            background: #0b1828;
+            border: 1px solid #1c3045;
+            border-radius: 12px;
+            padding: 25px;
+            color: #9db1c6;
+            text-align: center;
+            line-height: 1.6;
+        }
 
-.message {
-    background: #0b1828;
-    border: 1px solid #1c3045;
-    border-radius: 12px;
-    padding: 25px;
-    color: #9db1c6;
-    text-align: center;
-    line-height: 1.6;
-}
+        .error {
+            color: #ff9da8;
+            border-color: #683039;
+            background: #30171b;
+        }
 
-.error {
-    color: #ff9da8;
-    border-color: #683039;
-    background: #30171b;
-}
+        .empty {
+            color: #9db1c6;
+        }
 
-@media (max-width: 750px) {
-    .topbar { padding: 0 18px; }
+        .hidden {
+            display: none !important;
+        }
 
-    .container {
-        margin: 25px auto;
-        padding: 0 12px;
-    }
+        @media (max-width: 750px) {
 
-    .tasks-grid { grid-template-columns: 1fr; }
+            .topbar {
+                padding: 0 18px;
+            }
 
-    .task-footer {
-        flex-direction: column;
-        align-items: stretch;
-    }
+            .container {
+                margin: 25px auto;
+                padding: 0 12px;
+            }
 
-    .start-btn { width: 100%; }
-}
-</style>
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .start-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="topbar">
-    <div class="logo">Nexa<span>Learn</span></div>
-    <a href="dashboard.html" class="back-link">← Dashboard</a>
+
+    <div class="logo">
+        Nexa<span>Learn</span>
+    </div>
+
+    <a href="dashboard.html" class="back-link">
+        ← Dashboard
+    </a>
+
 </div>
+
 
 <div class="container">
 
     <div class="page-header">
+
         <h1>Available Tasks</h1>
+
         <p>
-            Explore available data tasks, preview the work and earn
-            KSh 50 for every eligible verified submission.
+            Complete available tasks and earn KSh 50 for every verified submission.
+            Rewards are credited immediately.
         </p>
+
     </div>
 
-    <div class="preview-notice">
-        You can preview available tasks before activating a package.
-        An active package for the relevant task category is required
-        before you can submit answers and earn rewards.
-    </div>
 
     <div class="filters">
-        <button class="filter-btn active" data-category="All">All Tasks</button>
-        <button class="filter-btn" data-category="Language Translation">Language Translation</button>
-        <button class="filter-btn" data-category="Data Annotation">Data Annotation</button>
-        <button class="filter-btn" data-category="Audio">Audio</button>
-        <button class="filter-btn" data-category="Image Annotation">Image Annotation</button>
+
+        <button
+            class="filter-btn active"
+            data-category="All">
+            All Tasks
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Language Translation">
+            Language Translation
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Data Annotation">
+            Data Annotation
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Audio">
+            Audio
+        </button>
+
+        <button
+            class="filter-btn"
+            data-category="Image Annotation">
+            Image Annotation
+        </button>
+
     </div>
 
-    <div id="loadingArea" class="loading">Loading available tasks...</div>
-    <div id="messageArea" class="message" hidden></div>
-    <div id="tasksGrid" class="tasks-grid"></div>
+
+    <div id="loadingArea" class="loading">
+        Loading available tasks...
+    </div>
+
+
+    <div
+        id="messageArea"
+        class="message hidden">
+    </div>
+
+
+    <div
+        id="tasksGrid"
+        class="tasks-grid">
+    </div>
 
 </div>
 
+
 <script>
 
-/* SUPABASE CONFIGURATION */
+/* =========================================================
+   SUPABASE
+   ========================================================= */
 
 const SUPABASE_URL =
     "https://vzgrzzesquqnftfhchwt.supabase.co";
@@ -264,346 +320,262 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-            storageKey: "nexalearn-auth"
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+        {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
         }
-    }
-);
+    );
 
 
-/* VARIABLES */
+/* =========================================================
+   VARIABLES
+   ========================================================= */
 
 let currentUser = null;
+
 let allTasks = [];
-let userPackages = [];
+
 let currentCategory = "All";
-let redirectingToLogin = false;
-let loadingTasks = false;
 
 
-/* ELEMENTS */
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
 
-const loadingArea = document.getElementById("loadingArea");
-const messageArea = document.getElementById("messageArea");
-const tasksGrid = document.getElementById("tasksGrid");
+const loadingArea =
+    document.getElementById("loadingArea");
+
+const messageArea =
+    document.getElementById("messageArea");
+
+const tasksGrid =
+    document.getElementById("tasksGrid");
 
 
-/* HTML ESCAPE */
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
 
 function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-    })[char]);
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
-/* AUTHENTICATION */
-
-function redirectToLogin() {
-    if (redirectingToLogin) return;
-
-    redirectingToLogin = true;
-    window.location.replace("login.html");
-}
+/* =========================================================
+   GET CURRENT USER
+   ========================================================= */
 
 async function getCurrentUser() {
-    const { data, error } =
-        await supabaseClient.auth.getSession();
 
-    if (error) throw error;
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.getUser();
 
-    if (!data?.session?.user) {
-        redirectToLogin();
+
+    if (error) {
+        throw error;
+    }
+
+
+    if (
+        !data ||
+        !data.user
+    ) {
+
+        window.location.href =
+            "login.html";
+
         return null;
     }
 
-    return data.session.user;
+
+    return data.user;
 }
 
 
-/* LOAD USER PACKAGES */
+/* =========================================================
+   START TASK
+   ========================================================= */
 
-async function loadUserPackages(userId) {
-    const { data, error } = await supabaseClient
-        .from("user_packages")
-        .select(`
-            id,
-            status,
-            task_count,
-            completed_tasks,
-            expires_at,
-            activated_at,
-            packages (
-                category,
-                task_limit
-            )
-        `)
-        .eq("user_id", userId)
-        .eq("status", "active");
+async function startTask(taskId) {
 
-    if (error) throw error;
+    if (!taskId) {
 
-    userPackages = (data || []).filter(pkg => {
-        if (!pkg.expires_at) return true;
-
-        const expiryDate = new Date(pkg.expires_at);
-
-        return (
-            !Number.isNaN(expiryDate.getTime()) &&
-            expiryDate > new Date()
-        );
-    });
-}
-
-
-/* NORMALIZE CATEGORY NAMES */
-
-function normalizeCategory(value) {
-    return String(value || "")
-        .trim()
-        .toLowerCase()
-        .replace(/[_-]+/g, " ")
-        .replace(/\s+/g, " ");
-}
-
-
-/* MATCH PACKAGE CATEGORY TO TASK CATEGORY */
-
-function categoriesMatch(packageCategory, taskCategory) {
-
-    const packageName = normalizeCategory(packageCategory);
-    const taskName = normalizeCategory(taskCategory);
-
-    // Older general packages with no category
-    // can still provide general task access.
-    if (!packageName) return true;
-
-    const aliases = {
-
-        "audio": [
-            "audio",
-            "audio annotation",
-            "audio transcription"
-        ],
-
-        "audio annotation": [
-            "audio",
-            "audio annotation",
-            "audio transcription"
-        ],
-
-        "audio transcription": [
-            "audio",
-            "audio annotation",
-            "audio transcription"
-        ],
-
-        "image": [
-            "image",
-            "image annotation"
-        ],
-
-        "image annotation": [
-            "image",
-            "image annotation"
-        ],
-
-        "translation": [
-            "translation",
-            "language translation",
-            "swahili to english"
-        ],
-
-        "language translation": [
-            "translation",
-            "language translation",
-            "swahili to english"
-        ],
-
-        "swahili to english": [
-            "translation",
-            "language translation",
-            "swahili to english"
-        ],
-
-        "data": [
-            "data",
-            "data annotation",
-            "text data annotation"
-        ],
-
-        "data annotation": [
-            "data",
-            "data annotation",
-            "text data annotation"
-        ],
-
-        "text data annotation": [
-            "data",
-            "data annotation",
-            "text data annotation"
-        ]
-    };
-
-    const packageAliases =
-        aliases[packageName] || [packageName];
-
-    const taskAliases =
-        aliases[taskName] || [taskName];
-
-    return packageAliases.some(category =>
-        taskAliases.includes(category)
-    );
-}
-
-
-/* GET PACKAGE ACCESS STATUS */
-
-function getPackageAccessStatus(taskCategory) {
-
-    const matchingPackages = userPackages.filter(pkg => {
-
-        const details = Array.isArray(pkg.packages)
-            ? pkg.packages[0]
-            : pkg.packages;
-
-        if (!details) return false;
-
-        return categoriesMatch(
-            details.category,
-            taskCategory
-        );
-    });
-
-    if (!matchingPackages.length) {
-        return "required";
-    }
-
-    const hasRemainingTasks = matchingPackages.some(pkg => {
-
-        const details = Array.isArray(pkg.packages)
-            ? pkg.packages[0]
-            : pkg.packages;
-
-        const allowed = Number(
-            pkg.task_count ?? details?.task_limit ?? 0
+        alert(
+            "Task ID is missing."
         );
 
-        const completed = Number(pkg.completed_tasks || 0);
-
-        return (
-            Number.isFinite(allowed) &&
-            Number.isFinite(completed) &&
-            allowed > completed
-        );
-    });
-
-    return hasRemainingTasks ? "allowed" : "exhausted";
-}
-
-
-/* START TASK - PREVIEW ALLOWED WITHOUT PACKAGE */
-
-async function startTask(taskId, button) {
-
-    if (!currentUser) {
-        redirectToLogin();
         return;
     }
 
-    if (button) {
-        button.disabled = true;
-        button.textContent = "Opening...";
+
+    /*
+     * IMPORTANT:
+     *
+     * Check Supabase again before opening
+     * the task.
+     *
+     * This prevents a task that was deleted
+     * or deactivated by the admin from being
+     * opened using an old task ID.
+     */
+
+    const {
+        data: task,
+        error
+    } = await supabaseClient
+        .from("tasks")
+        .select("id,status")
+        .eq("id", taskId)
+        .eq("status", "active")
+        .maybeSingle();
+
+
+    if (
+        error ||
+        !task
+    ) {
+
+        /*
+         * Remove the old task from local storage.
+         */
+
+        localStorage.removeItem(
+            "nexaLearnCurrentTaskId"
+        );
+
+
+        alert(
+            "This task is no longer available."
+        );
+
+
+        /*
+         * Reload the task list.
+         */
+
+        await loadTasks();
+
+        return;
     }
 
-    try {
 
-        const task = allTasks.find(
-            item => String(item.id) === String(taskId)
+    /*
+     * Save current task.
+     */
+
+    localStorage.setItem(
+        "nexaLearnCurrentTaskId",
+        taskId
+    );
+
+
+    /*
+     * Verify it was saved.
+     */
+
+    const savedTaskId =
+        localStorage.getItem(
+            "nexaLearnCurrentTaskId"
         );
 
-        if (!task) {
-            throw new Error("This task is no longer available.");
-        }
 
-        // Confirm the task is still active.
-        const { data: activeTask, error } = await supabaseClient
-            .from("tasks")
-            .select("id")
-            .eq("id", taskId)
-            .eq("status", "active")
-            .maybeSingle();
+    if (
+        savedTaskId !==
+        taskId
+    ) {
 
-        if (error) throw error;
-
-        if (!activeTask) {
-            throw new Error("This task is no longer active.");
-        }
-
-        // Package ownership is not required to preview.
-        // Submission permission is checked again in
-        // task-workspace.html and by the Supabase reward function.
-
-        localStorage.setItem(
-            "nexaLearnCurrentTaskId",
-            String(taskId)
+        alert(
+            "Unable to save the selected task."
         );
 
-        const workspaceUrl = new URL(
-            "task-workspace.html",
-            window.location.href
-        );
-
-        workspaceUrl.searchParams.set("id", String(taskId));
-
-        window.location.assign(workspaceUrl.href);
-
-    } catch (error) {
-
-        console.error("Start task error:", error);
-
-        alert(error.message || "Unable to open this task.");
-
-        if (button) {
-            button.disabled = false;
-            button.textContent = "Start Task";
-        }
+        return;
     }
+
+
+    /*
+     * Open workspace.
+     */
+
+    window.location.href =
+        "/task-workspace";
 }
 
 
-/* LOAD TASKS */
+/* =========================================================
+   LOAD TASKS
+   ========================================================= */
 
 async function loadTasks() {
 
-    if (loadingTasks) return;
-
-    loadingTasks = true;
-
-    loadingArea.hidden = false;
-    messageArea.hidden = true;
-    tasksGrid.innerHTML = "";
-
     try {
 
-        currentUser = await getCurrentUser();
+        /*
+         * Show loading state.
+         */
 
-        if (!currentUser) return;
+        loadingArea.classList.remove(
+            "hidden"
+        );
 
-        await loadUserPackages(currentUser.id);
 
-        const { data, error } = await supabaseClient
+        messageArea.classList.add(
+            "hidden"
+        );
+
+
+        tasksGrid.innerHTML =
+            "";
+
+
+        /*
+         * Get logged-in user.
+         */
+
+        currentUser =
+            await getCurrentUser();
+
+
+        if (!currentUser) {
+            return;
+        }
+
+
+        /*
+         * ONLY ACTIVE TASKS ARE LOADED.
+         *
+         * There are NO fallback tasks.
+         *
+         * If admin deletes a task from Supabase,
+         * it will not appear here.
+         */
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("tasks")
             .select(`
                 id,
@@ -615,169 +587,366 @@ async function loadTasks() {
                 status,
                 created_at
             `)
-            .eq("status", "active")
-            .order("created_at", { ascending: false });
+            .eq(
+                "status",
+                "active"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
-        if (error) throw error;
 
-        allTasks = data || [];
+        if (error) {
+            throw error;
+        }
 
-        loadingArea.hidden = true;
+
+        /*
+         * Only keep active tasks.
+         */
+
+        allTasks =
+            (data || []).filter(
+                task =>
+                    String(
+                        task.status || ""
+                    ).toLowerCase() ===
+                    "active"
+            );
+
+
+        /*
+         * Remove any saved task ID that
+         * is no longer active.
+         */
+
+        const savedTaskId =
+            localStorage.getItem(
+                "nexaLearnCurrentTaskId"
+            );
+
+
+        if (savedTaskId) {
+
+            const stillActive =
+                allTasks.some(
+                    task =>
+                        String(task.id) ===
+                        String(savedTaskId)
+                );
+
+
+            if (!stillActive) {
+
+                localStorage.removeItem(
+                    "nexaLearnCurrentTaskId"
+                );
+
+            }
+        }
+
+
+        loadingArea.classList.add(
+            "hidden"
+        );
+
 
         renderTasks();
 
-    } catch (error) {
+    }
 
-        console.error("Task loading error:", error);
+    catch (error) {
 
-        loadingArea.hidden = true;
-        tasksGrid.innerHTML = "";
+        console.error(
+            "Task loading error:",
+            error
+        );
+
+
+        loadingArea.classList.add(
+            "hidden"
+        );
+
+
+        tasksGrid.innerHTML =
+            "";
+
 
         messageArea.textContent =
             "Unable to load tasks: " +
-            (error.message || "Please try again.");
+            (
+                error?.message ||
+                "Unknown error"
+            );
 
-        messageArea.className = "message error";
-        messageArea.hidden = false;
 
-    } finally {
-        loadingTasks = false;
+        messageArea.className =
+            "message error";
+
+
+        messageArea.classList.remove(
+            "hidden"
+        );
     }
 }
 
 
-/* RENDER TASK CARDS */
+/* =========================================================
+   RENDER TASKS
+   ========================================================= */
 
 function renderTasks() {
 
-    const filteredTasks = currentCategory === "All"
-        ? allTasks
-        : allTasks.filter(task =>
-            normalizeCategory(task.category) ===
-            normalizeCategory(currentCategory)
-        );
+    let filteredTasks =
+        allTasks;
 
-    tasksGrid.innerHTML = "";
 
-    if (!filteredTasks.length) {
+    if (
+        currentCategory !==
+        "All"
+    ) {
+
+        filteredTasks =
+            allTasks.filter(
+                task =>
+                    task.category ===
+                    currentCategory
+            );
+    }
+
+
+    tasksGrid.innerHTML =
+        "";
+
+
+    if (
+        filteredTasks.length ===
+        0
+    ) {
+
         tasksGrid.innerHTML = `
-            <div class="message">
-                No tasks are currently available in this category.
+
+            <div class="message empty">
+
+                No tasks are currently available
+                in this category.
+
             </div>
+
         `;
+
         return;
     }
 
-    filteredTasks.forEach(task => {
 
-        const accessStatus =
-            getPackageAccessStatus(task.category);
+    filteredTasks.forEach(
+        task => {
 
-        const canSubmit = accessStatus === "allowed";
+            /*
+             * Extra safety:
+             *
+             * Never render a task unless
+             * its status is active.
+             */
 
-        const reward = Number(task.reward ?? 50);
-        const currency = task.currency || "KES";
+            if (
+                String(
+                    task.status || ""
+                ).toLowerCase() !==
+                "active"
+            ) {
+                return;
+            }
 
-        const currencyDisplay =
-            currency === "KES" ? "KSh" : currency;
 
-        const card = document.createElement("div");
-        card.className = "task-card";
+            const reward =
+                Number(
+                    task.reward || 50
+                );
 
-        card.innerHTML = `
-            <div class="task-category">
-                ${escapeHtml(task.category || "Task")}
-            </div>
 
-            <h2>${escapeHtml(task.title || "NexaLearn Task")}</h2>
+            const currency =
+                task.currency ||
+                "KES";
 
-            <div class="task-description">
-                ${escapeHtml(task.description || "Complete this task accurately.")}
-            </div>
 
-            <div class="task-footer">
+            const currencyDisplay =
+                currency === "KES"
+                    ? "KSh"
+                    : currency;
 
-                <div class="reward">
-                    ${escapeHtml(currencyDisplay)}
-                    ${reward.toLocaleString("en-KE")}
-                    / task
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "task-card";
+
+
+            card.innerHTML = `
+
+                <div class="task-category">
+                    ${escapeHtml(
+                        task.category ||
+                        "Task"
+                    )}
                 </div>
 
-                <button class="start-btn" type="button">
-                    Start Task
-                </button>
+                <h2>
+                    ${escapeHtml(
+                        task.title ||
+                        "NexaLearn Task"
+                    )}
+                </h2>
 
-            </div>
+                <div class="task-description">
+                    ${escapeHtml(
+                        task.description ||
+                        "Complete this task accurately."
+                    )}
+                </div>
 
-            <div class="access-note ${
-                canSubmit ? "available" : "locked"
-            }">
-                ${
-                    canSubmit
-                        ? "Your package currently allows submissions in this category."
-                        : accessStatus === "exhausted"
-                            ? "Preview available. Your package allowance has been used. Activate another package to submit."
-                            : "Preview available. Activate a package for this category before submitting and earning."
-                }
-            </div>
-        `;
+                <div class="task-footer">
 
-        const button = card.querySelector(".start-btn");
+                    <div class="reward">
 
-        // Always allow the user to open and preview the task.
-        button.addEventListener("click", () => {
-            startTask(task.id, button);
-        });
+                        ${currencyDisplay}
+                        ${reward.toLocaleString(
+                            "en-KE"
+                        )}
 
-        tasksGrid.appendChild(card);
-    });
+                        / task
+
+                    </div>
+
+                    <button
+                        class="start-btn"
+                        type="button"
+                        data-task-id="${escapeHtml(
+                            task.id
+                        )}">
+
+                        Start Task
+
+                    </button>
+
+                </div>
+            `;
+
+
+            tasksGrid.appendChild(
+                card
+            );
+        }
+    );
+
+
+    /*
+     * Attach Start Task events.
+     */
+
+    document
+        .querySelectorAll(
+            ".start-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const taskId =
+                            this.getAttribute(
+                                "data-task-id"
+                            );
+
+
+                        startTask(
+                            taskId
+                        );
+
+                    }
+                );
+
+            }
+        );
 }
 
 
-/* CATEGORY FILTERS */
+/* =========================================================
+   FILTERS
+   ========================================================= */
 
-document.querySelectorAll(".filter-btn").forEach(button => {
+document
+    .querySelectorAll(
+        ".filter-btn"
+    )
+    .forEach(
+        button => {
 
-    button.addEventListener("click", function() {
+            button.addEventListener(
+                "click",
+                function () {
 
-        document.querySelectorAll(".filter-btn").forEach(btn => {
-            btn.classList.remove("active");
-        });
+                    document
+                        .querySelectorAll(
+                            ".filter-btn"
+                        )
+                        .forEach(
+                            btn => {
 
-        this.classList.add("active");
+                                btn.classList.remove(
+                                    "active"
+                                );
 
-        currentCategory =
-            this.getAttribute("data-category") || "All";
-
-        renderTasks();
-    });
-
-});
-
-
-/* AUTH STATE */
-
-supabaseClient.auth.onAuthStateChange((event, session) => {
-
-    if (event === "SIGNED_OUT" && !session) {
-        redirectToLogin();
-    }
-
-});
+                            }
+                        );
 
 
-/* PAGE RESTORE */
+                    this.classList.add(
+                        "active"
+                    );
 
-window.addEventListener("pageshow", event => {
 
-    if (event.persisted) {
+                    currentCategory =
+                        this.getAttribute(
+                            "data-category"
+                        ) ||
+                        "All";
+
+
+                    renderTasks();
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   REFRESH WHEN USER RETURNS TO PAGE
+   ========================================================= */
+
+window.addEventListener(
+    "pageshow",
+    function () {
+
         loadTasks();
+
     }
+);
 
-});
 
-
-/* INITIALIZE */
+/* =========================================================
+   START
+   ========================================================= */
 
 loadTasks();
 
@@ -785,3 +954,4 @@ loadTasks();
 
 </body>
 </html>
+```
