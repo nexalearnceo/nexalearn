@@ -2,212 +2,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexaLearn - Tasks</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexaLearn - Tasks</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
-        * { box-sizing: border-box; }
+<style>
+* { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #06101d;
-            color: #fff;
-            min-height: 100vh;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #06101d;
+    color: #fff;
+    min-height: 100vh;
+}
 
-        .topbar {
-            min-height: 70px;
-            background: #0b1828;
-            border-bottom: 1px solid #1c3045;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-        }
+.topbar {
+    min-height: 70px;
+    background: #0b1828;
+    border-bottom: 1px solid #1c3045;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+}
 
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-        }
+.logo { font-size: 22px; font-weight: bold; }
+.logo span { color: #39d98a; }
 
-        .logo span { color: #39d98a; }
+.back-link {
+    color: #9db1c6;
+    text-decoration: none;
+}
 
-        .back-link {
-            color: #9db1c6;
-            text-decoration: none;
-        }
+.back-link:hover { color: #fff; }
 
-        .back-link:hover { color: #fff; }
+.container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
 
-        .container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+.page-header { margin-bottom: 30px; }
 
-        .page-header { margin-bottom: 30px; }
+.page-header h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+}
 
-        .page-header h1 {
-            margin: 0 0 8px;
-            font-size: 32px;
-        }
+.page-header p {
+    margin: 0;
+    color: #9db1c6;
+    line-height: 1.6;
+}
 
-        .page-header p {
-            margin: 0;
-            color: #9db1c6;
-            line-height: 1.6;
-        }
+.preview-notice {
+    background: #10243a;
+    border: 1px solid #244766;
+    border-radius: 10px;
+    padding: 15px 18px;
+    margin-bottom: 25px;
+    color: #b9d9f4;
+    line-height: 1.6;
+    font-size: 14px;
+}
 
-        .filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+}
 
-        .filter-btn {
-            padding: 10px 16px;
-            background: #0b1828;
-            color: #9db1c6;
-            border: 1px solid #1c3045;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
+.filter-btn {
+    padding: 10px 16px;
+    background: #0b1828;
+    color: #9db1c6;
+    border: 1px solid #1c3045;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
 
-        .filter-btn.active {
-            background: #39d98a;
-            color: #06101d;
-            border-color: #39d98a;
-            font-weight: bold;
-        }
+.filter-btn.active {
+    background: #39d98a;
+    color: #06101d;
+    border-color: #39d98a;
+    font-weight: bold;
+}
 
-        .tasks-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 20px;
-        }
+.tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
 
-        .task-card {
-            background: #0b1828;
-            border: 1px solid #1c3045;
-            border-radius: 14px;
-            padding: 25px;
-            transition: .2s;
-        }
+.task-card {
+    background: #0b1828;
+    border: 1px solid #1c3045;
+    border-radius: 14px;
+    padding: 25px;
+    transition: .2s;
+}
 
-        .task-card:hover {
-            transform: translateY(-2px);
-            border-color: #294158;
-        }
+.task-card:hover {
+    transform: translateY(-2px);
+    border-color: #294158;
+}
 
-        .task-category {
-            display: inline-block;
-            padding: 6px 10px;
-            background: #16283a;
-            color: #9db1c6;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
+.task-category {
+    display: inline-block;
+    padding: 6px 10px;
+    background: #16283a;
+    color: #9db1c6;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
 
-        .task-card h2 {
-            margin: 0 0 10px;
-            font-size: 22px;
-        }
+.task-card h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+}
 
-        .task-description {
-            color: #9db1c6;
-            line-height: 1.6;
-            min-height: 52px;
-            margin-bottom: 20px;
-        }
+.task-description {
+    color: #9db1c6;
+    line-height: 1.6;
+    min-height: 52px;
+    margin-bottom: 20px;
+}
 
-        .task-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-        }
+.task-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
 
-        .reward {
-            color: #39d98a;
-            font-weight: bold;
-            font-size: 17px;
-        }
+.reward {
+    color: #39d98a;
+    font-weight: bold;
+    font-size: 17px;
+}
 
-        .start-btn {
-            padding: 11px 18px;
-            background: #39d98a;
-            color: #06101d;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.start-btn {
+    padding: 11px 18px;
+    background: #39d98a;
+    color: #06101d;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        .start-btn:hover:not(:disabled) { opacity: .9; }
+.start-btn:hover:not(:disabled) { opacity: .9; }
 
-        .start-btn:disabled {
-            background: #26384a;
-            color: #8197aa;
-            cursor: not-allowed;
-        }
+.start-btn:disabled {
+    background: #26384a;
+    color: #8197aa;
+    cursor: not-allowed;
+}
 
-        .access-note {
-            margin-top: 14px;
-            font-size: 12px;
-            color: #9db1c6;
-            line-height: 1.5;
-        }
+.access-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: #9db1c6;
+    line-height: 1.5;
+}
 
-        .access-note.locked { color: #ffb0b8; }
-        .access-note.available { color: #39d98a; }
+.access-note.locked { color: #ffb0b8; }
+.access-note.available { color: #39d98a; }
 
-        .loading {
-            text-align: center;
-            color: #9db1c6;
-            padding: 50px 20px;
-        }
+.loading {
+    text-align: center;
+    color: #9db1c6;
+    padding: 50px 20px;
+}
 
-        .message {
-            background: #0b1828;
-            border: 1px solid #1c3045;
-            border-radius: 12px;
-            padding: 25px;
-            color: #9db1c6;
-            text-align: center;
-            line-height: 1.6;
-        }
+.message {
+    background: #0b1828;
+    border: 1px solid #1c3045;
+    border-radius: 12px;
+    padding: 25px;
+    color: #9db1c6;
+    text-align: center;
+    line-height: 1.6;
+}
 
-        .error {
-            color: #ff9da8;
-            border-color: #683039;
-            background: #30171b;
-        }
+.error {
+    color: #ff9da8;
+    border-color: #683039;
+    background: #30171b;
+}
 
-        @media (max-width: 750px) {
-            .topbar { padding: 0 18px; }
+@media (max-width: 750px) {
+    .topbar { padding: 0 18px; }
 
-            .container {
-                margin: 25px auto;
-                padding: 0 12px;
-            }
+    .container {
+        margin: 25px auto;
+        padding: 0 12px;
+    }
 
-            .tasks-grid { grid-template-columns: 1fr; }
+    .tasks-grid { grid-template-columns: 1fr; }
 
-            .task-footer {
-                flex-direction: column;
-                align-items: stretch;
-            }
+    .task-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-            .start-btn { width: 100%; }
-        }
-    </style>
+    .start-btn { width: 100%; }
+}
+</style>
 </head>
 
 <body>
@@ -222,9 +229,15 @@
     <div class="page-header">
         <h1>Available Tasks</h1>
         <p>
-            Complete available tasks and earn KSh 50 for every verified submission.
-            Rewards are credited to your wallet.
+            Explore available data tasks, preview the work and earn
+            KSh 50 for every eligible verified submission.
         </p>
+    </div>
+
+    <div class="preview-notice">
+        You can preview available tasks before activating a package.
+        An active package for the relevant task category is required
+        before you can submit answers and earn rewards.
     </div>
 
     <div class="filters">
@@ -242,9 +255,8 @@
 </div>
 
 <script>
-/* =====================================================
-   SUPABASE CONFIGURATION
-===================================================== */
+
+/* SUPABASE CONFIGURATION */
 
 const SUPABASE_URL =
     "https://vzgrzzesquqnftfhchwt.supabase.co";
@@ -266,9 +278,7 @@ const supabaseClient = window.supabase.createClient(
 );
 
 
-/* =====================================================
-   VARIABLES
-===================================================== */
+/* VARIABLES */
 
 let currentUser = null;
 let allTasks = [];
@@ -278,18 +288,14 @@ let redirectingToLogin = false;
 let loadingTasks = false;
 
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+/* ELEMENTS */
 
 const loadingArea = document.getElementById("loadingArea");
 const messageArea = document.getElementById("messageArea");
 const tasksGrid = document.getElementById("tasksGrid");
 
 
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
+/* HTML ESCAPE */
 
 function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -302,15 +308,12 @@ function escapeHtml(value) {
 }
 
 
-/* =====================================================
-   AUTHENTICATION
-===================================================== */
+/* AUTHENTICATION */
 
 function redirectToLogin() {
     if (redirectingToLogin) return;
 
     redirectingToLogin = true;
-
     window.location.replace("login.html");
 }
 
@@ -320,28 +323,16 @@ async function getCurrentUser() {
 
     if (error) throw error;
 
-    if (!data?.session) {
+    if (!data?.session?.user) {
         redirectToLogin();
         return null;
     }
 
-    const { data: userData, error: userError } =
-        await supabaseClient.auth.getUser();
-
-    if (userError) throw userError;
-
-    if (!userData?.user) {
-        redirectToLogin();
-        return null;
-    }
-
-    return userData.user;
+    return data.session.user;
 }
 
 
-/* =====================================================
-   LOAD USER PACKAGES
-===================================================== */
+/* LOAD USER PACKAGES */
 
 async function loadUserPackages(userId) {
     const { data, error } = await supabaseClient
@@ -371,12 +362,12 @@ async function loadUserPackages(userId) {
 }
 
 
-/* =====================================================
-   PACKAGE ACCESS CHECK
-===================================================== */
+/* PACKAGE ACCESS STATUS */
 
 function getPackageAccessStatus(taskCategory) {
+
     const matchingPackages = userPackages.filter(pkg => {
+
         const details = Array.isArray(pkg.packages)
             ? pkg.packages[0]
             : pkg.packages;
@@ -392,6 +383,7 @@ function getPackageAccessStatus(taskCategory) {
     if (!matchingPackages.length) return "required";
 
     const hasRemainingTasks = matchingPackages.some(pkg => {
+
         const details = Array.isArray(pkg.packages)
             ? pkg.packages[0]
             : pkg.packages;
@@ -409,11 +401,10 @@ function getPackageAccessStatus(taskCategory) {
 }
 
 
-/* =====================================================
-   START TASK - CORRECTED NAVIGATION
-===================================================== */
+/* START TASK - PREVIEW ALLOWED WITHOUT PACKAGE */
 
 async function startTask(taskId, button) {
+
     if (!currentUser) {
         redirectToLogin();
         return;
@@ -425,8 +416,6 @@ async function startTask(taskId, button) {
     }
 
     try {
-        // Refresh package information before opening.
-        await loadUserPackages(currentUser.id);
 
         const task = allTasks.find(
             item => String(item.id) === String(taskId)
@@ -436,18 +425,7 @@ async function startTask(taskId, button) {
             throw new Error("This task is no longer available.");
         }
 
-        const accessStatus =
-            getPackageAccessStatus(task.category);
-
-        if (accessStatus !== "allowed") {
-            throw new Error(
-                accessStatus === "exhausted"
-                    ? "Your package allowance for this category has been used. Activate another package to continue."
-                    : "You need an active package for this task category."
-            );
-        }
-
-        // Confirm that the task is still active.
+        // Confirm the task is still active.
         const { data: activeTask, error } = await supabaseClient
             .from("tasks")
             .select("id")
@@ -461,13 +439,15 @@ async function startTask(taskId, button) {
             throw new Error("This task is no longer active.");
         }
 
-        // Save the selected task.
+        // Package ownership is NOT required to preview.
+        // Submission permission will be checked in the workspace
+        // and protected again by the Supabase reward function.
+
         localStorage.setItem(
             "nexaLearnCurrentTaskId",
             String(taskId)
         );
 
-        // CORRECT FILE NAVIGATION FOR RENDER STATIC HOSTING.
         const workspaceUrl = new URL(
             "task-workspace.html",
             window.location.href
@@ -478,6 +458,7 @@ async function startTask(taskId, button) {
         window.location.assign(workspaceUrl.href);
 
     } catch (error) {
+
         console.error("Start task error:", error);
 
         alert(error.message || "Unable to open this task.");
@@ -490,11 +471,10 @@ async function startTask(taskId, button) {
 }
 
 
-/* =====================================================
-   LOAD TASKS
-===================================================== */
+/* LOAD TASKS */
 
 async function loadTasks() {
+
     if (loadingTasks) return;
 
     loadingTasks = true;
@@ -504,6 +484,7 @@ async function loadTasks() {
     tasksGrid.innerHTML = "";
 
     try {
+
         currentUser = await getCurrentUser();
 
         if (!currentUser) return;
@@ -534,6 +515,7 @@ async function loadTasks() {
         renderTasks();
 
     } catch (error) {
+
         console.error("Task loading error:", error);
 
         loadingArea.hidden = true;
@@ -552,11 +534,10 @@ async function loadTasks() {
 }
 
 
-/* =====================================================
-   RENDER TASK CARDS
-===================================================== */
+/* RENDER TASK CARDS */
 
 function renderTasks() {
+
     const filteredTasks = currentCategory === "All"
         ? allTasks
         : allTasks.filter(
@@ -575,16 +556,11 @@ function renderTasks() {
     }
 
     filteredTasks.forEach(task => {
+
         const accessStatus =
             getPackageAccessStatus(task.category);
 
-        const canStart = accessStatus === "allowed";
-
-        const buttonText = canStart
-            ? "Start Task"
-            : accessStatus === "exhausted"
-                ? "Allowance Used"
-                : "Package Required";
+        const canSubmit = accessStatus === "allowed";
 
         const reward = Number(task.reward ?? 50);
         const currency = task.currency || "KES";
@@ -607,52 +583,50 @@ function renderTasks() {
             </div>
 
             <div class="task-footer">
+
                 <div class="reward">
                     ${escapeHtml(currencyDisplay)}
                     ${reward.toLocaleString("en-KE")}
                     / task
                 </div>
 
-                <button
-                    class="start-btn"
-                    type="button"
-                    ${canStart ? "" : "disabled"}>
-                    ${buttonText}
+                <button class="start-btn" type="button">
+                    Start Task
                 </button>
+
             </div>
 
             <div class="access-note ${
-                canStart ? "available" : "locked"
+                canSubmit ? "available" : "locked"
             }">
                 ${
-                    canStart
-                        ? "Your package allows access to this task category."
+                    canSubmit
+                        ? "Your package currently allows submissions in this category."
                         : accessStatus === "exhausted"
-                            ? "Your allowance for this category has been used. Activate another package to continue."
-                            : "An active package for this category is required to submit this task."
+                            ? "Preview available. Your package allowance has been used. Activate another package to submit."
+                            : "Preview available. Activate a package for this category before submitting and earning."
                 }
             </div>
         `;
 
         const button = card.querySelector(".start-btn");
 
-        if (canStart) {
-            button.addEventListener("click", () => {
-                startTask(task.id, button);
-            });
-        }
+        // Always allow the user to open and preview the task.
+        button.addEventListener("click", () => {
+            startTask(task.id, button);
+        });
 
         tasksGrid.appendChild(card);
     });
 }
 
 
-/* =====================================================
-   CATEGORY FILTERS
-===================================================== */
+/* CATEGORY FILTERS */
 
 document.querySelectorAll(".filter-btn").forEach(button => {
+
     button.addEventListener("click", function() {
+
         document.querySelectorAll(".filter-btn").forEach(btn => {
             btn.classList.remove("active");
         });
@@ -664,34 +638,33 @@ document.querySelectorAll(".filter-btn").forEach(button => {
 
         renderTasks();
     });
+
 });
 
 
-/* =====================================================
-   AUTH STATE
-===================================================== */
+/* AUTH STATE */
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
+
     if (event === "SIGNED_OUT" && !session) {
         redirectToLogin();
     }
+
 });
 
 
-/* =====================================================
-   PAGE RESTORE
-===================================================== */
+/* PAGE RESTORE */
 
 window.addEventListener("pageshow", event => {
+
     if (event.persisted) {
         loadTasks();
     }
+
 });
 
 
-/* =====================================================
-   INITIALIZE
-===================================================== */
+/* INITIALIZE */
 
 loadTasks();
 
