@@ -215,7 +215,11 @@ body.menu-open{overflow:hidden}
 <script>
 "use strict";
 
-/* Supabase configuration retained from the supplied dashboard. */
+/* =========================================================
+   SUPABASE CONFIGURATION
+   IMPORTANT: SAME STORAGE KEY AS LOGIN AND PACKAGES
+========================================================= */
+
 const SUPABASE_URL = "https://vzgrzzesquqnftfhchwt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
@@ -226,7 +230,8 @@ const supabaseClient = window.supabase.createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storageKey: "nexalearn-auth"
     }
   }
 );
@@ -238,7 +243,13 @@ const menuOverlay = $("menuOverlay");
 const errorBox = $("errorBox");
 const loadingNote = $("loadingNote");
 
-/* Main navigation drawer */
+let redirectingToLogin = false;
+let dashboardUser = null;
+
+/* =========================================================
+   MAIN NAVIGATION DRAWER
+========================================================= */
+
 function setMenuOpen(open) {
   sidebar.classList.toggle("open", open);
   menuOverlay.classList.toggle("open", open);
@@ -259,6 +270,7 @@ function setMenuOpen(open) {
 menuToggle.addEventListener("click", () => {
   setMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true");
 });
+
 menuOverlay.addEventListener("click", () => setMenuOpen(false));
 
 document.addEventListener("keydown", event => {
@@ -267,6 +279,7 @@ document.addEventListener("keydown", event => {
       setMenuOpen(false);
       menuToggle.focus();
     }
+
     if (!$("notificationPanel").hidden) {
       $("notificationPanel").hidden = true;
       $("notificationToggle").setAttribute("aria-expanded", "false");
@@ -286,8 +299,13 @@ sidebar.querySelectorAll("a").forEach(link => {
   });
 });
 
+/* =========================================================
+   GENERAL HELPERS
+========================================================= */
+
 function money(amount) {
   const value = Number(amount ?? 0);
+
   return "KSh " + (Number.isFinite(value) ? value : 0).toLocaleString(
     "en-KE",
     {minimumFractionDigits: 2, maximumFractionDigits: 2}
@@ -299,29 +317,60 @@ function showError(message) {
   errorBox.style.display = "block";
 }
 
-/* Authentication: check for a session before fetching private data. */
+function redirectToLogin() {
+  if (redirectingToLogin) return;
+
+  redirectingToLogin = true;
+  loadingNote.textContent = "Your login session has expired. Redirecting...";
+  window.location.replace("login.html");
+}
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
 async function getCurrentUser() {
-  const {data: sessionData, error: sessionError} =
-    await supabaseClient.auth.getSession();
+  const {
+    data: sessionData,
+    error: sessionError
+  } = await supabaseClient.auth.getSession();
 
-  if (sessionError) throw sessionError;
+  if (sessionError) {
+    throw sessionError;
+  }
 
-  if (!sessionData.session) {
-    window.location.replace("login.html");
+  if (!sessionData || !sessionData.session) {
+    redirectToLogin();
     return null;
   }
 
-  const {data, error} = await supabaseClient.auth.getUser();
+  /*
+    Verify the session with Supabase.
+    A temporary network/API error should not automatically
+    send a logged-in user back to the login page.
+  */
 
-  if (error || !data?.user) {
-    window.location.replace("login.html");
+  const {
+    data,
+    error
+  } = await supabaseClient.auth.getUser();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data || !data.user) {
+    redirectToLogin();
     return null;
   }
 
   return data.user;
 }
 
-/* Wallet data */
+/* =========================================================
+   WALLET DATA
+========================================================= */
+
 async function loadWallet(userId) {
   const {data, error} = await supabaseClient
     .from("wallets")
@@ -336,7 +385,10 @@ async function loadWallet(userId) {
   $("totalEarned").textContent = money(data?.total_earned);
 }
 
-/* Approved task count */
+/* =========================================================
+   COMPLETED TASKS
+========================================================= */
+
 async function loadCompletedTasks(userId) {
   const {data, error} = await supabaseClient
     .from("task_completions")
@@ -348,10 +400,14 @@ async function loadCompletedTasks(userId) {
 
   const count = data?.length ?? 0;
   $("completedTasks").textContent = count;
+
   return count;
 }
 
-/* Active package */
+/* =========================================================
+   ACTIVE PACKAGE
+========================================================= */
+
 async function loadPackage(userId) {
   const {data, error} = await supabaseClient
     .from("user_packages")
@@ -379,22 +435,38 @@ async function loadPackage(userId) {
   $("packageInfo").textContent = money(pkg.price_paid) + " package";
 
   const total = Math.max(0, Number(pkg.task_count) || 0);
-  const completed = Math.max(0, Number(pkg.completed_tasks ?? pkg.tasks_completed) || 0);
-  const percentage = total > 0 ? Math.min(100, completed / total * 100) : 0;
+  const completed = Math.max(
+    0,
+    Number(pkg.completed_tasks ?? pkg.tasks_completed) || 0
+  );
+
+  const percentage = total > 0
+    ? Math.min(100, completed / total * 100)
+    : 0;
 
   $("progressFill").style.width = percentage + "%";
   $("progressText").textContent = completed + " / " + total + " tasks";
 }
 
+/* =========================================================
+   LOAD DASHBOARD
+========================================================= */
+
 async function loadDashboard() {
   errorBox.style.display = "none";
-  loadingNote.textContent = "Loading your account...";
+  loadingNote.style.display = "block";
+  loadingNote.textContent = "Checking your login...";
 
   try {
     const user = await getCurrentUser();
+
     if (!user) return;
 
+    dashboardUser = user;
+
     $("userEmail").textContent = user.email || "NexaLearn Member";
+
+    loadingNote.textContent = "Loading your account...";
 
     await Promise.all([
       loadWallet(user.id),
@@ -403,16 +475,25 @@ async function loadDashboard() {
     ]);
 
     loadingNote.style.display = "none";
+
     console.log("NexaLearn dashboard loaded successfully.");
+
   } catch (error) {
     console.error("DASHBOARD ERROR:", error);
+
     loadingNote.style.display = "none";
-    showError("Unable to load your dashboard. " +
-      (error?.message || "Please refresh and try again."));
+
+    showError(
+      "Unable to load your dashboard. " +
+      (error?.message || "Please refresh and try again.")
+    );
   }
 }
 
-/* Browser-local notification centre */
+/* =========================================================
+   NOTIFICATION CENTRE
+========================================================= */
+
 const notificationKey = "nexaLearnDashboardNotifications";
 const notificationToggle = $("notificationToggle");
 const notificationPanel = $("notificationPanel");
@@ -455,6 +536,7 @@ function renderNotifications() {
 
   notificationBadge.textContent = unread > 99 ? "99+" : String(unread);
   notificationBadge.hidden = unread === 0;
+
   notificationSummary.textContent = unread
     ? `${unread} unread notification${unread === 1 ? "" : "s"}`
     : "Your latest updates";
@@ -476,6 +558,7 @@ function renderNotifications() {
 
     empty.append(icon, message, hint);
     notificationList.appendChild(empty);
+
     return;
   }
 
@@ -498,20 +581,31 @@ function renderNotifications() {
 
     const time = document.createElement("small");
     const date = new Date(item.createdAt);
-    time.textContent = Number.isNaN(date.getTime()) ? "" : date.toLocaleString();
+
+    time.textContent = Number.isNaN(date.getTime())
+      ? ""
+      : date.toLocaleString();
 
     content.append(title, message, time);
 
     const readButton = document.createElement("button");
     readButton.type = "button";
     readButton.textContent = item.read ? "✓" : "Read";
-    readButton.setAttribute("aria-label", item.read ? "Already read" : "Mark notification as read");
+
+    readButton.setAttribute(
+      "aria-label",
+      item.read ? "Already read" : "Mark notification as read"
+    );
+
     readButton.disabled = Boolean(item.read);
 
     readButton.addEventListener("click", () => {
-      saveNotifications(getNotifications().map(n =>
-        n.id === item.id ? {...n, read: true} : n
-      ));
+      saveNotifications(
+        getNotifications().map(n =>
+          n.id === item.id ? {...n, read: true} : n
+        )
+      );
+
       renderNotifications();
     });
 
@@ -521,7 +615,9 @@ function renderNotifications() {
 }
 
 notificationToggle.addEventListener("click", () => {
-  const open = notificationToggle.getAttribute("aria-expanded") !== "true";
+  const open =
+    notificationToggle.getAttribute("aria-expanded") !== "true";
+
   notificationToggle.setAttribute("aria-expanded", String(open));
   notificationPanel.hidden = !open;
 
@@ -529,7 +625,10 @@ notificationToggle.addEventListener("click", () => {
 });
 
 $("markAllRead").addEventListener("click", () => {
-  saveNotifications(getNotifications().map(item => ({...item, read: true})));
+  saveNotifications(
+    getNotifications().map(item => ({...item, read: true}))
+  );
+
   renderNotifications();
 });
 
@@ -538,25 +637,37 @@ $("clearNotifications").addEventListener("click", () => {
   renderNotifications();
 });
 
-/* Create the welcome message only once per browser. */
+/* Welcome notification */
+
 if (!localStorage.getItem("nexaLearnWelcomeNotificationAdded")) {
   addNexaNotification(
     "Welcome to NexaLearn",
     "Your workspace is ready. Explore tasks, packages, and your wallet.",
     "🎉"
   );
-  localStorage.setItem("nexaLearnWelcomeNotificationAdded", "true");
+
+  localStorage.setItem(
+    "nexaLearnWelcomeNotificationAdded",
+    "true"
+  );
 }
 
 renderNotifications();
 
-/* Sign out */
+/* =========================================================
+   LOGOUT
+========================================================= */
+
 async function logout() {
   setMenuOpen(false);
 
   try {
     const {error} = await supabaseClient.auth.signOut();
-    if (error) console.error("LOGOUT ERROR:", error);
+
+    if (error) {
+      console.error("LOGOUT ERROR:", error);
+    }
+
   } catch (error) {
     console.error("LOGOUT ERROR:", error);
   }
@@ -568,14 +679,23 @@ async function logout() {
   window.location.replace("login.html");
 }
 
-/* React to logout in another browser tab. */
+/* =========================================================
+   AUTH STATE CHANGES
+========================================================= */
+
 supabaseClient.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT" && !session) {
-    window.location.replace("login.html");
+    redirectToLogin();
   }
 });
 
+/* =========================================================
+   START DASHBOARD
+========================================================= */
+
 loadDashboard();
+
 </script>
+
 </body>
 </html>

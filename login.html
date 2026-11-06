@@ -178,7 +178,6 @@
 
       <div class="field">
         <label for="email">Email Address</label>
-
         <input
           type="email"
           id="email"
@@ -189,11 +188,9 @@
       </div>
 
       <div class="field">
-
         <label for="password">Password</label>
 
         <div class="password-row">
-
           <input
             type="password"
             id="password"
@@ -202,30 +199,19 @@
             required
           >
 
-          <span
-            class="show-password"
-            id="showPassword"
-          >
+          <span class="show-password" id="showPassword">
             Show
           </span>
-
         </div>
-
       </div>
 
-      <button
-        type="submit"
-        id="loginButton"
-      >
+      <button type="submit" id="loginButton">
         Sign In
       </button>
 
     </form>
 
-    <div
-      id="message"
-      class="message"
-    ></div>
+    <div id="message" class="message"></div>
 
     <div class="links">
       <a href="signup.html">Create an account</a>
@@ -234,10 +220,7 @@
   </div>
 
 <script>
-
-  // =========================================================
   // SUPABASE CONFIGURATION
-  // =========================================================
 
   const SUPABASE_URL =
     "https://vzgrzzesquqnftfhchwt.supabase.co";
@@ -245,297 +228,155 @@
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
+  // USE THE SAME AUTH STORAGE KEY ACROSS NEXALEARN
 
-  // =========================================================
-  // SUPABASE CLIENT
-  // IMPORTANT: SAME STORAGE KEY AS PACKAGES.HTML
-  // =========================================================
-
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          storageKey: "nexalearn-auth"
-        }
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "nexalearn-auth"
       }
-    );
+    }
+  );
 
-
-  // =========================================================
   // ELEMENTS
-  // =========================================================
 
-  const loginForm =
-    document.getElementById("loginForm");
+  const loginForm = document.getElementById("loginForm");
+  const loginButton = document.getElementById("loginButton");
+  const message = document.getElementById("message");
+  const passwordInput = document.getElementById("password");
+  const showPassword = document.getElementById("showPassword");
 
-  const loginButton =
-    document.getElementById("loginButton");
+  let loginInProgress = false;
 
-  const message =
-    document.getElementById("message");
-
-  const passwordInput =
-    document.getElementById("password");
-
-  const showPassword =
-    document.getElementById("showPassword");
-
-
-  // =========================================================
-  // MESSAGE
-  // =========================================================
+  // DISPLAY MESSAGE
 
   function showMessage(text, type) {
-
     message.textContent = text;
-
-    message.className =
-      "message " + type;
-
-    message.style.display =
-      "block";
+    message.className = "message " + type;
+    message.style.display = "block";
   }
 
-
-  // =========================================================
   // PASSWORD VISIBILITY
-  // =========================================================
 
-  showPassword.addEventListener(
-    "click",
-    function () {
-
-      if (passwordInput.type === "password") {
-
-        passwordInput.type = "text";
-
-        showPassword.textContent = "Hide";
-
-      } else {
-
-        passwordInput.type = "password";
-
-        showPassword.textContent = "Show";
-
-      }
-
+  showPassword.addEventListener("click", function () {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      showPassword.textContent = "Hide";
+    } else {
+      passwordInput.type = "password";
+      showPassword.textContent = "Show";
     }
-  );
+  });
 
-
-  // =========================================================
   // LOGIN
-  // =========================================================
 
-  loginForm.addEventListener(
-    "submit",
-    async function (event) {
+  loginForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
 
-      event.preventDefault();
+    if (loginInProgress) return;
 
-      const email =
-        document
-          .getElementById("email")
-          .value
-          .trim();
+    const email = document.getElementById("email").value.trim();
+    const password = passwordInput.value;
 
-      const password =
-        passwordInput.value;
-
-
-      if (!email || !password) {
-
-        showMessage(
-          "Please enter your email and password.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      loginButton.disabled = true;
-
-      loginButton.textContent = "Signing in...";
-
-      message.style.display = "none";
-
-
-      try {
-
-        console.log("Starting NexaLearn login...");
-
-
-        // SIGN IN
-
-        const {
-          data,
-          error
-        } = await supabaseClient.auth.signInWithPassword({
-
-          email: email,
-
-          password: password
-
-        });
-
-
-        if (error) {
-
-          console.error("SUPABASE LOGIN ERROR:", error);
-
-          throw error;
-        }
-
-
-        if (!data || !data.user) {
-
-          throw new Error(
-            "No user was returned from Supabase."
-          );
-        }
-
-
-        if (!data.session) {
-
-          throw new Error(
-            "Supabase login succeeded but no session was created."
-          );
-        }
-
-
-        console.log("LOGIN SUCCESS");
-
-
-        // VERIFY SESSION
-
-        const {
-          data: sessionData,
-          error: sessionError
-        } = await supabaseClient.auth.getSession();
-
-
-        if (sessionError) {
-
-          console.error("SESSION ERROR:", sessionError);
-
-          throw sessionError;
-        }
-
-
-        if (!sessionData || !sessionData.session) {
-
-          throw new Error(
-            "Auth session missing after login. Please try again."
-          );
-        }
-
-
-        console.log("SESSION VERIFIED SUCCESSFULLY");
-
-
-        // SAVE LOCAL USER INFORMATION
-
-        localStorage.setItem(
-          "nexaLearnLoggedIn",
-          "true"
-        );
-
-        localStorage.setItem(
-          "nexaLearnUser",
-          JSON.stringify(data.user)
-        );
-
-        localStorage.setItem(
-          "nexaLearnUserId",
-          data.user.id
-        );
-
-
-        // SUCCESS MESSAGE
-
-        showMessage(
-          "Login successful. Opening dashboard...",
-          "success"
-        );
-
-
-        // REDIRECT TO DASHBOARD
-
-        setTimeout(function () {
-
-          window.location.replace("dashboard.html");
-
-        }, 1200);
-
-
-      } catch (error) {
-
-        console.error("LOGIN ERROR:", error);
-
-        showMessage(
-          error.message || "Unable to sign in.",
-          "error"
-        );
-
-        loginButton.disabled = false;
-
-        loginButton.textContent = "Sign In";
-
-      }
-
+    if (!email || !password) {
+      showMessage(
+        "Please enter your email and password.",
+        "error"
+      );
+      return;
     }
-  );
 
-
-  // =========================================================
-  // EXISTING SESSION CHECK
-  // =========================================================
-
-  async function checkExistingSession() {
+    loginInProgress = true;
+    loginButton.disabled = true;
+    loginButton.textContent = "Signing in...";
+    message.style.display = "none";
 
     try {
+      // SIGN IN WITH SUPABASE
+
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+      if (error) throw error;
+
+      if (!data || !data.user || !data.session) {
+        throw new Error(
+          "Login did not return a valid user session."
+        );
+      }
+
+      // VERIFY SESSION
 
       const {
-        data,
-        error
+        data: sessionData,
+        error: sessionError
       } = await supabaseClient.auth.getSession();
 
+      if (sessionError) throw sessionError;
 
-      if (error) {
-
-        console.error("SESSION CHECK ERROR:", error);
-
-        return;
+      if (
+        !sessionData ||
+        !sessionData.session ||
+        sessionData.session.user.id !== data.user.id
+      ) {
+        throw new Error(
+          "Unable to verify your login session. Please try again."
+        );
       }
 
+      // SAVE USER INFORMATION
 
-      if (data && data.session) {
+      localStorage.setItem(
+        "nexaLearnLoggedIn",
+        "true"
+      );
 
-        console.log("Existing session found.");
+      localStorage.setItem(
+        "nexaLearnUser",
+        JSON.stringify(data.user)
+      );
 
+      localStorage.setItem(
+        "nexaLearnUserId",
+        data.user.id
+      );
+
+      showMessage(
+        "Login successful. Opening dashboard...",
+        "success"
+      );
+
+      // REDIRECT ONLY AFTER SUCCESSFUL LOGIN
+
+      window.setTimeout(function() {
         window.location.replace("dashboard.html");
-
-      }
+      }, 800);
 
     } catch (error) {
+      console.error("NEXALEARN LOGIN ERROR:", error);
 
-      console.error("EXISTING SESSION ERROR:", error);
+      showMessage(
+        error.message || "Unable to sign in. Please try again.",
+        "error"
+      );
 
+      loginButton.disabled = false;
+      loginButton.textContent = "Sign In";
+      loginInProgress = false;
     }
+  });
 
-  }
-
-
-  // RUN SESSION CHECK
-
-  checkExistingSession();
-
+  // IMPORTANT:
+  // There is deliberately NO automatic session redirect here.
+  // The dashboard must verify the Supabase session itself.
 </script>
 
 </body>
