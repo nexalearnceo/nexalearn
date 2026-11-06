@@ -225,7 +225,6 @@
         }
 
         @media (max-width: 750px) {
-
             .topbar {
                 padding: 0 18px;
             }
@@ -265,7 +264,6 @@
 
 </div>
 
-
 <div class="container">
 
     <div class="page-header">
@@ -279,65 +277,44 @@
 
     </div>
 
-
     <div class="filters">
 
-        <button
-            class="filter-btn active"
-            data-category="All">
+        <button class="filter-btn active" data-category="All">
             All Tasks
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Language Translation">
+        <button class="filter-btn" data-category="Language Translation">
             Language Translation
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Data Annotation">
+        <button class="filter-btn" data-category="Data Annotation">
             Data Annotation
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Audio">
+        <button class="filter-btn" data-category="Audio">
             Audio
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Image Annotation">
+        <button class="filter-btn" data-category="Image Annotation">
             Image Annotation
         </button>
 
     </div>
 
-
     <div id="loadingArea" class="loading">
         Loading available tasks...
     </div>
 
+    <div id="messageArea" class="message hidden"></div>
 
-    <div
-        id="messageArea"
-        class="message hidden">
-    </div>
-
-
-    <div
-        id="tasksGrid"
-        class="tasks-grid">
-    </div>
+    <div id="tasksGrid" class="tasks-grid"></div>
 
 </div>
-
 
 <script>
 
 /* =========================================================
-   SUPABASE
+   SUPABASE CONFIGURATION
    ========================================================= */
 
 const SUPABASE_URL =
@@ -345,7 +322,6 @@ const SUPABASE_URL =
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
-
 
 const supabaseClient =
     window.supabase.createClient(
@@ -355,7 +331,8 @@ const supabaseClient =
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
-                detectSessionInUrl: true
+                detectSessionInUrl: true,
+                storageKey: "nexaLearn-auth"
             }
         }
     );
@@ -372,6 +349,10 @@ let allTasks = [];
 let currentCategory = "All";
 
 let userPackages = [];
+
+let redirectingToLogin = false;
+
+let loadingTasks = false;
 
 
 /* =========================================================
@@ -411,33 +392,81 @@ function escapeHtml(value) {
 
 
 /* =========================================================
+   REDIRECT TO LOGIN
+   ========================================================= */
+
+function redirectToLogin() {
+
+    if (redirectingToLogin) {
+        return;
+    }
+
+    redirectingToLogin = true;
+
+    loadingArea.textContent =
+        "Your login session has expired. Redirecting...";
+
+    loadingArea.classList.remove("hidden");
+
+    window.location.replace("login.html");
+}
+
+
+/* =========================================================
    GET CURRENT USER
    ========================================================= */
 
 async function getCurrentUser() {
+
+    /*
+     * First check the existing authenticated session.
+     */
+
+    const {
+        data: sessionData,
+        error: sessionError
+    } = await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+        throw sessionError;
+    }
+
+    /*
+     * If there is no session, return to login.
+     */
+
+    if (
+        !sessionData ||
+        !sessionData.session
+    ) {
+
+        redirectToLogin();
+
+        return null;
+    }
+
+    /*
+     * Verify the authenticated user.
+     */
 
     const {
         data,
         error
     } = await supabaseClient.auth.getUser();
 
-
     if (error) {
         throw error;
     }
-
 
     if (
         !data ||
         !data.user
     ) {
 
-        window.location.href =
-            "login.html";
+        redirectToLogin();
 
         return null;
     }
-
 
     return data.user;
 }
@@ -469,11 +498,9 @@ async function loadUserPackages(userId) {
         .eq("user_id", userId)
         .eq("status", "active");
 
-
     if (error) {
         throw error;
     }
-
 
     userPackages = (data || []).filter(pkg => {
 
@@ -505,17 +532,13 @@ function getPackageAccessStatus(taskCategory) {
                     ? up.packages[0]
                     : up.packages;
 
-
             if (!packageDetails) {
                 return false;
             }
 
-
             /*
-             * New packages must match the task category.
-             *
-             * Old general packages have category NULL.
-             * They retain access across categories.
+             * Category-specific packages must match.
+             * Legacy general packages have category NULL.
              */
 
             return (
@@ -525,11 +548,9 @@ function getPackageAccessStatus(taskCategory) {
 
         });
 
-
     if (matchingPackages.length === 0) {
         return "required";
     }
-
 
     const hasRemainingTasks =
         matchingPackages.some(up => {
@@ -539,7 +560,6 @@ function getPackageAccessStatus(taskCategory) {
                     ? up.packages[0]
                     : up.packages;
 
-
             const allowedTasks =
                 Number(
                     up.task_count ??
@@ -547,17 +567,14 @@ function getPackageAccessStatus(taskCategory) {
                     0
                 );
 
-
             const completedTasks =
                 Number(
                     up.completed_tasks || 0
                 );
 
-
             return completedTasks < allowedTasks;
 
         });
-
 
     return hasRemainingTasks
         ? "allowed"
@@ -574,13 +591,19 @@ async function startTask(taskId) {
 
     if (!taskId) {
 
-        alert(
-            "Task ID is missing."
-        );
+        alert("Task ID is missing.");
 
         return;
     }
 
+    if (!currentUser) {
+
+        alert("Please sign in again.");
+
+        redirectToLogin();
+
+        return;
+    }
 
     /*
      * Refresh package access before opening a task.
@@ -588,9 +611,7 @@ async function startTask(taskId) {
 
     try {
 
-        await loadUserPackages(
-            currentUser.id
-        );
+        await loadUserPackages(currentUser.id);
 
     } catch (error) {
 
@@ -606,29 +627,23 @@ async function startTask(taskId) {
         return;
     }
 
-
     const selectedTask =
         allTasks.find(
             task =>
                 String(task.id) === String(taskId)
         );
 
-
     if (!selectedTask) {
 
-        alert(
-            "This task is no longer available."
-        );
+        alert("This task is no longer available.");
 
         return;
     }
-
 
     const accessStatus =
         getPackageAccessStatus(
             selectedTask.category
         );
-
 
     if (accessStatus !== "allowed") {
 
@@ -640,7 +655,6 @@ async function startTask(taskId) {
 
         return;
     }
-
 
     /*
      * Verify task is still active in Supabase.
@@ -656,27 +670,29 @@ async function startTask(taskId) {
         .eq("status", "active")
         .maybeSingle();
 
+    if (error) {
 
-    if (
-        error ||
-        !task
-    ) {
+        console.error("Task verification error:", error);
+
+        alert(
+            "Unable to verify this task. Please try again."
+        );
+
+        return;
+    }
+
+    if (!task) {
 
         localStorage.removeItem(
             "nexaLearnCurrentTaskId"
         );
 
-
-        alert(
-            "This task is no longer available."
-        );
-
+        alert("This task is no longer available.");
 
         await loadTasks();
 
         return;
     }
-
 
     /*
      * Save current task.
@@ -687,7 +703,6 @@ async function startTask(taskId) {
         taskId
     );
 
-
     /*
      * Verify saved task ID.
      */
@@ -697,18 +712,12 @@ async function startTask(taskId) {
             "nexaLearnCurrentTaskId"
         );
 
+    if (savedTaskId !== String(taskId)) {
 
-    if (
-        savedTaskId !== taskId
-    ) {
-
-        alert(
-            "Unable to save the selected task."
-        );
+        alert("Unable to save the selected task.");
 
         return;
     }
-
 
     /*
      * Open workspace.
@@ -716,6 +725,7 @@ async function startTask(taskId) {
 
     window.location.href =
         "/task-workspace";
+
 }
 
 
@@ -725,42 +735,38 @@ async function startTask(taskId) {
 
 async function loadTasks() {
 
+    if (loadingTasks) {
+        return;
+    }
+
+    loadingTasks = true;
+
     try {
 
-        loadingArea.classList.remove(
-            "hidden"
-        );
+        loadingArea.classList.remove("hidden");
 
+        loadingArea.textContent =
+            "Loading available tasks...";
 
-        messageArea.classList.add(
-            "hidden"
-        );
-
+        messageArea.classList.add("hidden");
 
         tasksGrid.innerHTML = "";
-
 
         /*
          * Get logged-in user.
          */
 
-        currentUser =
-            await getCurrentUser();
-
+        currentUser = await getCurrentUser();
 
         if (!currentUser) {
             return;
         }
 
-
         /*
          * Load package allowances.
          */
 
-        await loadUserPackages(
-            currentUser.id
-        );
-
+        await loadUserPackages(currentUser.id);
 
         /*
          * ONLY ACTIVE TASKS ARE LOADED.
@@ -781,31 +787,20 @@ async function loadTasks() {
                 status,
                 created_at
             `)
-            .eq(
-                "status",
-                "active"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
+            .eq("status", "active")
+            .order("created_at", {
+                ascending: false
+            });
 
         if (error) {
             throw error;
         }
 
-
         allTasks =
             (data || []).filter(
                 task =>
-                    String(
-                        task.status || ""
-                    ).toLowerCase() === "active"
+                    String(task.status || "").toLowerCase() === "active"
             );
-
 
         /*
          * Remove saved task ID if no longer active.
@@ -816,16 +811,13 @@ async function loadTasks() {
                 "nexaLearnCurrentTaskId"
             );
 
-
         if (savedTaskId) {
 
             const stillActive =
                 allTasks.some(
                     task =>
-                        String(task.id) ===
-                        String(savedTaskId)
+                        String(task.id) === String(savedTaskId)
                 );
-
 
             if (!stillActive) {
 
@@ -836,31 +828,20 @@ async function loadTasks() {
             }
         }
 
-
-        loadingArea.classList.add(
-            "hidden"
-        );
-
+        loadingArea.classList.add("hidden");
 
         renderTasks();
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Task loading error:",
             error
         );
 
-
-        loadingArea.classList.add(
-            "hidden"
-        );
-
+        loadingArea.classList.add("hidden");
 
         tasksGrid.innerHTML = "";
-
 
         messageArea.textContent =
             "Unable to load tasks: " +
@@ -869,14 +850,15 @@ async function loadTasks() {
                 "Unknown error"
             );
 
-
         messageArea.className =
             "message error";
 
+        messageArea.classList.remove("hidden");
 
-        messageArea.classList.remove(
-            "hidden"
-        );
+    } finally {
+
+        loadingTasks = false;
+
     }
 }
 
@@ -887,28 +869,21 @@ async function loadTasks() {
 
 function renderTasks() {
 
-    let filteredTasks =
-        allTasks;
+    let filteredTasks = allTasks;
 
-
-    if (
-        currentCategory !== "All"
-    ) {
+    if (currentCategory !== "All") {
 
         filteredTasks =
             allTasks.filter(
                 task =>
                     task.category === currentCategory
             );
-    }
 
+    }
 
     tasksGrid.innerHTML = "";
 
-
-    if (
-        filteredTasks.length === 0
-    ) {
+    if (filteredTasks.length === 0) {
 
         tasksGrid.innerHTML = `
 
@@ -924,7 +899,6 @@ function renderTasks() {
         return;
     }
 
-
     filteredTasks.forEach(task => {
 
         /*
@@ -932,41 +906,31 @@ function renderTasks() {
          */
 
         if (
-            String(
-                task.status || ""
-            ).toLowerCase() !== "active"
+            String(task.status || "").toLowerCase() !== "active"
         ) {
             return;
         }
 
-
         const reward =
             Number(task.reward || 50);
 
-
         const currency =
             task.currency || "KES";
-
 
         const currencyDisplay =
             currency === "KES"
                 ? "KSh"
                 : currency;
 
-
         /*
          * Check package access.
          */
 
         const accessStatus =
-            getPackageAccessStatus(
-                task.category
-            );
-
+            getPackageAccessStatus(task.category);
 
         const canStartTask =
             accessStatus === "allowed";
-
 
         const buttonText =
             accessStatus === "allowed"
@@ -975,27 +939,19 @@ function renderTasks() {
                     ? "Allowance Used"
                     : "Package Required";
 
-
         const card =
             document.createElement("div");
 
-
-        card.className =
-            "task-card";
-
+        card.className = "task-card";
 
         card.innerHTML = `
 
             <div class="task-category">
-                ${escapeHtml(
-                    task.category || "Task"
-                )}
+                ${escapeHtml(task.category || "Task")}
             </div>
 
             <h2>
-                ${escapeHtml(
-                    task.title || "NexaLearn Task"
-                )}
+                ${escapeHtml(task.title || "NexaLearn Task")}
             </h2>
 
             <div class="task-description">
@@ -1009,7 +965,7 @@ function renderTasks() {
 
                 <div class="reward">
 
-                    ${currencyDisplay}
+                    ${escapeHtml(currencyDisplay)}
                     ${reward.toLocaleString("en-KE")}
 
                     / task
@@ -1044,11 +1000,9 @@ function renderTasks() {
 
         `;
 
-
         tasksGrid.appendChild(card);
 
     });
-
 
     /*
      * Attach Start Task events.
@@ -1064,7 +1018,6 @@ function renderTasks() {
 
                     const taskId =
                         this.getAttribute("data-task-id");
-
 
                     startTask(taskId);
 
@@ -1096,14 +1049,10 @@ document
 
                     });
 
-
                 this.classList.add("active");
 
-
                 currentCategory =
-                    this.getAttribute("data-category") ||
-                    "All";
-
+                    this.getAttribute("data-category") || "All";
 
                 renderTasks();
 
@@ -1121,12 +1070,28 @@ window.addEventListener(
     "pageshow",
     function(event) {
 
-        /*
-         * Avoid duplicate initial loading.
-         */
-
         if (event.persisted) {
             loadTasks();
+        }
+
+    }
+);
+
+
+/* =========================================================
+   AUTHENTICATION STATE CHANGES
+   ========================================================= */
+
+supabaseClient.auth.onAuthStateChange(
+    (event, session) => {
+
+        if (
+            event === "SIGNED_OUT" &&
+            !session
+        ) {
+
+            redirectToLogin();
+
         }
 
     }
