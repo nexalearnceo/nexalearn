@@ -357,12 +357,118 @@ async function loadUserPackages(userId) {
     userPackages = (data || []).filter(pkg => {
         if (!pkg.expires_at) return true;
 
-        return new Date(pkg.expires_at) > new Date();
+        const expiryDate = new Date(pkg.expires_at);
+
+        return (
+            !Number.isNaN(expiryDate.getTime()) &&
+            expiryDate > new Date()
+        );
     });
 }
 
 
-/* PACKAGE ACCESS STATUS */
+/* NORMALIZE CATEGORY NAMES */
+
+function normalizeCategory(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ");
+}
+
+
+/* MATCH PACKAGE CATEGORY TO TASK CATEGORY */
+
+function categoriesMatch(packageCategory, taskCategory) {
+
+    const packageName = normalizeCategory(packageCategory);
+    const taskName = normalizeCategory(taskCategory);
+
+    // Older general packages with no category
+    // can still provide general task access.
+    if (!packageName) return true;
+
+    const aliases = {
+
+        "audio": [
+            "audio",
+            "audio annotation",
+            "audio transcription"
+        ],
+
+        "audio annotation": [
+            "audio",
+            "audio annotation",
+            "audio transcription"
+        ],
+
+        "audio transcription": [
+            "audio",
+            "audio annotation",
+            "audio transcription"
+        ],
+
+        "image": [
+            "image",
+            "image annotation"
+        ],
+
+        "image annotation": [
+            "image",
+            "image annotation"
+        ],
+
+        "translation": [
+            "translation",
+            "language translation",
+            "swahili to english"
+        ],
+
+        "language translation": [
+            "translation",
+            "language translation",
+            "swahili to english"
+        ],
+
+        "swahili to english": [
+            "translation",
+            "language translation",
+            "swahili to english"
+        ],
+
+        "data": [
+            "data",
+            "data annotation",
+            "text data annotation"
+        ],
+
+        "data annotation": [
+            "data",
+            "data annotation",
+            "text data annotation"
+        ],
+
+        "text data annotation": [
+            "data",
+            "data annotation",
+            "text data annotation"
+        ]
+    };
+
+    const packageAliases =
+        aliases[packageName] || [packageName];
+
+    const taskAliases =
+        aliases[taskName] || [taskName];
+
+    return packageAliases.some(category =>
+        taskAliases.includes(category)
+    );
+}
+
+
+/* GET PACKAGE ACCESS STATUS */
 
 function getPackageAccessStatus(taskCategory) {
 
@@ -374,13 +480,15 @@ function getPackageAccessStatus(taskCategory) {
 
         if (!details) return false;
 
-        return (
-            details.category === taskCategory ||
-            details.category === null
+        return categoriesMatch(
+            details.category,
+            taskCategory
         );
     });
 
-    if (!matchingPackages.length) return "required";
+    if (!matchingPackages.length) {
+        return "required";
+    }
 
     const hasRemainingTasks = matchingPackages.some(pkg => {
 
@@ -394,7 +502,11 @@ function getPackageAccessStatus(taskCategory) {
 
         const completed = Number(pkg.completed_tasks || 0);
 
-        return completed < allowed;
+        return (
+            Number.isFinite(allowed) &&
+            Number.isFinite(completed) &&
+            allowed > completed
+        );
     });
 
     return hasRemainingTasks ? "allowed" : "exhausted";
@@ -439,9 +551,9 @@ async function startTask(taskId, button) {
             throw new Error("This task is no longer active.");
         }
 
-        // Package ownership is NOT required to preview.
-        // Submission permission will be checked in the workspace
-        // and protected again by the Supabase reward function.
+        // Package ownership is not required to preview.
+        // Submission permission is checked again in
+        // task-workspace.html and by the Supabase reward function.
 
         localStorage.setItem(
             "nexaLearnCurrentTaskId",
@@ -540,8 +652,9 @@ function renderTasks() {
 
     const filteredTasks = currentCategory === "All"
         ? allTasks
-        : allTasks.filter(
-            task => task.category === currentCategory
+        : allTasks.filter(task =>
+            normalizeCategory(task.category) ===
+            normalizeCategory(currentCategory)
         );
 
     tasksGrid.innerHTML = "";
