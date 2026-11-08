@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -178,7 +178,6 @@
 
       <div class="field">
         <label for="email">Email Address</label>
-
         <input
           type="email"
           id="email"
@@ -189,11 +188,9 @@
       </div>
 
       <div class="field">
-
         <label for="password">Password</label>
 
         <div class="password-row">
-
           <input
             type="password"
             id="password"
@@ -202,30 +199,19 @@
             required
           >
 
-          <span
-            class="show-password"
-            id="showPassword"
-          >
+          <span class="show-password" id="showPassword">
             Show
           </span>
-
         </div>
-
       </div>
 
-      <button
-        type="submit"
-        id="loginButton"
-      >
+      <button type="submit" id="loginButton">
         Sign In
       </button>
 
     </form>
 
-    <div
-      id="message"
-      class="message"
-    ></div>
+    <div id="message" class="message"></div>
 
     <div class="links">
       <a href="signup.html">Create an account</a>
@@ -233,120 +219,172 @@
 
   </div>
 
+  <script>
 
-<script>
+    // ==========================================
+    // SUPABASE CONFIGURATION
+    // ==========================================
 
-  // =========================================================
-  // SUPABASE CONFIGURATION
-  // =========================================================
+    const SUPABASE_URL =
+      "https://vzgrzzesquqnftfhchwt.supabase.co";
 
-  const SUPABASE_URL =
-    "https://vzgrzzesquqnftfhchwt.supabase.co";
-
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
 
-  // =========================================================
-  // SUPABASE CLIENT
-  // =========================================================
+    // ==========================================
+    // SUPABASE CLIENT
+    // ==========================================
 
-  const supabaseClient =
-    window.supabase.createClient(
+    const supabaseClient = window.supabase.createClient(
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY,
       {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+          storageKey: "nexalearn-auth"
         }
       }
     );
 
 
-  // =========================================================
-  // ELEMENTS
-  // =========================================================
+    // ==========================================
+    // ELEMENTS
+    // ==========================================
 
-  const loginForm =
-    document.getElementById("loginForm");
+    const loginForm =
+      document.getElementById("loginForm");
 
-  const loginButton =
-    document.getElementById("loginButton");
+    const loginButton =
+      document.getElementById("loginButton");
 
-  const message =
-    document.getElementById("message");
+    const message =
+      document.getElementById("message");
 
-  const passwordInput =
-    document.getElementById("password");
+    const passwordInput =
+      document.getElementById("password");
 
-  const showPassword =
-    document.getElementById("showPassword");
-
-
-  // =========================================================
-  // MESSAGE
-  // =========================================================
-
-  function showMessage(text, type) {
-
-    message.textContent = text;
-
-    message.className =
-      "message " + type;
-
-    message.style.display =
-      "block";
-  }
+    const showPassword =
+      document.getElementById("showPassword");
 
 
-  // =========================================================
-  // PASSWORD VISIBILITY
-  // =========================================================
+    // ==========================================
+    // MESSAGE FUNCTION
+    // ==========================================
 
-  showPassword.addEventListener(
-    "click",
-    function () {
+    function showMessage(text, type) {
+
+      message.textContent = text;
+
+      message.className = "message " + type;
+
+      message.style.display = "block";
+
+    }
+
+
+    // ==========================================
+    // PASSWORD VISIBILITY
+    // ==========================================
+
+    showPassword.addEventListener("click", function () {
 
       if (passwordInput.type === "password") {
 
         passwordInput.type = "text";
 
-        showPassword.textContent =
-          "Hide";
+        showPassword.textContent = "Hide";
 
       } else {
 
         passwordInput.type = "password";
 
-        showPassword.textContent =
-          "Show";
+        showPassword.textContent = "Show";
+
+      }
+
+    });
+
+
+    // ==========================================
+    // EXISTING SESSION CHECK
+    // ==========================================
+
+    async function checkExistingSession() {
+
+      try {
+
+        const {
+          data,
+          error
+        } = await supabaseClient.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        if (data && data.session) {
+
+          const {
+            data: userData,
+            error: userError
+          } = await supabaseClient.auth.getUser();
+
+          if (userError) {
+            throw userError;
+          }
+
+          if (userData.user) {
+
+            localStorage.setItem(
+              "nexaLearnLoggedIn",
+              "true"
+            );
+
+            localStorage.setItem(
+              "nexaLearnUser",
+              JSON.stringify(userData.user)
+            );
+
+            localStorage.setItem(
+              "nexaLearnUserId",
+              userData.user.id
+            );
+
+            window.location.replace("dashboard.html");
+
+          }
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "EXISTING SESSION ERROR:",
+          error
+        );
+
       }
 
     }
-  );
 
 
-  // =========================================================
-  // LOGIN
-  // =========================================================
+    // ==========================================
+    // LOGIN
+    // ==========================================
 
-  loginForm.addEventListener(
-    "submit",
-    async function (event) {
+    loginForm.addEventListener("submit", async function(event) {
 
       event.preventDefault();
 
-      const email =
-        document
-          .getElementById("email")
-          .value
-          .trim();
+      const email = document
+        .getElementById("email")
+        .value
+        .trim();
 
-      const password =
-        passwordInput.value;
-
+      const password = passwordInput.value;
 
       if (!email || !password) {
 
@@ -356,126 +394,83 @@
         );
 
         return;
+
       }
 
+      loginButton.disabled = true;
 
-      loginButton.disabled =
-        true;
+      loginButton.textContent = "Signing in...";
 
-      loginButton.textContent =
-        "Signing in...";
-
-      message.style.display =
-        "none";
-
+      message.style.display = "none";
 
       try {
 
-        console.log(
-          "Starting NexaLearn login..."
-        );
+        console.log("Starting NexaLearn login...");
 
-
-        // ===================================================
         // SIGN IN
-        // ===================================================
 
         const {
           data,
           error
-        } =
-          await supabaseClient.auth.signInWithPassword({
+        } = await supabaseClient.auth.signInWithPassword({
 
-            email: email,
+          email: email,
 
-            password: password
+          password: password
 
-          });
-
+        });
 
         if (error) {
-
-          console.error(
-            "SUPABASE LOGIN ERROR:",
-            error
-          );
-
           throw error;
         }
 
-
-        if (!data || !data.user) {
-
-          throw new Error(
-            "No user was returned from Supabase."
-          );
-        }
-
-
-        if (!data.session) {
+        if (!data || !data.user || !data.session) {
 
           throw new Error(
-            "Supabase login succeeded but no session was created."
+            "Login succeeded but Supabase did not return a valid session."
           );
+
         }
 
-
-        console.log(
-          "LOGIN SUCCESS"
-        );
-
-        console.log(
-          "USER:",
-          data.user
-        );
-
-        console.log(
-          "SESSION:",
-          data.session
-        );
-
-
-        // ===================================================
-        // VERIFY SESSION
-        // ===================================================
+        // VERIFY THE SAVED SESSION
 
         const {
           data: sessionData,
           error: sessionError
-        } =
-          await supabaseClient.auth.getSession();
-
+        } = await supabaseClient.auth.getSession();
 
         if (sessionError) {
-
-          console.error(
-            "SESSION ERROR:",
-            sessionError
-          );
-
           throw sessionError;
         }
 
-
-        if (
-          !sessionData ||
-          !sessionData.session
-        ) {
+        if (!sessionData || !sessionData.session) {
 
           throw new Error(
-            "Auth session missing after login. Please try again."
+            "Your login session could not be saved. Please try again."
           );
+
         }
 
+        // VERIFY AUTHENTICATED USER
 
-        console.log(
-          "SESSION VERIFIED SUCCESSFULLY"
-        );
+        const {
+          data: verifiedUser,
+          error: verifyError
+        } = await supabaseClient.auth.getUser();
 
+        if (verifyError) {
+          throw verifyError;
+        }
 
-        // ===================================================
+        if (!verifiedUser.user) {
+
+          throw new Error(
+            "Unable to verify your account. Please try again."
+          );
+
+        }
+
         // SAVE LOCAL USER INFORMATION
-        // ===================================================
 
         localStorage.setItem(
           "nexaLearnLoggedIn",
@@ -484,125 +479,57 @@
 
         localStorage.setItem(
           "nexaLearnUser",
-          JSON.stringify(data.user)
+          JSON.stringify(verifiedUser.user)
         );
 
         localStorage.setItem(
           "nexaLearnUserId",
-          data.user.id
+          verifiedUser.user.id
         );
 
+        console.log("LOGIN SUCCESS");
 
-        // ===================================================
-        // SUCCESS
-        // ===================================================
+        console.log(
+          "AUTHENTICATED USER:",
+          verifiedUser.user.id
+        );
 
         showMessage(
           "Login successful. Opening dashboard...",
           "success"
         );
 
+        loginButton.textContent = "Success...";
 
-        // Give Supabase time to persist the session
-        // before changing pages.
+        // REDIRECT AFTER LOGIN
 
-        setTimeout(
-          function () {
-
-            window.location.replace(
-              "dashboard.html"
-            );
-
-          },
-          1200
-        );
-
+        window.location.replace("dashboard.html");
 
       } catch (error) {
 
-        console.error(
-          "LOGIN ERROR:",
-          error
-        );
-
+        console.error("LOGIN ERROR:", error);
 
         showMessage(
-          error.message ||
-          "Unable to sign in.",
+          error.message || "Unable to sign in.",
           "error"
         );
 
+        loginButton.disabled = false;
 
-        loginButton.disabled =
-          false;
-
-        loginButton.textContent =
-          "Sign In";
+        loginButton.textContent = "Sign In";
 
       }
 
-    }
-  );
+    });
 
 
-  // =========================================================
-  // EXISTING SESSION CHECK
-  // =========================================================
+    // ==========================================
+    // STARTUP
+    // ==========================================
 
-  async function checkExistingSession() {
+    checkExistingSession();
 
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await supabaseClient.auth.getSession();
-
-
-      if (error) {
-
-        console.error(
-          "SESSION CHECK ERROR:",
-          error
-        );
-
-        return;
-      }
-
-
-      if (
-        data &&
-        data.session
-      ) {
-
-        console.log(
-          "Existing session found."
-        );
-
-        window.location.replace(
-          "dashboard.html"
-        );
-
-      }
-
-    } catch (error) {
-
-      console.error(
-        "EXISTING SESSION ERROR:",
-        error
-      );
-
-    }
-
-  }
-
-
-  // Run session check
-
-  checkExistingSession();
-
-</script>
+  </script>
 
 </body>
 </html>
