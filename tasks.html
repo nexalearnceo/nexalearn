@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,6 +168,11 @@
             opacity: 0.9;
         }
 
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .loading {
             text-align: center;
             color: #9db1c6;
@@ -199,7 +204,6 @@
         }
 
         @media (max-width: 750px) {
-
             .topbar {
                 padding: 0 18px;
             }
@@ -239,7 +243,6 @@
 
 </div>
 
-
 <div class="container">
 
     <div class="page-header">
@@ -253,65 +256,44 @@
 
     </div>
 
-
     <div class="filters">
 
-        <button
-            class="filter-btn active"
-            data-category="All">
+        <button class="filter-btn active" data-category="All">
             All Tasks
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Language Translation">
+        <button class="filter-btn" data-category="Language Translation">
             Language Translation
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Data Annotation">
+        <button class="filter-btn" data-category="Data Annotation">
             Data Annotation
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Audio">
+        <button class="filter-btn" data-category="Audio">
             Audio
         </button>
 
-        <button
-            class="filter-btn"
-            data-category="Image Annotation">
+        <button class="filter-btn" data-category="Image Annotation">
             Image Annotation
         </button>
 
     </div>
 
-
     <div id="loadingArea" class="loading">
         Loading available tasks...
     </div>
 
+    <div id="messageArea" class="message hidden"></div>
 
-    <div
-        id="messageArea"
-        class="message hidden">
-    </div>
-
-
-    <div
-        id="tasksGrid"
-        class="tasks-grid">
-    </div>
+    <div id="tasksGrid" class="tasks-grid"></div>
 
 </div>
-
 
 <script>
 
 /* =========================================================
-   SUPABASE
+   SUPABASE CONFIGURATION
    ========================================================= */
 
 const SUPABASE_URL =
@@ -319,7 +301,6 @@ const SUPABASE_URL =
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
-
 
 const supabaseClient =
     window.supabase.createClient(
@@ -329,7 +310,10 @@ const supabaseClient =
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
-                detectSessionInUrl: true
+                detectSessionInUrl: true,
+
+                // Must match login.html and dashboard.html.
+                storageKey: "nexalearn-auth"
             }
         }
     );
@@ -340,10 +324,9 @@ const supabaseClient =
    ========================================================= */
 
 let currentUser = null;
-
 let allTasks = [];
-
 let currentCategory = "All";
+let isLoadingTasks = false;
 
 
 /* =========================================================
@@ -366,10 +349,7 @@ const tasksGrid =
 
 function escapeHtml(value) {
 
-    if (
-        value === null ||
-        value === undefined
-    ) {
+    if (value === null || value === undefined) {
         return "";
     }
 
@@ -389,29 +369,24 @@ function escapeHtml(value) {
 async function getCurrentUser() {
 
     const {
-        data,
-        error
-    } = await supabaseClient.auth.getUser();
+        data: sessionData,
+        error: sessionError
+    } = await supabaseClient.auth.getSession();
 
-
-    if (error) {
-        throw error;
+    if (sessionError) {
+        throw sessionError;
     }
 
+    // No active session: return to login.
+    if (!sessionData || !sessionData.session) {
 
-    if (
-        !data ||
-        !data.user
-    ) {
-
-        window.location.href =
-            "login.html";
+        window.location.replace("login.html");
 
         return null;
     }
 
-
-    return data.user;
+    // Use the user belonging to the existing session.
+    return sessionData.session.user;
 }
 
 
@@ -423,104 +398,79 @@ async function startTask(taskId) {
 
     if (!taskId) {
 
-        alert(
-            "Task ID is missing."
-        );
+        alert("Task ID is missing.");
 
         return;
     }
 
+    try {
 
-    /*
-     * IMPORTANT:
-     *
-     * Check Supabase again before opening
-     * the task.
-     *
-     * This prevents a task that was deleted
-     * or deactivated by the admin from being
-     * opened using an old task ID.
-     */
+        // Confirm that the login session still exists.
+        const user = await getCurrentUser();
 
-    const {
-        data: task,
-        error
-    } = await supabaseClient
-        .from("tasks")
-        .select("id,status")
-        .eq("id", taskId)
-        .eq("status", "active")
-        .maybeSingle();
+        if (!user) {
+            return;
+        }
 
+        // Confirm that the task is still active.
+        const {
+            data: task,
+            error
+        } = await supabaseClient
+            .from("tasks")
+            .select("id,status")
+            .eq("id", taskId)
+            .eq("status", "active")
+            .maybeSingle();
 
-    if (
-        error ||
-        !task
-    ) {
+        if (error) {
+            throw error;
+        }
 
-        /*
-         * Remove the old task from local storage.
-         */
+        if (!task) {
 
-        localStorage.removeItem(
-            "nexaLearnCurrentTaskId"
+            localStorage.removeItem(
+                "nexaLearnCurrentTaskId"
+            );
+
+            alert("This task is no longer available.");
+
+            await loadTasks();
+
+            return;
+        }
+
+        // Save selected task.
+        localStorage.setItem(
+            "nexaLearnCurrentTaskId",
+            String(taskId)
         );
 
+        // Verify saved task.
+        const savedTaskId =
+            localStorage.getItem(
+                "nexaLearnCurrentTaskId"
+            );
+
+        if (savedTaskId !== String(taskId)) {
+
+            alert("Unable to save the selected task.");
+
+            return;
+        }
+
+        // Open task workspace.
+        window.location.href = "/task-workspace";
+
+    } catch (error) {
+
+        console.error("Start task error:", error);
 
         alert(
-            "This task is no longer available."
+            "Unable to open this task: " +
+            (error.message || "Please try again.")
         );
-
-
-        /*
-         * Reload the task list.
-         */
-
-        await loadTasks();
-
-        return;
     }
-
-
-    /*
-     * Save current task.
-     */
-
-    localStorage.setItem(
-        "nexaLearnCurrentTaskId",
-        taskId
-    );
-
-
-    /*
-     * Verify it was saved.
-     */
-
-    const savedTaskId =
-        localStorage.getItem(
-            "nexaLearnCurrentTaskId"
-        );
-
-
-    if (
-        savedTaskId !==
-        taskId
-    ) {
-
-        alert(
-            "Unable to save the selected task."
-        );
-
-        return;
-    }
-
-
-    /*
-     * Open workspace.
-     */
-
-    window.location.href =
-        "/task-workspace";
 }
 
 
@@ -530,46 +480,31 @@ async function startTask(taskId) {
 
 async function loadTasks() {
 
+    // Prevent duplicate simultaneous requests.
+    if (isLoadingTasks) {
+        return;
+    }
+
+    isLoadingTasks = true;
+
     try {
 
-        /*
-         * Show loading state.
-         */
+        loadingArea.classList.remove("hidden");
 
-        loadingArea.classList.remove(
-            "hidden"
-        );
+        messageArea.classList.add("hidden");
 
+        tasksGrid.innerHTML = "";
 
-        messageArea.classList.add(
-            "hidden"
-        );
-
-
-        tasksGrid.innerHTML =
-            "";
-
-
-        /*
-         * Get logged-in user.
-         */
-
-        currentUser =
-            await getCurrentUser();
-
+        // Get the existing login session.
+        currentUser = await getCurrentUser();
 
         if (!currentUser) {
             return;
         }
 
-
         /*
-         * ONLY ACTIVE TASKS ARE LOADED.
-         *
-         * There are NO fallback tasks.
-         *
-         * If admin deletes a task from Supabase,
-         * it will not appear here.
+         * Load active tasks from Supabase.
+         * No fallback or demo tasks are used.
          */
 
         const {
@@ -587,109 +522,63 @@ async function loadTasks() {
                 status,
                 created_at
             `)
-            .eq(
-                "status",
-                "active"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
+            .eq("status", "active")
+            .order("created_at", {
+                ascending: false
+            });
 
         if (error) {
             throw error;
         }
 
+        // Keep active tasks only.
+        allTasks = (data || []).filter(task =>
+            String(task.status || "").toLowerCase() === "active"
+        );
 
-        /*
-         * Only keep active tasks.
-         */
-
-        allTasks =
-            (data || []).filter(
-                task =>
-                    String(
-                        task.status || ""
-                    ).toLowerCase() ===
-                    "active"
-            );
-
-
-        /*
-         * Remove any saved task ID that
-         * is no longer active.
-         */
-
+        // Check previously selected task.
         const savedTaskId =
             localStorage.getItem(
                 "nexaLearnCurrentTaskId"
             );
 
-
         if (savedTaskId) {
 
-            const stillActive =
-                allTasks.some(
-                    task =>
-                        String(task.id) ===
-                        String(savedTaskId)
-                );
-
+            const stillActive = allTasks.some(task =>
+                String(task.id) === String(savedTaskId)
+            );
 
             if (!stillActive) {
 
                 localStorage.removeItem(
                     "nexaLearnCurrentTaskId"
                 );
-
             }
         }
 
-
-        loadingArea.classList.add(
-            "hidden"
-        );
-
+        loadingArea.classList.add("hidden");
 
         renderTasks();
 
-    }
+    } catch (error) {
 
-    catch (error) {
+        console.error("Task loading error:", error);
 
-        console.error(
-            "Task loading error:",
-            error
-        );
+        loadingArea.classList.add("hidden");
 
-
-        loadingArea.classList.add(
-            "hidden"
-        );
-
-
-        tasksGrid.innerHTML =
-            "";
-
+        tasksGrid.innerHTML = "";
 
         messageArea.textContent =
             "Unable to load tasks: " +
-            (
-                error?.message ||
-                "Unknown error"
-            );
+            (error?.message || "Unknown error");
 
+        messageArea.className = "message error";
 
-        messageArea.className =
-            "message error";
+        messageArea.classList.remove("hidden");
 
+    } finally {
 
-        messageArea.classList.remove(
-            "hidden"
-        );
+        isLoadingTasks = false;
     }
 }
 
@@ -700,183 +589,110 @@ async function loadTasks() {
 
 function renderTasks() {
 
-    let filteredTasks =
-        allTasks;
+    let filteredTasks = allTasks;
 
+    if (currentCategory !== "All") {
 
-    if (
-        currentCategory !==
-        "All"
-    ) {
-
-        filteredTasks =
-            allTasks.filter(
-                task =>
-                    task.category ===
-                    currentCategory
-            );
+        filteredTasks = allTasks.filter(task =>
+            task.category === currentCategory
+        );
     }
 
+    tasksGrid.innerHTML = "";
 
-    tasksGrid.innerHTML =
-        "";
-
-
-    if (
-        filteredTasks.length ===
-        0
-    ) {
+    if (filteredTasks.length === 0) {
 
         tasksGrid.innerHTML = `
-
             <div class="message empty">
-
                 No tasks are currently available
                 in this category.
-
             </div>
-
         `;
 
         return;
     }
 
+    filteredTasks.forEach(task => {
 
-    filteredTasks.forEach(
-        task => {
-
-            /*
-             * Extra safety:
-             *
-             * Never render a task unless
-             * its status is active.
-             */
-
-            if (
-                String(
-                    task.status || ""
-                ).toLowerCase() !==
-                "active"
-            ) {
-                return;
-            }
-
-
-            const reward =
-                Number(
-                    task.reward || 50
-                );
-
-
-            const currency =
-                task.currency ||
-                "KES";
-
-
-            const currencyDisplay =
-                currency === "KES"
-                    ? "KSh"
-                    : currency;
-
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "task-card";
-
-
-            card.innerHTML = `
-
-                <div class="task-category">
-                    ${escapeHtml(
-                        task.category ||
-                        "Task"
-                    )}
-                </div>
-
-                <h2>
-                    ${escapeHtml(
-                        task.title ||
-                        "NexaLearn Task"
-                    )}
-                </h2>
-
-                <div class="task-description">
-                    ${escapeHtml(
-                        task.description ||
-                        "Complete this task accurately."
-                    )}
-                </div>
-
-                <div class="task-footer">
-
-                    <div class="reward">
-
-                        ${currencyDisplay}
-                        ${reward.toLocaleString(
-                            "en-KE"
-                        )}
-
-                        / task
-
-                    </div>
-
-                    <button
-                        class="start-btn"
-                        type="button"
-                        data-task-id="${escapeHtml(
-                            task.id
-                        )}">
-
-                        Start Task
-
-                    </button>
-
-                </div>
-            `;
-
-
-            tasksGrid.appendChild(
-                card
-            );
+        if (
+            String(task.status || "").toLowerCase() !== "active"
+        ) {
+            return;
         }
-    );
 
+        const reward = Number(task.reward || 50);
 
-    /*
-     * Attach Start Task events.
-     */
+        const currency = task.currency || "KES";
 
-    document
-        .querySelectorAll(
-            ".start-btn"
-        )
-        .forEach(
-            button => {
+        const currencyDisplay =
+            currency === "KES" ? "KSh" : currency;
 
-                button.addEventListener(
-                    "click",
-                    function () {
+        const card = document.createElement("div");
 
-                        const taskId =
-                            this.getAttribute(
-                                "data-task-id"
-                            );
+        card.className = "task-card";
 
+        card.innerHTML = `
 
-                        startTask(
-                            taskId
-                        );
+            <div class="task-category">
+                ${escapeHtml(task.category || "Task")}
+            </div>
 
-                    }
-                );
+            <h2>
+                ${escapeHtml(task.title || "NexaLearn Task")}
+            </h2>
 
-            }
-        );
+            <div class="task-description">
+                ${escapeHtml(
+                    task.description ||
+                    "Complete this task accurately."
+                )}
+            </div>
+
+            <div class="task-footer">
+
+                <div class="reward">
+                    ${escapeHtml(currencyDisplay)}
+                    ${reward.toLocaleString("en-KE")}
+                    / task
+                </div>
+
+                <button
+                    class="start-btn"
+                    type="button"
+                    data-task-id="${escapeHtml(task.id)}">
+
+                    Start Task
+
+                </button>
+
+            </div>
+        `;
+
+        tasksGrid.appendChild(card);
+    });
+
+    // Attach Start Task events.
+    document.querySelectorAll(".start-btn").forEach(button => {
+
+        button.addEventListener("click", function() {
+
+            const taskId =
+                this.getAttribute("data-task-id");
+
+            this.disabled = true;
+            this.textContent = "Opening...";
+
+            startTask(taskId).finally(() => {
+
+                if (document.body.contains(this)) {
+                    this.disabled = false;
+                    this.textContent = "Start Task";
+                }
+            });
+
+        });
+
+    });
 }
 
 
@@ -884,64 +700,40 @@ function renderTasks() {
    FILTERS
    ========================================================= */
 
-document
-    .querySelectorAll(
-        ".filter-btn"
-    )
-    .forEach(
-        button => {
+document.querySelectorAll(".filter-btn").forEach(button => {
 
-            button.addEventListener(
-                "click",
-                function () {
+    button.addEventListener("click", function() {
 
-                    document
-                        .querySelectorAll(
-                            ".filter-btn"
-                        )
-                        .forEach(
-                            btn => {
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.classList.remove("active");
+        });
 
-                                btn.classList.remove(
-                                    "active"
-                                );
+        this.classList.add("active");
 
-                            }
-                        );
+        currentCategory =
+            this.getAttribute("data-category") || "All";
 
+        renderTasks();
 
-                    this.classList.add(
-                        "active"
-                    );
+    });
 
-
-                    currentCategory =
-                        this.getAttribute(
-                            "data-category"
-                        ) ||
-                        "All";
-
-
-                    renderTasks();
-                }
-            );
-
-        }
-    );
+});
 
 
 /* =========================================================
-   REFRESH WHEN USER RETURNS TO PAGE
+   REFRESH WHEN RETURNING TO PAGE
    ========================================================= */
 
-window.addEventListener(
-    "pageshow",
-    function () {
+// Only refresh on pages restored from the browser's
+// back-forward cache. The initial page load is handled below.
 
+window.addEventListener("pageshow", function(event) {
+
+    if (event.persisted) {
         loadTasks();
-
     }
-);
+
+});
 
 
 /* =========================================================
@@ -954,4 +746,3 @@ loadTasks();
 
 </body>
 </html>
-```

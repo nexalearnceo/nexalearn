@@ -301,6 +301,7 @@
 </head>
 
 <body>
+
   <aside class="sidebar">
     <div class="logo">
       <h2>NexaLearn</h2>
@@ -320,9 +321,11 @@
   </aside>
 
   <main class="main">
+
     <a href="wallet.html" class="back">← Back to Wallet</a>
 
     <h1>Deposit Funds</h1>
+
     <p class="subtitle">
       Add funds to your NexaLearn wallet using M-Pesa.
     </p>
@@ -330,6 +333,7 @@
     <div id="message" class="message" role="status" aria-live="polite"></div>
 
     <div class="grid">
+
       <div class="card">
         <h2>M-Pesa Payment</h2>
 
@@ -344,18 +348,22 @@
             <strong>1.</strong>
             Send the amount you want to deposit using M-Pesa.
           </div>
+
           <div class="step">
             <strong>2.</strong>
             Make sure you use your own M-Pesa number.
           </div>
+
           <div class="step">
             <strong>3.</strong>
             Copy the transaction code from your M-Pesa confirmation.
           </div>
+
           <div class="step">
             <strong>4.</strong>
             Enter the payment details in the form.
           </div>
+
           <div class="step">
             <strong>5.</strong>
             Submit the request and wait for admin verification.
@@ -367,6 +375,7 @@
         <h2>Deposit Details</h2>
 
         <form id="depositForm">
+
           <div class="form-group">
             <label for="amount">Deposit Amount (KSh)</label>
             <input
@@ -405,16 +414,20 @@
           <button type="submit" id="submitBtn" class="submit-btn">
             Submit Deposit Request
           </button>
+
         </form>
       </div>
+
     </div>
 
     <div class="card recent">
       <h2>My Deposit Requests</h2>
+
       <div id="depositList">
         <div class="empty">Loading deposit history...</div>
       </div>
     </div>
+
   </main>
 
   <script>
@@ -435,12 +448,16 @@
         auth: {
           autoRefreshToken: true,
           persistSession: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+
+          // IMPORTANT: Must match wallet.html and login.html
+          storageKey: "nexalearn-auth"
         }
       }
     );
 
     let currentUser = null;
+    let authCheckComplete = false;
 
     /* MESSAGE */
 
@@ -466,19 +483,27 @@
         if (error) throw error;
 
         if (!data.session) {
-          window.location.href = "login.html";
+          /*
+           * Redirect only when Supabase confirms
+           * that no saved session exists.
+           */
+          window.location.replace("login.html");
           return false;
         }
 
         currentUser = data.session.user;
+        authCheckComplete = true;
+
         return true;
 
       } catch (error) {
         console.error("Session error:", error);
+
         showMessage(
-          "Unable to verify your session. Please log in again.",
+          "Unable to verify your login session. Please refresh the page or log in again.",
           "error"
         );
+
         return false;
       }
     }
@@ -488,11 +513,12 @@
     document
       .getElementById("depositForm")
       .addEventListener("submit", async function (e) {
+
         e.preventDefault();
 
-        if (!currentUser) {
+        if (!authCheckComplete || !currentUser) {
           showMessage(
-            "Your login session is missing. Please log in again.",
+            "Your login session is missing. Please refresh the page and log in again.",
             "error"
           );
           return;
@@ -511,7 +537,8 @@
           .value.trim()
           .toUpperCase();
 
-        const submitBtn = document.getElementById("submitBtn");
+        const submitBtn =
+          document.getElementById("submitBtn");
 
         if (!Number.isSafeInteger(amount) || amount <= 0) {
           showMessage(
@@ -521,9 +548,10 @@
           return;
         }
 
-        if (!/^(?:\+?254|0)\d{9}$/.test(
-          mpesaNumber.replace(/[\s-]/g, "")
-        )) {
+        const cleanedNumber =
+          mpesaNumber.replace(/[\s-]/g, "");
+
+        if (!/^(?:\+?254|0)\d{9}$/.test(cleanedNumber)) {
           showMessage(
             "Enter a valid Kenyan M-Pesa number, for example 0712345678 or +254712345678.",
             "error"
@@ -543,11 +571,23 @@
         submitBtn.textContent = "Submitting...";
 
         try {
-          /*
-           * Check whether this transaction code has already
-           * been submitted. Database-level uniqueness is
-           * still recommended to prevent simultaneous duplicates.
-           */
+
+          /* VERIFY SESSION AGAIN BEFORE INSERTING */
+
+          const { data: sessionData, error: sessionError } =
+            await supabaseClient.auth.getSession();
+
+          if (sessionError) throw sessionError;
+
+          if (!sessionData.session) {
+            throw new Error(
+              "Your login session has expired. Please log in again."
+            );
+          }
+
+          currentUser = sessionData.session.user;
+
+          /* CHECK DUPLICATE TRANSACTION CODE */
 
           const {
             data: existing,
@@ -567,14 +607,7 @@
             );
           }
 
-          /*
-           * IMPORTANT:
-           * The database permits only lowercase:
-           * pending, approved, rejected.
-           *
-           * This request stays pending until an admin
-           * verifies the payment and approves it.
-           */
+          /* INSERT DEPOSIT REQUEST */
 
           const {
             data: deposit,
@@ -586,7 +619,7 @@
               amount: amount,
               currency: "KES",
               method: "M-Pesa",
-              user_mpesa_number: mpesaNumber.replace(/[\s-]/g, ""),
+              user_mpesa_number: cleanedNumber,
               transaction_code: transactionCode,
               status: "pending"
             })
@@ -595,7 +628,10 @@
 
           if (depositError) throw depositError;
 
-          console.log("Deposit request submitted:", deposit.id);
+          console.log(
+            "Deposit request submitted:",
+            deposit.id
+          );
 
           showMessage(
             "Deposit request submitted successfully. It is pending admin approval.",
@@ -607,23 +643,27 @@
           await loadDeposits();
 
         } catch (error) {
+
           console.error("Deposit submission error:", error);
 
           showMessage(
             error.message ||
-              "Unable to submit your deposit request. Please try again.",
+            "Unable to submit your deposit request. Please try again.",
             "error"
           );
 
         } finally {
+
           submitBtn.disabled = false;
           submitBtn.textContent = "Submit Deposit Request";
+
         }
       });
 
     /* LOAD DEPOSIT HISTORY */
 
     async function loadDeposits() {
+
       if (!currentUser) return;
 
       const list = document.getElementById("depositList");
@@ -632,6 +672,7 @@
         '<div class="empty">Loading deposit history...</div>';
 
       try {
+
         const { data, error } = await supabaseClient
           .from("deposit_requests")
           .select(
@@ -653,6 +694,7 @@
         }
 
         list.innerHTML = data.map(deposit => {
+
           const amount = Number(deposit.amount || 0);
 
           const date = deposit.created_at
@@ -669,14 +711,18 @@
             "rejected"
           ].includes(status) ? status : "pending";
 
-          const currency = escapeHtml(deposit.currency || "KES");
+          const currency = escapeHtml(
+            deposit.currency || "KES"
+          );
 
           return `
             <div class="deposit-item">
+
               <div class="deposit-top">
                 <span class="amount">
                   KSh ${amount.toLocaleString("en-KE")}
                 </span>
+
                 <span class="status ${safeStatus}">
                   ${capitalize(safeStatus)}
                 </span>
@@ -691,11 +737,14 @@
                 <br>
                 ${escapeHtml(date)}
               </div>
+
             </div>
           `;
+
         }).join("");
 
       } catch (error) {
+
         console.error("Deposit history error:", error);
 
         list.innerHTML = `
@@ -726,22 +775,30 @@
     document
       .getElementById("logoutBtn")
       .addEventListener("click", async function (e) {
+
         e.preventDefault();
 
-        const { error } = await supabaseClient.auth.signOut();
+        const { error } =
+          await supabaseClient.auth.signOut();
 
         if (error) {
           console.error("Logout error:", error);
-          showMessage("Unable to log out. Please try again.", "error");
+
+          showMessage(
+            "Unable to log out. Please try again.",
+            "error"
+          );
+
           return;
         }
 
-        window.location.href = "login.html";
+        window.location.replace("login.html");
       });
 
     /* START */
 
     async function start() {
+
       const loggedIn = await loadUser();
 
       if (loggedIn) {
@@ -750,6 +807,8 @@
     }
 
     start();
+
   </script>
+
 </body>
 </html>

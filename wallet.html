@@ -1,10 +1,9 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>NexaLearn - Wallet</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -250,6 +249,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 15px;
       padding: 15px 0;
       border-bottom: 1px solid #172d41;
     }
@@ -261,6 +261,7 @@
     .transaction-title {
       font-size: 14px;
       margin-bottom: 5px;
+      overflow-wrap: anywhere;
     }
 
     .transaction-date {
@@ -271,6 +272,7 @@
     .transaction-amount {
       font-weight: bold;
       font-size: 14px;
+      white-space: nowrap;
     }
 
     .credit {
@@ -287,8 +289,11 @@
       padding: 10px 0;
     }
 
-    @media (max-width: 900px) {
+    .status-text {
+      color: #9eb0c1;
+    }
 
+    @media (max-width: 900px) {
       .sidebar {
         width: 190px;
       }
@@ -304,7 +309,6 @@
     }
 
     @media (max-width: 650px) {
-
       .sidebar {
         position: relative;
         width: 100%;
@@ -332,285 +336,134 @@
 <body>
 
   <aside class="sidebar">
-
-    <div class="logo">
-      NexaLearn
-    </div>
+    <div class="logo">NexaLearn</div>
 
     <div class="tagline">
       LEARN • COMPLETE • EARN
     </div>
 
     <nav class="nav">
-
-      <a href="dashboard.html">
-        Dashboard
-      </a>
-
-      <a href="packages.html">
-        Packages
-      </a>
-
-      <a href="tasks.html">
-        Tasks
-      </a>
-
-      <a href="wallet.html" class="active">
-        Wallet
-      </a>
-
-      <a href="history.html">
-        History
-      </a>
-
-      <a href="profile.html">
-        Profile
-      </a>
-
-      <a href="support.html">
-        Support
-      </a>
-
-      <a href="login.html" class="logout" id="logoutLink">
-        Logout
-      </a>
-
+      <a href="dashboard.html">Dashboard</a>
+      <a href="packages.html">Packages</a>
+      <a href="tasks.html">Tasks</a>
+      <a href="wallet.html" class="active">Wallet</a>
+      <a href="history.html">History</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="login.html" class="logout" id="logoutLink">Logout</a>
     </nav>
-
   </aside>
-
 
   <main class="main">
 
     <div class="header">
-
-      <h1>
-        My Wallet
-      </h1>
-
+      <h1>My Wallet</h1>
       <p>
         Manage your earnings, deposits, package activation and withdrawals.
       </p>
-
     </div>
 
-
     <div id="errorBox" class="error"></div>
-
 
     <!-- BALANCES -->
 
     <div class="balance-grid">
 
       <div class="balance-card earning">
-
-        <div class="card-label">
-          Earning Balance
-        </div>
-
-        <div
-          class="balance"
-          id="earningBalance"
-        >
-          KSh 0.00
-        </div>
-
+        <div class="card-label">Earning Balance</div>
+        <div class="balance" id="earningBalance">KSh 0.00</div>
         <div class="card-note">
           Money earned from verified tasks.
           This balance is available for withdrawal.
         </div>
-
       </div>
 
-
       <div class="balance-card deposit">
-
-        <div class="card-label">
-          Deposit Balance
-        </div>
-
-        <div
-          class="balance"
-          id="depositBalance"
-        >
-          KSh 0.00
-        </div>
-
+        <div class="card-label">Deposit Balance</div>
+        <div class="balance" id="depositBalance">KSh 0.00</div>
         <div class="card-note">
           Approved deposits available for package activation only.
           Package purchases are deducted from this balance.
         </div>
-
       </div>
 
     </div>
 
-
     <!-- ACTIONS -->
 
     <div class="actions">
-
-      <a
-        href="deposit.html"
-        class="action-link deposit-btn"
-      >
+      <a href="deposit.html" class="action-link deposit-btn">
         Deposit Funds
       </a>
 
-      <a
-        href="withdraw.html"
-        class="action-link withdraw-btn"
-      >
+      <a href="withdraw.html" class="action-link withdraw-btn">
         Withdraw Earnings
       </a>
 
-      <a
-        href="packages.html"
-        class="action-link package-btn"
-      >
+      <a href="packages.html" class="action-link package-btn">
         Activate Package
       </a>
-
     </div>
-
 
     <!-- STATS -->
 
     <div class="stats">
 
       <div class="stat">
-
-        <div class="stat-label">
-          Total Earned
-        </div>
-
-        <div
-          class="stat-value"
-          id="totalEarned"
-        >
-          KSh 0.00
-        </div>
-
+        <div class="stat-label">Total Earned</div>
+        <div class="stat-value" id="totalEarned">KSh 0.00</div>
       </div>
 
-
       <div class="stat">
-
-        <div class="stat-label">
-          Total Deposited
-        </div>
-
-        <div
-          class="stat-value"
-          id="totalDeposited"
-        >
-          KSh 0.00
-        </div>
-
+        <div class="stat-label">Total Deposited</div>
+        <div class="stat-value" id="totalDeposited">KSh 0.00</div>
       </div>
 
-
       <div class="stat">
-
-        <div class="stat-label">
-          Total Withdrawn
-        </div>
-
-        <div
-          class="stat-value"
-          id="totalWithdrawn"
-        >
-          KSh 0.00
-        </div>
-
+        <div class="stat-label">Total Withdrawn</div>
+        <div class="stat-value" id="totalWithdrawn">KSh 0.00</div>
       </div>
 
-
       <div class="stat">
-
-        <div class="stat-label">
-          Completed Tasks
-        </div>
-
-        <div
-          class="stat-value"
-          id="completedTasks"
-        >
-          0
-        </div>
-
+        <div class="stat-label">Completed Tasks</div>
+        <div class="stat-value" id="completedTasks">0</div>
       </div>
 
     </div>
 
-
     <!-- CURRENT PACKAGE -->
 
     <section class="section">
+      <h2>Current Package</h2>
 
-      <h2>
-        Current Package
-      </h2>
-
-      <div
-        id="packageArea"
-        class="package-box"
-      >
-
-        <div class="no-package">
-          Checking package...
-        </div>
-
+      <div id="packageArea" class="package-box">
+        <div class="no-package">Checking package...</div>
       </div>
-
     </section>
-
 
     <!-- LATEST DEPOSIT -->
 
     <section class="section">
+      <h2>Latest Deposit</h2>
 
-      <h2>
-        Latest Deposit
-      </h2>
-
-      <div
-        id="latestDeposit"
-        class="package-box"
-      >
-
-        <div class="empty">
-          Checking deposits...
-        </div>
-
+      <div id="latestDeposit" class="package-box">
+        <div class="empty">Checking deposits...</div>
       </div>
-
     </section>
-
 
     <!-- RECENT ACTIVITY -->
 
     <section class="section">
-
-      <h2>
-        Recent Wallet Activity
-      </h2>
+      <h2>Recent Wallet Activity</h2>
 
       <div id="activityList">
-
-        <div class="empty">
-          Checking activity...
-        </div>
-
+        <div class="empty">Checking activity...</div>
       </div>
-
     </section>
 
   </main>
 
-
 <script>
-
   // ==================================================
   // SUPABASE CONFIGURATION
   // ==================================================
@@ -621,139 +474,153 @@
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
-
   // ==================================================
   // SUPABASE CLIENT
   // ==================================================
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "nexalearn-auth"
       }
-    );
-
+    }
+  );
 
   // ==================================================
   // MONEY
   // ==================================================
 
   function money(value) {
-
-    return new Intl.NumberFormat(
-      "en-KE",
-      {
-        style: "currency",
-        currency: "KES",
-        minimumFractionDigits: 2
-      }
-    ).format(
-      Number(value || 0)
-    );
-
+    return new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency: "KES",
+      minimumFractionDigits: 2
+    }).format(Number(value || 0));
   }
-
 
   // ==================================================
   // DATE
   // ==================================================
 
   function formatDate(value) {
+    if (!value) return "Date unavailable";
 
-    if (!value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
       return "Date unavailable";
     }
 
-    return new Date(value).toLocaleString(
-      "en-KE",
-      {
-        dateStyle: "medium",
-        timeStyle: "short"
-      }
-    );
-
+    return date.toLocaleString("en-KE", {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
   }
 
+  // ==================================================
+  // SAFE HTML
+  // ==================================================
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
+  }
 
   // ==================================================
   // ERROR
   // ==================================================
 
   function showError(message) {
-
-    const box =
-      document.getElementById(
-        "errorBox"
-      );
-
-    box.textContent =
-      message;
-
-    box.style.display =
-      "block";
-
+    const box = document.getElementById("errorBox");
+    box.textContent = message;
+    box.style.display = "block";
   }
-
 
   function clearError() {
-
-    const box =
-      document.getElementById(
-        "errorBox"
-      );
-
-    box.textContent =
-      "";
-
-    box.style.display =
-      "none";
-
+    const box = document.getElementById("errorBox");
+    box.textContent = "";
+    box.style.display = "none";
   }
 
+  // ==================================================
+  // SAFE TABLE LOADER
+  // Uses select("*") so optional columns do not
+  // break the entire page.
+  // ==================================================
+
+  async function loadUserRows(table, userId) {
+    try {
+      const { data, error } = await supabaseClient
+        .from(table)
+        .select("*")
+        .eq("user_id", userId);
+
+      if (error) {
+        console.warn(`Could not load ${table}:`, error.message);
+        return [];
+      }
+
+      return data || [];
+
+    } catch (error) {
+      console.warn(`Error loading ${table}:`, error);
+      return [];
+    }
+  }
+
+  // ==================================================
+  // DATE SORTING
+  // ==================================================
+
+  function newestFirst(rows) {
+    return [...rows].sort((a, b) => {
+      const dateA = new Date(
+        a.created_at || a.activated_at || a.updated_at || 0
+      ).getTime();
+
+      const dateB = new Date(
+        b.created_at || b.activated_at || b.updated_at || 0
+      ).getTime();
+
+      return dateB - dateA;
+    });
+  }
 
   // ==================================================
   // LOAD WALLET
   // ==================================================
 
   async function loadWallet() {
-
     clearError();
 
     try {
-
       // ----------------------------------------------
-      // CURRENT USER
+      // AUTHENTICATED USER
       // ----------------------------------------------
 
       const {
-        data: {
-          user
-        },
-        error: userError
-      } =
-        await supabaseClient.auth.getUser();
+        data: { session },
+        error: sessionError
+      } = await supabaseClient.auth.getSession();
 
+      if (sessionError) throw sessionError;
 
-      if (userError) {
-        throw userError;
-      }
-
-
-      if (!user) {
-
-        window.location.href =
-          "login.html";
-
+      if (!session || !session.user) {
+        window.location.href = "login.html";
         return;
-
       }
 
+      const user = session.user;
 
       // ----------------------------------------------
       // WALLET
@@ -762,164 +629,89 @@
       const {
         data: wallet,
         error: walletError
-      } =
-        await supabaseClient
-          .from("wallets")
-          .select(`
-            balance,
-            deposit_balance,
-            total_earned,
-            total_deposited,
-            total_withdrawn
-          `)
-          .eq("user_id", user.id)
-          .maybeSingle();
+      } = await supabaseClient
+        .from("wallets")
+        .select(`
+          balance,
+          deposit_balance,
+          total_earned,
+          total_deposited,
+          total_withdrawn
+        `)
+        .eq("user_id", user.id)
+        .maybeSingle();
 
+      if (walletError) throw walletError;
 
-      if (walletError) {
+      const w = wallet || {};
 
-        throw walletError;
-
-      }
-
-
-      const w =
-        wallet || {};
-
-
-      document.getElementById(
-        "earningBalance"
-      ).textContent =
+      document.getElementById("earningBalance").textContent =
         money(w.balance);
 
-
-      document.getElementById(
-        "depositBalance"
-      ).textContent =
+      document.getElementById("depositBalance").textContent =
         money(w.deposit_balance);
 
-
-      document.getElementById(
-        "totalEarned"
-      ).textContent =
+      document.getElementById("totalEarned").textContent =
         money(w.total_earned);
 
-
-      document.getElementById(
-        "totalDeposited"
-      ).textContent =
+      document.getElementById("totalDeposited").textContent =
         money(w.total_deposited);
 
-
-      document.getElementById(
-        "totalWithdrawn"
-      ).textContent =
+      document.getElementById("totalWithdrawn").textContent =
         money(w.total_withdrawn);
 
-
       // ----------------------------------------------
-      // COMPLETED TASKS
-      // ----------------------------------------------
-
-      const {
-        count,
-        error: completionError
-      } =
-        await supabaseClient
-          .from("task_completions")
-          .select(
-            "id",
-            {
-              count: "exact",
-              head: true
-            }
-          )
-          .eq(
-            "user_id",
-            user.id
-          )
-          .eq(
-            "status",
-            "approved"
-          );
-
-
-      if (completionError) {
-
-        console.error(
-          "Task completion query:",
-          completionError
-        );
-
-      } else {
-
-        document.getElementById(
-          "completedTasks"
-        ).textContent =
-          count || 0;
-
-      }
-
-
-      // ----------------------------------------------
-      // CURRENT PACKAGE
+      // LOAD ALL ACTIVITY SOURCES
       // ----------------------------------------------
 
-      const packageArea =
-        document.getElementById(
-          "packageArea"
-        );
+      const [
+        completions,
+        packages,
+        deposits,
+        withdrawals,
+        transactions
+      ] = await Promise.all([
+        loadUserRows("task_completions", user.id),
+        loadUserRows("user_packages", user.id),
+        loadUserRows("deposit_requests", user.id),
+        loadUserRows("withdrawal_requests", user.id),
+        loadUserRows("transactions", user.id)
+      ]);
 
+      // ----------------------------------------------
+      // COMPLETED TASK COUNT
+      // ----------------------------------------------
 
-      const {
-        data: packageData,
-        error: packageError
-      } =
-        await supabaseClient
-          .from("user_packages")
-          .select(`
-            package_name,
-            price_paid,
-            task_count,
-            completed_tasks,
-            tasks_completed,
-            status,
-            activated_at,
-            created_at
-          `)
-          .eq(
-            "user_id",
-            user.id
-          )
-          .eq(
-            "status",
-            "active"
-          )
-          .order(
-            "activated_at",
-            {
-              ascending: false
-            }
-          )
-          .limit(1)
-          .maybeSingle();
+      const completedStatuses = [
+        "approved",
+        "verified",
+        "completed"
+      ];
 
+      const completedCount = completions.filter(item => {
+        const status = String(item.status || "").toLowerCase();
 
-      if (packageError) {
+        // If no status column/value exists, count the record
+        // as a completion. Otherwise count only completed statuses.
+        return !status || completedStatuses.includes(status);
+      }).length;
 
-        console.error(
-          "Package query:",
-          packageError
-        );
+      document.getElementById("completedTasks").textContent =
+        completedCount;
 
-        packageArea.innerHTML = `
-          <div class="no-package">
-            Unable to load current package.
-          </div>
-        `;
+      // ----------------------------------------------
+      // CURRENT ACTIVE PACKAGE
+      // ----------------------------------------------
 
-      } else if (!packageData) {
+      const packageArea = document.getElementById("packageArea");
 
+      const activePackages = newestFirst(
+        packages.filter(item =>
+          String(item.status || "").toLowerCase() === "active"
+        )
+      );
+
+      if (activePackages.length === 0) {
         packageArea.innerHTML = `
           <div class="no-package">
             No active package.
@@ -927,313 +719,277 @@
             Activate a package to start completing tasks.
           </div>
         `;
-
       } else {
+        const packageData = activePackages[0];
+
+        const packageName =
+          packageData.package_name ||
+          packageData.name ||
+          "Active Package";
+
+        const packagePrice =
+          packageData.price_paid ??
+          packageData.price ??
+          packageData.amount ??
+          0;
 
         const completed =
-          Number(
-            packageData.completed_tasks ??
-            packageData.tasks_completed ??
-            0
-          );
-
+          packageData.completed_tasks ??
+          packageData.tasks_completed ??
+          0;
 
         const total =
-          Number(
-            packageData.task_count || 0
-          );
+          packageData.task_count ??
+          packageData.total_tasks ??
+          0;
 
+        const activatedAt =
+          packageData.activated_at ||
+          packageData.created_at;
 
         packageArea.innerHTML = `
-
           <div class="package-name">
-            ${packageData.package_name || "Active Package"}
+            ${escapeHTML(packageName)}
           </div>
 
           <div class="package-info">
-
             Status:
             <strong style="color:#52d394;">
-              ${packageData.status}
+              ${escapeHTML(packageData.status || "Active")}
             </strong>
 
             <br>
 
             Package Price:
-            ${money(packageData.price_paid)}
+            ${money(packagePrice)}
 
             <br>
 
             Tasks:
-            ${completed}
+            ${escapeHTML(completed)}
             /
-            ${total}
+            ${escapeHTML(total)}
 
             <br>
 
             Activated:
-            ${formatDate(
-              packageData.activated_at ||
-              packageData.created_at
-            )}
-
+            ${escapeHTML(formatDate(activatedAt))}
           </div>
-
         `;
-
       }
-
 
       // ----------------------------------------------
       // LATEST DEPOSIT
       // ----------------------------------------------
 
       const latestDepositBox =
-        document.getElementById(
-          "latestDeposit"
-        );
+        document.getElementById("latestDeposit");
 
+      const sortedDeposits = newestFirst(deposits);
 
-      const {
-        data: depositData,
-        error: depositError
-      } =
-        await supabaseClient
-          .from("deposit_requests")
-          .select(`
-            amount,
-            currency,
-            method,
-            status,
-            created_at
-          `)
-          .eq(
-            "user_id",
-            user.id
-          )
-          .order(
-            "created_at",
-            {
-              ascending: false
-            }
-          )
-          .limit(1)
-          .maybeSingle();
-
-
-      if (depositError) {
-
-        console.error(
-          "Deposit query:",
-          depositError
-        );
-
+      if (sortedDeposits.length === 0) {
         latestDepositBox.innerHTML = `
-          <div class="empty">
-            Unable to load deposit information.
-          </div>
+          <div class="empty">No deposits found.</div>
         `;
-
-      } else if (!depositData) {
-
-        latestDepositBox.innerHTML = `
-          <div class="empty">
-            No deposits found.
-          </div>
-        `;
-
       } else {
+        const deposit = sortedDeposits[0];
 
         latestDepositBox.innerHTML = `
-
           <div class="package-name">
-            ${money(depositData.amount)}
+            ${money(deposit.amount)}
           </div>
 
           <div class="package-info">
-
             Status:
-            <strong>
-              ${depositData.status || "Pending"}
+            <strong class="status-text">
+              ${escapeHTML(deposit.status || "Pending")}
             </strong>
 
             <br>
 
             Method:
-            ${depositData.method || "M-Pesa"}
+            ${escapeHTML(deposit.method || "M-Pesa")}
 
             <br>
 
             Submitted:
-            ${formatDate(
-              depositData.created_at
-            )}
-
+            ${escapeHTML(formatDate(deposit.created_at))}
           </div>
-
         `;
-
       }
 
-
       // ----------------------------------------------
-      // TRANSACTIONS
+      // BUILD RECENT ACTIVITY
       // ----------------------------------------------
 
       const activityList =
-        document.getElementById(
-          "activityList"
-        );
+        document.getElementById("activityList");
 
+      const activity = [];
 
-      const {
-        data: transactionData,
-        error: transactionError
-      } =
-        await supabaseClient
-          .from("transactions")
-          .select(`
-            type,
-            amount,
-            currency,
-            status,
-            description,
-            created_at
-          `)
-          .eq(
-            "user_id",
-            user.id
-          )
-          .order(
-            "created_at",
-            {
-              ascending: false
-            }
-          )
-          .limit(10);
+      // Transactions
+      transactions.forEach(item => {
+        const type = String(item.type || "").toLowerCase();
 
+        const creditTypes = [
+          "deposit",
+          "task_reward",
+          "earning",
+          "task_earning",
+          "task_completion",
+          "refund"
+        ];
 
-      if (transactionError) {
+        const isCredit = creditTypes.includes(type);
 
-        console.error(
-          "Transaction query:",
-          transactionError
-        );
+        activity.push({
+          title:
+            item.description ||
+            item.type ||
+            "Wallet transaction",
 
-        activityList.innerHTML = `
-          <div class="empty">
-            Unable to load wallet activity.
-          </div>
-        `;
+          amount: Number(item.amount || 0),
+          date: item.created_at,
+          credit: isCredit,
+          source: "transaction",
+          reference: item.reference_id || item.id || ""
+        });
+      });
 
-      } else if (
-        !transactionData ||
-        transactionData.length === 0
-      ) {
+      // Deposit requests
+      deposits.forEach(item => {
+        activity.push({
+          title: "Deposit " + (item.status || "request"),
+          amount: Number(item.amount || 0),
+          date: item.created_at,
+          credit: true,
+          source: "deposit",
+          reference: item.transaction_code || item.id || ""
+        });
+      });
 
+      // Withdrawal requests
+      withdrawals.forEach(item => {
+        activity.push({
+          title: "Withdrawal " + (item.status || "request"),
+          amount: Number(item.amount || 0),
+          date: item.created_at,
+          credit: false,
+          source: "withdrawal",
+          reference: item.id || ""
+        });
+      });
+
+      // Package activations
+      packages.forEach(item => {
+        activity.push({
+          title:
+            "Package activation: " +
+            (item.package_name || item.name || "Package"),
+
+          amount: Number(
+            item.price_paid ??
+            item.price ??
+            item.amount ??
+            0
+          ),
+
+          date: item.activated_at || item.created_at,
+          credit: false,
+          source: "package",
+          reference: item.id || ""
+        });
+      });
+
+      // Task completions
+      completions.forEach(item => {
+        const status = String(item.status || "").toLowerCase();
+
+        if (
+          status &&
+          !completedStatuses.includes(status)
+        ) {
+          return;
+        }
+
+        activity.push({
+          title: "Task completion reward",
+          amount: Number(item.reward ?? item.amount ?? 0),
+          date: item.created_at,
+          credit: true,
+          source: "task",
+          reference: item.id || ""
+        });
+      });
+
+      // ----------------------------------------------
+      // REMOVE DUPLICATES USING REFERENCES
+      // ----------------------------------------------
+
+      const seenReferences = new Set();
+
+      const uniqueActivity = activity.filter(item => {
+        if (!item.reference) return true;
+
+        const key = String(item.reference);
+
+        if (seenReferences.has(key)) return false;
+
+        seenReferences.add(key);
+        return true;
+      });
+
+      // ----------------------------------------------
+      // SORT AND DISPLAY
+      // ----------------------------------------------
+
+      const sortedActivity = uniqueActivity.sort((a, b) => {
+        const dateA = new Date(a.date || 0).getTime();
+        const dateB = new Date(b.date || 0).getTime();
+
+        return dateB - dateA;
+      }).slice(0, 10);
+
+      if (sortedActivity.length === 0) {
         activityList.innerHTML = `
           <div class="empty">
             No wallet activity yet.
           </div>
         `;
-
       } else {
+        activityList.innerHTML = sortedActivity.map(item => {
+          const amountClass = item.credit ? "credit" : "debit";
+          const sign = item.credit ? "+" : "-";
 
-        activityList.innerHTML =
-          transactionData.map(
-            item => {
-
-              const type =
-                String(
-                  item.type || ""
-                ).toLowerCase();
-
-
-              /*
-                Credits:
-                - deposit
-                - task_reward
-                - earning
-
-                Debits:
-                - package_activation
-                - withdrawal
-              */
-
-              const credit =
-                type === "deposit" ||
-                type === "task_reward" ||
-                type === "earning" ||
-                type === "task_earning";
-
-
-              const sign =
-                credit
-                  ? "+"
-                  : "-";
-
-
-              const amountClass =
-                credit
-                  ? "credit"
-                  : "debit";
-
-
-              return `
-
-                <div class="transaction">
-
-                  <div>
-
-                    <div class="transaction-title">
-                      ${
-                        item.description ||
-                        item.type ||
-                        "Wallet transaction"
-                      }
-                    </div>
-
-                    <div class="transaction-date">
-                      ${formatDate(
-                        item.created_at
-                      )}
-                    </div>
-
-                  </div>
-
-                  <div class="transaction-amount ${amountClass}">
-
-                    ${sign}
-                    ${money(item.amount)}
-
-                  </div>
-
+          return `
+            <div class="transaction">
+              <div>
+                <div class="transaction-title">
+                  ${escapeHTML(item.title)}
                 </div>
 
-              `;
+                <div class="transaction-date">
+                  ${escapeHTML(formatDate(item.date))}
+                </div>
+              </div>
 
-            }
-          ).join("");
-
+              <div class="transaction-amount ${amountClass}">
+                ${sign}${money(item.amount)}
+              </div>
+            </div>
+          `;
+        }).join("");
       }
 
-
     } catch (error) {
-
-      console.error(
-        "Wallet error:",
-        error
-      );
+      console.error("Wallet error:", error);
 
       showError(
         error.message ||
-        "Unable to load wallet information."
+        "Unable to load wallet information. Please refresh the page."
       );
-
     }
-
   }
-
 
   // ==================================================
   // LOGOUT
@@ -1241,43 +997,26 @@
 
   document
     .getElementById("logoutLink")
-    .addEventListener(
-      "click",
-      async function(event) {
+    .addEventListener("click", async function(event) {
+      event.preventDefault();
 
-        event.preventDefault();
+      try {
+        const { error } = await supabaseClient.auth.signOut();
 
-        try {
-
-          await supabaseClient.auth.signOut();
-
-        } catch (error) {
-
-          console.error(
-            "Logout error:",
-            error
-          );
-
+        if (error) {
+          console.error("Logout error:", error);
         }
 
-        localStorage.removeItem(
-          "nexaLearnLoggedIn"
-        );
-
-        localStorage.removeItem(
-          "nexaLearnUser"
-        );
-
-        localStorage.removeItem(
-          "nexaLearnUserId"
-        );
-
-        window.location.href =
-          "login.html";
-
+      } catch (error) {
+        console.error("Logout error:", error);
       }
-    );
 
+      localStorage.removeItem("nexaLearnLoggedIn");
+      localStorage.removeItem("nexaLearnUser");
+      localStorage.removeItem("nexaLearnUserId");
+
+      window.location.href = "login.html";
+    });
 
   // ==================================================
   // START
@@ -1289,4 +1028,3 @@
 
 </body>
 </html>
-```

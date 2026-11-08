@@ -1,628 +1,456 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexaLearn - History</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <title>NexaLearn - History</title>
+<style>
+* { box-sizing: border-box; }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #06101d;
+    color: #eef6ff;
+}
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+.layout { min-height: 100vh; display: flex; }
 
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #06101d;
-      color: #eef6ff;
-    }
+.sidebar {
+    width: 230px;
+    background: #081827;
+    border-right: 1px solid #173047;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    padding: 24px 16px;
+    overflow-y: auto;
+}
 
-    .layout {
-      min-height: 100vh;
-      display: flex;
-    }
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: #3ddc97;
+    margin-bottom: 4px;
+}
 
+.tagline {
+    font-size: 10px;
+    color: #7890a5;
+    letter-spacing: 1.2px;
+    margin-bottom: 28px;
+}
+
+.nav a {
+    display: block;
+    text-decoration: none;
+    color: #9fb1c2;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 7px;
+}
+
+.nav a:hover, .nav a.active {
+    background: #10263a;
+    color: #fff;
+}
+
+.main {
+    margin-left: 230px;
+    width: calc(100% - 230px);
+    padding: 30px;
+}
+
+.content { max-width: 1100px; }
+
+.page-header { margin-bottom: 24px; }
+
+.page-header h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+}
+
+.page-header p {
+    margin: 0;
+    color: #91a5b8;
+    line-height: 1.5;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: #0b1c2c;
+    border: 1px solid #173047;
+    border-radius: 15px;
+    padding: 18px;
+}
+
+.summary-label {
+    font-size: 11px;
+    color: #8197aa;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+}
+
+.summary-value {
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.green { color: #3ddc97; }
+.red { color: #ff8f9f; }
+.blue { color: #88c7ec; }
+
+.filter-card {
+    background: #0b1c2c;
+    border: 1px solid #173047;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 18px;
+}
+
+.filters {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    border: 1px solid #294258;
+    background: #071522;
+    color: #aebdcc;
+    padding: 10px 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    border-color: #3ddc97;
+    background: #16344b;
+    color: #fff;
+}
+
+.history-card {
+    background: #0b1c2c;
+    border: 1px solid #173047;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.history-top {
+    padding: 18px 20px;
+    border-bottom: 1px solid #173047;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-title {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.record-count {
+    color: #8197aa;
+    font-size: 12px;
+}
+
+.records { padding: 5px 20px 10px; }
+
+.record {
+    display: grid;
+    grid-template-columns: 52px 1.7fr 1fr 1fr 1fr;
+    align-items: center;
+    gap: 14px;
+    padding: 17px 0;
+    border-bottom: 1px solid #132b3e;
+}
+
+.record:last-child { border-bottom: 0; }
+
+.record-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 19px;
+    background: #102b40;
+}
+
+.record-main { min-width: 0; }
+
+.record-name {
+    font-weight: 800;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.record-meta {
+    color: #748b9f;
+    font-size: 11px;
+    word-break: break-word;
+    line-height: 1.45;
+}
+
+.record-label {
+    color: #72899d;
+    font-size: 10px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.record-value {
+    font-size: 13px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.amount-credit { color: #3ddc97; }
+.amount-debit { color: #ff8f9f; }
+
+.status {
+    display: inline-block;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.status-completed, .status-approved, .status-verified {
+    background: #10382a;
+    color: #73e3ac;
+}
+
+.status-pending {
+    background: #3c3114;
+    color: #f5cd69;
+}
+
+.status-rejected {
+    background: #402029;
+    color: #ff99a8;
+}
+
+.status-default {
+    background: #173047;
+    color: #9bb0c2;
+}
+
+.empty {
+    text-align: center;
+    padding: 55px 20px;
+    color: #7e94a7;
+}
+
+.empty-icon {
+    font-size: 34px;
+    margin-bottom: 10px;
+}
+
+.empty-title {
+    color: #dce8f2;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.loading {
+    position: fixed;
+    inset: 0;
+    background: #06101d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+}
+
+.note {
+    margin-top: 20px;
+    background: #091724;
+    border: 1px solid #173047;
+    border-radius: 14px;
+    padding: 15px;
+    color: #8499aa;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+@media (max-width: 950px) {
     .sidebar {
-      width: 230px;
-      background: #081827;
-      border-right: 1px solid #173047;
-      position: fixed;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      padding: 24px 16px;
-      overflow-y: auto;
-    }
-
-    .logo {
-      font-size: 24px;
-      font-weight: 800;
-      color: #3ddc97;
-      margin-bottom: 4px;
-    }
-
-    .tagline {
-      font-size: 10px;
-      color: #7890a5;
-      letter-spacing: 1.2px;
-      margin-bottom: 28px;
-    }
-
-    .nav a {
-      display: block;
-      text-decoration: none;
-      color: #9fb1c2;
-      padding: 12px 14px;
-      border-radius: 10px;
-      margin-bottom: 7px;
-    }
-
-    .nav a:hover,
-    .nav a.active {
-      background: #10263a;
-      color: #fff;
-    }
-
-    .main {
-      margin-left: 230px;
-      width: calc(100% - 230px);
-      padding: 30px;
-    }
-
-    .content {
-      max-width: 1100px;
-    }
-
-    .page-header {
-      margin-bottom: 24px;
-    }
-
-    .page-header h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-    }
-
-    .page-header p {
-      margin: 0;
-      color: #91a5b8;
-      line-height: 1.5;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      margin-bottom: 24px;
-    }
-
-    .summary-card {
-      background: #0b1c2c;
-      border: 1px solid #173047;
-      border-radius: 15px;
-      padding: 18px;
-    }
-
-    .summary-label {
-      font-size: 11px;
-      color: #8197aa;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: .6px;
-    }
-
-    .summary-value {
-      font-size: 23px;
-      font-weight: 900;
-    }
-
-    .green {
-      color: #3ddc97;
-    }
-
-    .red {
-      color: #ff8f9f;
-    }
-
-    .blue {
-      color: #88c7ec;
-    }
-
-    .filter-card {
-      background: #0b1c2c;
-      border: 1px solid #173047;
-      border-radius: 15px;
-      padding: 15px;
-      margin-bottom: 18px;
-    }
-
-    .filters {
-      display: flex;
-      gap: 9px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      border: 1px solid #294258;
-      background: #071522;
-      color: #aebdcc;
-      padding: 10px 14px;
-      border-radius: 9px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .filter-btn:hover,
-    .filter-btn.active {
-      border-color: #3ddc97;
-      background: #16344b;
-      color: #fff;
-    }
-
-    .history-card {
-      background: #0b1c2c;
-      border: 1px solid #173047;
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .history-top {
-      padding: 18px 20px;
-      border-bottom: 1px solid #173047;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .history-title {
-      font-size: 18px;
-      font-weight: 800;
-    }
-
-    .record-count {
-      color: #8197aa;
-      font-size: 12px;
-    }
-
-    .records {
-      padding: 5px 20px 10px;
-    }
-
-    .record {
-      display: grid;
-      grid-template-columns: 52px 1.7fr 1fr 1fr 1fr;
-      align-items: center;
-      gap: 14px;
-      padding: 17px 0;
-      border-bottom: 1px solid #132b3e;
-    }
-
-    .record:last-child {
-      border-bottom: 0;
-    }
-
-    .record-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 19px;
-      background: #102b40;
-    }
-
-    .record-main {
-      min-width: 0;
-    }
-
-    .record-name {
-      font-weight: 800;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-
-    .record-meta {
-      color: #748b9f;
-      font-size: 11px;
-      word-break: break-word;
-      line-height: 1.45;
-    }
-
-    .record-label {
-      color: #72899d;
-      font-size: 10px;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-    }
-
-    .record-value {
-      font-size: 13px;
-      font-weight: 700;
-      word-break: break-word;
-    }
-
-    .amount-credit {
-      color: #3ddc97;
-    }
-
-    .amount-debit {
-      color: #ff8f9f;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 6px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .status-completed {
-      background: #10382a;
-      color: #73e3ac;
-    }
-
-    .status-approved {
-      background: #10382a;
-      color: #73e3ac;
-    }
-
-    .status-pending {
-      background: #3c3114;
-      color: #f5cd69;
-    }
-
-    .status-rejected {
-      background: #402029;
-      color: #ff99a8;
-    }
-
-    .status-default {
-      background: #173047;
-      color: #9bb0c2;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 55px 20px;
-      color: #7e94a7;
-    }
-
-    .empty-icon {
-      font-size: 34px;
-      margin-bottom: 10px;
-    }
-
-    .empty-title {
-      color: #dce8f2;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .loading {
-      position: fixed;
-      inset: 0;
-      background: #06101d;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      color: white;
-    }
-
-    .note {
-      margin-top: 20px;
-      background: #091724;
-      border: 1px solid #173047;
-      border-radius: 14px;
-      padding: 15px;
-      color: #8499aa;
-      font-size: 12px;
-      line-height: 1.55;
-    }
-
-    @media (max-width: 950px) {
-      .sidebar {
         position: static;
         width: 100%;
         height: auto;
-      }
+    }
 
-      .layout {
-        display: block;
-      }
+    .layout { display: block; }
 
-      .main {
+    .main {
         margin-left: 0;
         width: 100%;
         padding: 20px 15px;
-      }
-
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .record {
-        grid-template-columns: 45px 1fr 1fr;
-      }
-
-      .record-date {
-        display: none;
-      }
     }
 
-    @media (max-width: 600px) {
-      .summary-grid {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .record { grid-template-columns: 45px 1fr 1fr; }
+
+    .record-date { display: none; }
+}
+
+@media (max-width: 600px) {
+    .summary-grid {
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-      }
+    }
 
-      .filters {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
+    .filters { display: grid; grid-template-columns: 1fr 1fr; }
 
-      .filter-btn {
-        width: 100%;
-      }
+    .filter-btn { width: 100%; }
 
-      .record {
+    .record {
         grid-template-columns: 42px 1fr;
         gap: 10px;
-      }
-
-      .record-main {
-        grid-column: 2;
-      }
-
-      .record-amount,
-      .record-status,
-      .record-date {
-        grid-column: 2;
-      }
-
-      .record-date {
-        display: block;
-      }
     }
-  </style>
 
+    .record-main { grid-column: 2; }
+
+    .record-amount, .record-status, .record-date {
+        grid-column: 2;
+    }
+
+    .record-date { display: block; }
+}
+</style>
 </head>
 
 <body>
 
 <div id="loadingScreen" class="loading">
-  Loading your history...
+    Loading your history...
 </div>
 
 <div class="layout">
 
-  <aside class="sidebar">
+<aside class="sidebar">
+    <div class="logo">NexaLearn</div>
+    <div class="tagline">LEARN • COMPLETE • EARN</div>
 
-```
-<div class="logo">
-  NexaLearn
-</div>
+    <nav class="nav">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="tasks.html">Tasks</a>
+        <a href="packages.html">Packages</a>
+        <a href="wallet.html">Wallet</a>
+        <a href="history.html" class="active">History</a>
+        <a href="profile.html">Profile</a>
+        <a href="support.html">Support</a>
+        <a href="login.html">Logout</a>
+    </nav>
+</aside>
 
-<div class="tagline">
-  LEARN • COMPLETE • EARN
-</div>
-
-<nav class="nav">
-
-  <a href="dashboard.html">Dashboard</a>
-
-  <a href="tasks.html">Tasks</a>
-
-  <a href="packages.html">Packages</a>
-
-  <a href="wallet.html">Wallet</a>
-
-  <a href="history.html" class="active">
-    History
-  </a>
-
-  <a href="profile.html">Profile</a>
-
-  <a href="support.html">Support</a>
-
-  <a href="login.html">Logout</a>
-
-</nav>
-```
-
-  </aside>
-
-  <main class="main">
-
-```
+<main class="main">
 <div class="content">
 
-  <div class="page-header">
-
-    <h1>
-      Transaction History
-    </h1>
-
-    <p>
-      View your deposits, package activations,
-      task earnings and withdrawals.
-    </p>
-
-  </div>
-
-  <section class="summary-grid">
-
-    <div class="summary-card">
-
-      <div class="summary-label">
-        Available Balance
-      </div>
-
-      <div
-        class="summary-value green"
-        id="availableBalance">
-        KSh 0.00
-      </div>
-
+    <div class="page-header">
+        <h1>Transaction History</h1>
+        <p>View your deposits, package activations, task activity and withdrawals.</p>
     </div>
 
-    <div class="summary-card">
+    <section class="summary-grid">
 
-      <div class="summary-label">
-        Total Earned
-      </div>
+        <div class="summary-card">
+            <div class="summary-label">Available Balance</div>
+            <div class="summary-value green" id="availableBalance">KSh 0.00</div>
+        </div>
 
-      <div
-        class="summary-value blue"
-        id="totalEarned">
-        KSh 0.00
-      </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Earned</div>
+            <div class="summary-value blue" id="totalEarned">KSh 0.00</div>
+        </div>
 
+        <div class="summary-card">
+            <div class="summary-label">Task Earnings</div>
+            <div class="summary-value green" id="taskEarnings">KSh 0.00</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Withdrawals</div>
+            <div class="summary-value red" id="withdrawals">KSh 0.00</div>
+        </div>
+
+    </section>
+
+    <section class="filter-card">
+        <div class="filters">
+            <button class="filter-btn active" data-filter="All" onclick="setFilter('All')">All</button>
+            <button class="filter-btn" data-filter="Earnings" onclick="setFilter('Earnings')">Earnings</button>
+            <button class="filter-btn" data-filter="Deposits" onclick="setFilter('Deposits')">Deposits</button>
+            <button class="filter-btn" data-filter="Packages" onclick="setFilter('Packages')">Packages</button>
+            <button class="filter-btn" data-filter="Withdrawals" onclick="setFilter('Withdrawals')">Withdrawals</button>
+        </div>
+    </section>
+
+    <section class="history-card">
+        <div class="history-top">
+            <div class="history-title">Activity</div>
+            <div class="record-count" id="recordCount">0 records</div>
+        </div>
+
+        <div class="records" id="records"></div>
+    </section>
+
+    <div class="note">
+        Your activity is retrieved from your NexaLearn Supabase account.
+        Pending, approved, rejected and completed activities are displayed where available.
     </div>
-
-    <div class="summary-card">
-
-      <div class="summary-label">
-        Task Earnings
-      </div>
-
-      <div
-        class="summary-value green"
-        id="taskEarnings">
-        KSh 0.00
-      </div>
-
-    </div>
-
-    <div class="summary-card">
-
-      <div class="summary-label">
-        Withdrawals
-      </div>
-
-      <div
-        class="summary-value red"
-        id="withdrawals">
-        KSh 0.00
-      </div>
-
-    </div>
-
-  </section>
-
-  <section class="filter-card">
-
-    <div class="filters">
-
-      <button
-        class="filter-btn active"
-        data-filter="All"
-        onclick="setFilter('All')">
-        All
-      </button>
-
-      <button
-        class="filter-btn"
-        data-filter="Earnings"
-        onclick="setFilter('Earnings')">
-        Earnings
-      </button>
-
-      <button
-        class="filter-btn"
-        data-filter="Deposits"
-        onclick="setFilter('Deposits')">
-        Deposits
-      </button>
-
-      <button
-        class="filter-btn"
-        data-filter="Packages"
-        onclick="setFilter('Packages')">
-        Packages
-      </button>
-
-      <button
-        class="filter-btn"
-        data-filter="Withdrawals"
-        onclick="setFilter('Withdrawals')">
-        Withdrawals
-      </button>
-
-    </div>
-
-  </section>
-
-  <section class="history-card">
-
-    <div class="history-top">
-
-      <div class="history-title">
-        Activity
-      </div>
-
-      <div
-        class="record-count"
-        id="recordCount">
-        0 records
-      </div>
-
-    </div>
-
-    <div
-      class="records"
-      id="records">
-    </div>
-
-  </section>
-
-  <div class="note">
-
-    All records shown here are loaded directly
-    from your NexaLearn Supabase account.
-
-  </div>
 
 </div>
-```
-
-  </main>
-
+</main>
 </div>
 
 <script>
+/* =========================
+   SUPABASE CONFIGURATION
+========================= */
 
 const SUPABASE_URL =
-  "https://vzgrzzesquqnftfhchwt.supabase.co";
+    "https://vzgrzzesquqnftfhchwt.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+    "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
-const supabaseClient =
-  window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
-      }
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storageKey: "nexalearn-auth"
+        }
     }
-  );
-
+);
 
 let currentFilter = "All";
 let allRecords = [];
 let allTransactions = [];
+let currentUserId = null;
 
 
 /* =========================
@@ -630,78 +458,100 @@ let allTransactions = [];
 ========================= */
 
 function money(value) {
-
-  return "KSh " +
-    Number(value || 0).toLocaleString(
-      "en-KE",
-      {
+    return "KSh " + Number(value || 0).toLocaleString("en-KE", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }
-    );
-
+    });
 }
-
 
 function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
-
 
 function formatDate(value) {
+    if (!value) return "-";
 
-  if (!value) return "-";
+    const date = new Date(value);
 
-  const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
 
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
+    return date.toLocaleString("en-KE", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
 
-  return date.toLocaleString(
-    "en-KE",
-    {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+function normalizedStatus(status) {
+    return String(status || "completed").toLowerCase();
+}
+
+function statusClass(status) {
+    const value = normalizedStatus(status);
+
+    if (["approved", "completed", "verified"].includes(value)) {
+        return "status-" + value;
     }
-  );
 
+    if (value === "pending") return "status-pending";
+    if (value === "rejected") return "status-rejected";
+
+    return "status-default";
+}
+
+function isSuccessful(status) {
+    return ["approved", "completed", "verified"].includes(
+        normalizedStatus(status)
+    );
+}
+
+function makeRecord(data) {
+    return {
+        id: String(data.id || ""),
+        type: data.type || "other",
+        title: data.title || "Activity",
+        description: data.description || "",
+        amount: Math.abs(Number(data.amount || 0)),
+        direction: data.direction || "credit",
+        status: data.status || "completed",
+        date: data.date || null,
+        reference: String(data.reference || "")
+    };
 }
 
 
-function statusClass(status) {
+/* =========================
+   SAFE TABLE LOADER
 
-  const value =
-    String(status || "")
-      .toLowerCase();
+   One missing table does not stop
+   the other activity sources.
+========================= */
 
-  if (
-    value === "approved" ||
-    value === "completed"
-  ) {
-    return "status-" + value;
-  }
+async function readTable(table, columns, userId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from(table)
+            .select(columns)
+            .eq("user_id", userId);
 
-  if (value === "pending") {
-    return "status-pending";
-  }
+        if (error) {
+            console.warn(table + " could not be loaded:", error.message);
+            return [];
+        }
 
-  if (value === "rejected") {
-    return "status-rejected";
-  }
+        return data || [];
 
-  return "status-default";
-
+    } catch (error) {
+        console.warn(table + " loading error:", error);
+        return [];
+    }
 }
 
 
@@ -710,34 +560,24 @@ function statusClass(status) {
 ========================= */
 
 async function loadWallet(userId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from("wallets")
+            .select("balance,total_earned")
+            .eq("user_id", userId)
+            .maybeSingle();
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("wallets")
-      .select(
-        "balance,total_earned"
-      )
-      .eq(
-        "user_id",
-        userId
-      )
-      .maybeSingle();
+        if (error) {
+            console.error("Wallet error:", error.message);
+            return null;
+        }
 
-  if (error) {
+        return data;
 
-    console.error(
-      "Wallet error:",
-      error
-    );
-
-    return null;
-  }
-
-  return data;
-
+    } catch (error) {
+        console.error("Wallet loading error:", error);
+        return null;
+    }
 }
 
 
@@ -746,179 +586,245 @@ async function loadWallet(userId) {
 ========================= */
 
 async function loadTransactions(userId) {
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("transactions")
-      .select(`
-        id,
-        user_id,
-        type,
-        amount,
-        currency,
-        status,
-        description,
-        reference_id,
-        created_at
-      `)
-      .eq(
-        "user_id",
+    return await readTable(
+        "transactions",
+        "id,user_id,type,amount,currency,status,description,reference_id,created_at",
         userId
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-
-  if (error) {
-
-    console.error(
-      "Transactions error:",
-      error
     );
-
-    return [];
-
-  }
-
-  return data || [];
-
 }
 
 
 /* =========================
-   BUILD RECORDS
+   BUILD TRANSACTION RECORDS
 ========================= */
 
-function buildHistory(transactions) {
+function buildTransactionRecords(transactions) {
+    return transactions.map(transaction => {
+        const type = String(transaction.type || "").toLowerCase();
 
-  return transactions.map(
-    transaction => {
+        let recordType = "other";
+        let title = "Transaction";
+        let direction = "credit";
+        let description = transaction.description || "Wallet transaction";
 
-      const type =
-        String(
-          transaction.type || ""
-        ).toLowerCase();
-
-      let recordType = "other";
-      let title = "Transaction";
-
-      let description =
-        transaction.description ||
-        "Wallet transaction";
-
-      let direction = "credit";
-
-      let status =
-        transaction.status ||
-        "completed";
-
-
-      if (type === "deposit") {
-
-        recordType = "deposit";
-        title = "Wallet Deposit";
-        direction = "credit";
-
-        if (!transaction.description) {
-          description =
-            "Wallet deposit";
+        if (type === "deposit") {
+            recordType = "deposit";
+            title = "Wallet Deposit";
+            direction = "credit";
+            description = transaction.description || "Wallet deposit";
         }
 
-      }
-
-      else if (
-        type === "task_reward" ||
-        type === "task_earning"
-      ) {
-
-        recordType = "earning";
-        title = "Task Reward";
-        direction = "credit";
-
-        if (!transaction.description) {
-          description =
-            "Task reward";
+        else if (
+            type === "task_reward" ||
+            type === "task_earning"
+        ) {
+            recordType = "earning";
+            title = "Task Reward";
+            direction = "credit";
+            description = transaction.description || "Task reward";
         }
 
-      }
-
-      else if (
-        type === "package_activation"
-      ) {
-
-        recordType = "package";
-        title =
-          transaction.description ||
-          "Package Activation";
-
-        direction = "debit";
-
-        description =
-          transaction.description ||
-          "Package activation";
-
-      }
-
-      else if (
-        type === "withdrawal"
-      ) {
-
-        recordType = "withdrawal";
-        title = "Withdrawal";
-        direction = "debit";
-
-        if (!transaction.description) {
-          description =
-            "Wallet withdrawal";
+        else if (type === "package_activation") {
+            recordType = "package";
+            title = transaction.description || "Package Activation";
+            direction = "debit";
+            description = transaction.description || "Package activation";
         }
 
-      }
+        else if (type === "withdrawal") {
+            recordType = "withdrawal";
+            title = "Withdrawal";
+            direction = "debit";
+            description = transaction.description || "Wallet withdrawal";
+        }
+
+        return makeRecord({
+            id: transaction.id,
+            type: recordType,
+            title,
+            description,
+            amount: transaction.amount,
+            direction,
+            status: transaction.status || "completed",
+            date: transaction.created_at,
+            reference: transaction.reference_id
+        });
+    });
+}
 
 
-      return {
+/* =========================
+   DEPOSIT REQUESTS
 
-        id:
-          transaction.id,
+   Includes pending, approved
+   and rejected requests.
+========================= */
 
-        type:
-          recordType,
+async function loadDepositRequests(userId) {
+    const rows = await readTable(
+        "deposit_requests",
+        "id,user_id,amount,currency,method,transaction_code,status,created_at",
+        userId
+    );
 
-        title:
-          title,
+    return rows.map(row => makeRecord({
+        id: row.id,
+        type: "deposit",
+        title: "Deposit Request",
+        description: "Deposit via " + (row.method || "payment method"),
+        amount: row.amount,
+        direction: "credit",
+        status: row.status,
+        date: row.created_at,
+        reference: row.id
+    }));
+}
 
-        description:
-          description,
 
-        amount:
-          Math.abs(
-            Number(
-              transaction.amount || 0
-            )
-          ),
+/* =========================
+   WITHDRAWAL REQUESTS
 
-        direction:
-          direction,
+   Does not display private
+   account or phone details.
+========================= */
 
-        status:
-          status,
+async function loadWithdrawalRequests(userId) {
+    const rows = await readTable(
+        "withdrawal_requests",
+        "id,user_id,amount,currency,method,status,created_at",
+        userId
+    );
 
-        date:
-          transaction.created_at,
+    return rows.map(row => makeRecord({
+        id: row.id,
+        type: "withdrawal",
+        title: "Withdrawal Request",
+        description: "Withdrawal via " + (row.method || "payment method"),
+        amount: row.amount,
+        direction: "debit",
+        status: row.status,
+        date: row.created_at,
+        reference: row.id
+    }));
+}
 
-        reference:
-          transaction.reference_id || ""
 
-      };
+/* =========================
+   PACKAGE ACTIVATIONS
+========================= */
 
+async function loadPackageActivations(userId) {
+    const rows = await readTable(
+        "user_packages",
+        "id,user_id,package_id,package_name,price_paid,status,activated_at",
+        userId
+    );
+
+    return rows.map(row => makeRecord({
+        id: row.id,
+        type: "package",
+        title: row.package_name || "Package Activation",
+        description: "Package purchase / activation",
+        amount: row.price_paid,
+        direction: "debit",
+        status: row.status || "completed",
+        date: row.activated_at,
+        reference: row.id
+    }));
+}
+
+
+/* =========================
+   TASK COMPLETIONS
+
+   Includes submitted, verified
+   and rejected task activity.
+========================= */
+
+async function loadTaskCompletions(userId) {
+    const rows = await readTable(
+        "task_completions",
+        "id,user_id,task_id,task_item_id,reward,currency,status,created_at",
+        userId
+    );
+
+    return rows.map(row => {
+        const status = normalizedStatus(row.status);
+
+        return makeRecord({
+            id: row.id,
+            type: "earning",
+            title: "Task Completion",
+            description:
+                status === "verified"
+                    ? "Task completed and verified"
+                    : status === "rejected"
+                        ? "Task submission rejected"
+                        : "Task submitted for review",
+            amount: row.reward,
+            direction: "credit",
+            status: row.status || "pending",
+            date: row.created_at,
+            reference: row.id
+        });
+    });
+}
+
+
+/* =========================
+   DEDUPLICATE RECORDS
+
+   Transactions are the primary
+   financial ledger. Request and
+   activity tables add records that
+   are not already in transactions.
+========================= */
+
+function combineRecords(
+    transactionRecords,
+    depositRecords,
+    withdrawalRecords,
+    packageRecords,
+    taskRecords
+) {
+    const combined = [...transactionRecords];
+
+    const transactionReferences = new Set();
+
+    transactionRecords.forEach(record => {
+        if (record.reference) {
+            transactionReferences.add(record.reference);
+        }
+    });
+
+    function addIfMissing(record) {
+        if (
+            record.reference &&
+            transactionReferences.has(record.reference)
+        ) {
+            return;
+        }
+
+        const duplicate = combined.some(existing =>
+            existing.type === record.type &&
+            existing.id === record.id
+        );
+
+        if (!duplicate) {
+            combined.push(record);
+        }
     }
-  );
 
+    depositRecords.forEach(addIfMissing);
+    withdrawalRecords.forEach(addIfMissing);
+    packageRecords.forEach(addIfMissing);
+    taskRecords.forEach(addIfMissing);
+
+    return combined.sort((a, b) => {
+        const dateA = new Date(a.date || 0).getTime();
+        const dateB = new Date(b.date || 0).getTime();
+        return dateB - dateA;
+    });
 }
 
 
@@ -926,305 +832,158 @@ function buildHistory(transactions) {
    SUMMARY
 ========================= */
 
-function updateSummary(
-  wallet,
-  transactions
-) {
+function updateSummary(wallet, transactions, taskRecords, withdrawalRecords) {
+    const balance = Number(wallet?.balance || 0);
+    const totalEarned = Number(wallet?.total_earned || 0);
 
-  const balance =
-    Number(
-      wallet?.balance || 0
-    );
+    // Count verified/completed task rewards only.
+    const transactionTaskEarnings = transactions
+        .filter(transaction =>
+            ["task_reward", "task_earning"].includes(
+                String(transaction.type || "").toLowerCase()
+            )
+        )
+        .filter(transaction => isSuccessful(transaction.status))
+        .reduce((total, transaction) =>
+            total + Number(transaction.amount || 0), 0
+        );
 
-  const totalEarned =
-    Number(
-      wallet?.total_earned || 0
-    );
+    const taskRecordEarnings = taskRecords
+        .filter(record => isSuccessful(record.status))
+        .filter(record =>
+            !transactions.some(transaction =>
+                String(transaction.reference_id || "") === record.id
+            )
+        )
+        .reduce((total, record) => total + record.amount, 0);
 
-  const taskEarnings =
-    transactions
-      .filter(
-        transaction => {
+    const taskEarnings =
+        transactionTaskEarnings + taskRecordEarnings;
 
-          const type =
-            String(
-              transaction.type || ""
-            ).toLowerCase();
+    const transactionWithdrawals = transactions
+        .filter(transaction =>
+            String(transaction.type || "").toLowerCase() === "withdrawal"
+        )
+        .filter(transaction => isSuccessful(transaction.status))
+        .reduce((total, transaction) =>
+            total + Number(transaction.amount || 0), 0
+        );
 
-          return (
-            type === "task_reward" ||
-            type === "task_earning"
-          );
+    const requestWithdrawals = withdrawalRecords
+        .filter(record => isSuccessful(record.status))
+        .filter(record =>
+            !transactions.some(transaction =>
+                String(transaction.reference_id || "") === record.id
+            )
+        )
+        .reduce((total, record) => total + record.amount, 0);
 
-        }
-      )
-      .reduce(
-        (total, transaction) =>
-          total +
-          Number(
-            transaction.amount || 0
-          ),
-        0
-      );
+    const withdrawals =
+        transactionWithdrawals + requestWithdrawals;
 
-  const withdrawals =
-    transactions
-      .filter(
-        transaction =>
-          String(
-            transaction.type || ""
-          ).toLowerCase() ===
-          "withdrawal"
-      )
-      .reduce(
-        (total, transaction) =>
-          total +
-          Number(
-            transaction.amount || 0
-          ),
-        0
-      );
-
-
-  document.getElementById(
-    "availableBalance"
-  ).textContent =
-    money(balance);
-
-  document.getElementById(
-    "totalEarned"
-  ).textContent =
-    money(totalEarned);
-
-  document.getElementById(
-    "taskEarnings"
-  ).textContent =
-    money(taskEarnings);
-
-  document.getElementById(
-    "withdrawals"
-  ).textContent =
-    money(withdrawals);
-
+    document.getElementById("availableBalance").textContent = money(balance);
+    document.getElementById("totalEarned").textContent = money(totalEarned);
+    document.getElementById("taskEarnings").textContent = money(taskEarnings);
+    document.getElementById("withdrawals").textContent = money(withdrawals);
 }
 
 
 /* =========================
-   ICONS
+   ICONS AND CATEGORIES
 ========================= */
 
 function iconFor(type) {
-
-  if (type === "deposit") {
-    return "↓";
-  }
-
-  if (type === "package") {
-    return "▣";
-  }
-
-  if (type === "earning") {
-    return "✓";
-  }
-
-  if (type === "withdrawal") {
-    return "↑";
-  }
-
-  return "•";
-
+    if (type === "deposit") return "↓";
+    if (type === "package") return "▣";
+    if (type === "earning") return "✓";
+    if (type === "withdrawal") return "↑";
+    return "•";
 }
-
-
-/* =========================
-   CATEGORY
-========================= */
 
 function categoryFor(type) {
-
-  if (type === "deposit") {
-    return "Deposits";
-  }
-
-  if (type === "package") {
-    return "Packages";
-  }
-
-  if (type === "earning") {
-    return "Earnings";
-  }
-
-  if (type === "withdrawal") {
-    return "Withdrawals";
-  }
-
-  return "All";
-
+    if (type === "deposit") return "Deposits";
+    if (type === "package") return "Packages";
+    if (type === "earning") return "Earnings";
+    if (type === "withdrawal") return "Withdrawals";
+    return "All";
 }
 
 
 /* =========================
-   RENDER
+   RENDER RECORDS
 ========================= */
 
 function renderRecords() {
-
-  const records =
-    currentFilter === "All"
-      ? allRecords
-      : allRecords.filter(
-          record =>
-            categoryFor(
-              record.type
-            ) === currentFilter
+    const records = currentFilter === "All"
+        ? allRecords
+        : allRecords.filter(record =>
+            categoryFor(record.type) === currentFilter
         );
 
+    document.getElementById("recordCount").textContent =
+        records.length + (records.length === 1 ? " record" : " records");
 
-  document.getElementById(
-    "recordCount"
-  ).textContent =
-    records.length +
-    (
-      records.length === 1
-        ? " record"
-        : " records"
-    );
+    const container = document.getElementById("records");
 
+    if (!records.length) {
+        container.innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">▣</div>
+                <div class="empty-title">No records found</div>
+                <div>Your activity will appear here.</div>
+            </div>
+        `;
+        return;
+    }
 
-  const container =
-    document.getElementById(
-      "records"
-    );
-
-
-  if (!records.length) {
-
-    container.innerHTML = `
-
-      <div class="empty">
-
-        <div class="empty-icon">
-          ▣
-        </div>
-
-        <div class="empty-title">
-          No records found
-        </div>
-
-        <div>
-          Your activity will appear here.
-        </div>
-
-      </div>
-
-    `;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    records.map(
-      record => {
-
-        const isCredit =
-          record.direction ===
-          "credit";
-
-        const amountClass =
-          isCredit
-            ? "amount-credit"
-            : "amount-debit";
-
-        const prefix =
-          isCredit
-            ? "+"
-            : "-";
-
+    container.innerHTML = records.map(record => {
+        const isCredit = record.direction === "credit";
+        const amountClass = isCredit ? "amount-credit" : "amount-debit";
+        const prefix = isCredit ? "+" : "-";
 
         return `
+            <div class="record">
 
-          <div class="record">
+                <div class="record-icon">
+                    ${iconFor(record.type)}
+                </div>
 
-            <div class="record-icon">
-              ${iconFor(record.type)}
-            </div>
+                <div class="record-main">
+                    <div class="record-name">
+                        ${escapeHtml(record.title)}
+                    </div>
+                    <div class="record-meta">
+                        ${escapeHtml(record.description)}
+                    </div>
+                </div>
 
-            <div class="record-main">
+                <div class="record-amount">
+                    <div class="record-label">Amount</div>
+                    <div class="record-value ${amountClass}">
+                        ${prefix}${money(record.amount)}
+                    </div>
+                </div>
 
-              <div class="record-name">
-                ${escapeHtml(
-                  record.title
-                )}
-              </div>
+                <div class="record-status">
+                    <div class="record-label">Status</div>
+                    <span class="status ${statusClass(record.status)}">
+                        ${escapeHtml(
+                            String(record.status || "completed")
+                                .replace(/^./, letter => letter.toUpperCase())
+                        )}
+                    </span>
+                </div>
 
-              <div class="record-meta">
-                ${escapeHtml(
-                  record.description || ""
-                )}
-              </div>
-
-            </div>
-
-            <div class="record-amount">
-
-              <div class="record-label">
-                Amount
-              </div>
-
-              <div
-                class="record-value ${amountClass}">
-                ${prefix}${money(
-                  record.amount
-                )}
-              </div>
-
-            </div>
-
-            <div class="record-status">
-
-              <div class="record-label">
-                Status
-              </div>
-
-              <span
-                class="status ${statusClass(
-                  record.status
-                )}">
-                ${escapeHtml(
-                  String(
-                    record.status
-                  ).replace(
-                    /^./,
-                    letter =>
-                      letter.toUpperCase()
-                  )
-                )}
-              </span>
+                <div class="record-date">
+                    <div class="record-label">Date</div>
+                    <div class="record-value">
+                        ${formatDate(record.date)}
+                    </div>
+                </div>
 
             </div>
-
-            <div class="record-date">
-
-              <div class="record-label">
-                Date
-              </div>
-
-              <div class="record-value">
-                ${formatDate(
-                  record.date
-                )}
-              </div>
-
-            </div>
-
-          </div>
-
         `;
-
-      }
-    ).join("");
-
+    }).join("");
 }
 
 
@@ -1233,190 +992,114 @@ function renderRecords() {
 ========================= */
 
 function setFilter(filter) {
+    currentFilter = filter;
 
-  currentFilter =
-    filter;
-
-
-  document
-    .querySelectorAll(
-      ".filter-btn"
-    )
-    .forEach(
-      button => {
-
+    document.querySelectorAll(".filter-btn").forEach(button => {
         button.classList.toggle(
-          "active",
-          button.dataset.filter ===
-          filter
+            "active",
+            button.dataset.filter === filter
         );
+    });
 
-      }
-    );
-
-
-  renderRecords();
-
+    renderRecords();
 }
 
 
 /* =========================
-   LOAD HISTORY
+   LOAD ALL HISTORY
 ========================= */
 
 async function loadHistory() {
+    const loading = document.getElementById("loadingScreen");
 
-  const loading =
-    document.getElementById(
-      "loadingScreen"
-    );
+    try {
+        const { data, error } =
+            await supabaseClient.auth.getSession();
 
+        if (error || !data?.session?.user) {
+            window.location.replace("login.html");
+            return;
+        }
 
-  try {
+        currentUserId = data.session.user.id;
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth.getSession();
+        console.log("History user:", currentUserId);
 
+        // Load all activity sources independently.
+        const [
+            wallet,
+            transactions,
+            depositRecords,
+            withdrawalRecords,
+            packageRecords,
+            taskRecords
+        ] = await Promise.all([
+            loadWallet(currentUserId),
+            loadTransactions(currentUserId),
+            loadDepositRequests(currentUserId),
+            loadWithdrawalRequests(currentUserId),
+            loadPackageActivations(currentUserId),
+            loadTaskCompletions(currentUserId)
+        ]);
 
-    if (
-      error ||
-      !data.session
-    ) {
+        console.log("Wallet:", wallet);
+        console.log("Transactions:", transactions);
+        console.log("Deposit requests:", depositRecords);
+        console.log("Withdrawal requests:", withdrawalRecords);
+        console.log("Package activations:", packageRecords);
+        console.log("Task completions:", taskRecords);
 
-      window.location.href =
-        "login.html";
+        allTransactions = transactions;
 
-      return;
+        updateSummary(
+            wallet,
+            transactions,
+            taskRecords,
+            withdrawalRecords
+        );
+
+        const transactionRecords =
+            buildTransactionRecords(transactions);
+
+        allRecords = combineRecords(
+            transactionRecords,
+            depositRecords,
+            withdrawalRecords,
+            packageRecords,
+            taskRecords
+        );
+
+        renderRecords();
+
+        loading.style.display = "none";
+
+    } catch (error) {
+        console.error("History loading error:", error);
+
+        document.getElementById("records").innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">⚠</div>
+                <div class="empty-title">Unable to load history</div>
+                <div>Please refresh the page and try again.</div>
+            </div>
+        `;
+
+        loading.style.display = "none";
     }
-
-
-    const userId =
-      data.session.user.id;
-
-
-    console.log(
-      "History user:",
-      userId
-    );
-
-
-    const [
-      wallet,
-      transactions
-    ] =
-      await Promise.all([
-
-        loadWallet(userId),
-
-        loadTransactions(userId)
-
-      ]);
-
-
-    console.log(
-      "Wallet:",
-      wallet
-    );
-
-    console.log(
-      "Transactions:",
-      transactions
-    );
-
-
-    allTransactions =
-      transactions;
-
-
-    updateSummary(
-      wallet,
-      transactions
-    );
-
-
-    allRecords =
-      buildHistory(
-        transactions
-      );
-
-
-    renderRecords();
-
-
-    loading.style.display =
-      "none";
-
-
-  } catch (error) {
-
-    console.error(
-      "History loading error:",
-      error
-    );
-
-
-    document.getElementById(
-      "records"
-    ).innerHTML = `
-
-      <div class="empty">
-
-        <div class="empty-icon">
-          ⚠
-        </div>
-
-        <div class="empty-title">
-          Unable to load history
-        </div>
-
-        <div>
-          Please refresh the page and try again.
-        </div>
-
-      </div>
-
-    `;
-
-
-    loading.style.display =
-      "none";
-
-  }
-
 }
 
 
 /* =========================
-   AUTH
+   AUTH LISTENER
 ========================= */
 
-supabaseClient.auth.onAuthStateChange(
-  (
-    event,
-    session
-  ) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log("Auth event:", event);
 
-    console.log(
-      "Auth event:",
-      event
-    );
-
-
-    if (
-      event ===
-      "SIGNED_OUT"
-    ) {
-
-      window.location.href =
-        "login.html";
-
+    if (event === "SIGNED_OUT") {
+        window.location.replace("login.html");
     }
-
-  }
-);
+});
 
 
 /* =========================

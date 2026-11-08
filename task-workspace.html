@@ -258,7 +258,15 @@ const SUPABASE_KEY = "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
 const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storageKey: "nexalearn-auth"
+        }
+    }
 );
 
 let currentUser = null;
@@ -395,14 +403,21 @@ async function loadItems() {
 /* AUTHENTICATED USER */
 
 async function loadUser() {
-    const { data, error } = await supabaseClient.auth.getUser();
+    const { data, error } = await supabaseClient.auth.getSession();
 
-    if (error || !data?.user) {
-        window.location.href = "login.html";
+    if (error) {
+        console.error("Session loading error:", error);
+        window.location.replace("login.html");
         throw new Error("USER_NOT_AUTHENTICATED");
     }
 
-    currentUser = data.user;
+    if (!data?.session?.user) {
+        window.location.replace("login.html");
+        throw new Error("USER_NOT_AUTHENTICATED");
+    }
+
+    currentUser = data.session.user;
+    return currentUser;
 }
 
 /* WALLET BALANCE */
@@ -813,7 +828,6 @@ async function redoTask() {
             monitoringTimer = null;
         }
 
-        // Ensure the previous attempt is closed before creating another.
         if (currentAttempt?.status === "active") {
             const { error: closeError } = await supabaseClient
                 .from("task_attempts")
@@ -825,8 +839,6 @@ async function redoTask() {
             if (closeError) throw closeError;
         }
 
-        // Create a separate attempt so old completion rows do not
-        // make findNextItem() skip items in the new attempt.
         const { data: newAttempt, error: createError } =
             await supabaseClient
                 .from("task_attempts")

@@ -1,9 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>NexaLearn Withdraw</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -75,6 +75,9 @@
 
     .logout a {
       color: #ef4444;
+      text-decoration: none;
+      display: block;
+      padding: 13px 15px;
     }
 
     .main {
@@ -124,6 +127,7 @@
       border: 1px solid #17283b;
       border-radius: 12px;
       padding: 25px;
+      min-width: 0;
     }
 
     .card h2 {
@@ -206,16 +210,17 @@
       border-radius: 7px;
       margin-bottom: 15px;
       font-size: 13px;
+      line-height: 1.5;
     }
 
-    .success {
+    .message.success {
       display: block;
       background: rgba(34, 197, 94, 0.12);
       border: 1px solid rgba(34, 197, 94, 0.25);
       color: #4ade80;
     }
 
-    .error {
+    .message.error {
       display: block;
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.25);
@@ -328,62 +333,41 @@
     </div>
 
     <div class="nav">
-
       <a href="dashboard.html">Dashboard</a>
-
       <a href="packages.html">Packages</a>
-
       <a href="tasks.html">Tasks</a>
-
       <a href="wallet.html">Wallet</a>
-
       <a href="history.html">History</a>
-
       <a href="profile.html">Profile</a>
-
       <a href="support.html">Support</a>
-
       <a href="withdraw.html" class="active">Withdraw</a>
-
     </div>
 
     <div class="logout">
-      <a href="#" onclick="logout()">Logout</a>
+      <a href="#" id="logoutBtn">Logout</a>
     </div>
 
   </aside>
 
-
   <main class="main">
 
     <div class="header">
-
       <h1>Withdraw Funds</h1>
-
       <p>
         Request a withdrawal from your NexaLearn account.
       </p>
-
     </div>
-
 
     <div class="balance-card">
-
       <span>Available Earning Balance</span>
-
-      <h2 id="balance">
-        KES 0.00
-      </h2>
-
+      <h2 id="balance">KES 0.00</h2>
     </div>
 
-
-    <div id="message" class="message"></div>
-
+    <div id="message" class="message" role="status" aria-live="polite"></div>
 
     <div class="content">
 
-      <!-- WITHDRAW FORM -->
+      <!-- WITHDRAWAL FORM -->
 
       <div class="card">
 
@@ -392,27 +376,17 @@
         <form id="withdrawForm">
 
           <div class="form-group">
-
-            <label for="accountName">
-              Account Name
-            </label>
-
+            <label for="accountName">Account Name</label>
             <input
               type="text"
               id="accountName"
               placeholder="Enter account name"
               required
             >
-
           </div>
 
-
           <div class="form-group">
-
-            <label for="amount">
-              Amount (KES)
-            </label>
-
+            <label for="amount">Amount (KES)</label>
             <input
               type="number"
               id="amount"
@@ -421,15 +395,10 @@
               placeholder="Enter amount"
               required
             >
-
           </div>
 
-
           <div class="form-group">
-
-            <label>
-              Withdrawal Method
-            </label>
+            <label>Withdrawal Method</label>
 
             <div class="method-buttons">
 
@@ -437,7 +406,6 @@
                 type="button"
                 class="method-btn active"
                 id="mobileBtn"
-                onclick="selectMethod('Mobile Money')"
               >
                 Mobile Money
               </button>
@@ -446,29 +414,21 @@
                 type="button"
                 class="method-btn"
                 id="bankBtn"
-                onclick="selectMethod('Bank Account')"
               >
                 Bank Account
               </button>
 
             </div>
-
           </div>
-
 
           <!-- MOBILE MONEY -->
 
-          <div
-            class="form-group"
-            id="mobileGroup"
-          >
+          <div class="form-group" id="mobileGroup">
 
-            <label for="mobileNumber">
-              M-Pesa Number
-            </label>
+            <label for="mobileNumber">M-Pesa Number</label>
 
             <input
-              type="text"
+              type="tel"
               id="mobileNumber"
               placeholder="e.g. 0712345678"
               autocomplete="tel"
@@ -476,8 +436,7 @@
 
           </div>
 
-
-          <!-- BANK -->
+          <!-- BANK ACCOUNT -->
 
           <div
             class="form-group"
@@ -485,16 +444,13 @@
             style="display:none;"
           >
 
-            <label for="bankName">
-              Bank Name
-            </label>
+            <label for="bankName">Bank Name</label>
 
             <input
               type="text"
               id="bankName"
               placeholder="Enter bank name"
             >
-
 
             <label
               for="bankAccountNumber"
@@ -511,7 +467,6 @@
 
           </div>
 
-
           <button
             type="submit"
             class="submit-btn"
@@ -524,21 +479,16 @@
 
       </div>
 
-
-      <!-- REQUEST HISTORY -->
+      <!-- WITHDRAWAL HISTORY -->
 
       <div class="card">
 
-        <h2>
-          Withdrawal Requests
-        </h2>
+        <h2>Withdrawal Requests</h2>
 
         <div id="requests">
-
           <div class="empty">
             Loading requests...
           </div>
-
         </div>
 
       </div>
@@ -547,1037 +497,617 @@
 
   </main>
 
+  <script>
+    "use strict";
 
-<script>
+    /* =========================================
+       SUPABASE CONFIGURATION
+    ========================================= */
 
-const SUPABASE_URL =
-  "https://vzgrzzesquqnftfhchwt.supabase.co";
+    const SUPABASE_URL =
+      "https://vzgrzzesquqnftfhchwt.supabase.co";
 
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
 
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
+          // Must match login.html, wallet.html and deposit.html
+          storageKey: "nexalearn-auth"
+        }
       }
-    }
-  );
+    );
+
+    let selectedMethod = "Mobile Money";
+    let currentBalance = 0;
+    let currentUser = null;
 
 
-let selectedMethod = "Mobile Money";
+    /* =========================================
+       MESSAGE
+    ========================================= */
 
-let currentBalance = 0;
+    function showMessage(text, type) {
+      const message = document.getElementById("message");
 
+      message.textContent = text;
+      message.className = "message " + type;
 
-/* =========================================
-   LOAD EARNING BALANCE
-========================================= */
-
-async function loadBalance() {
-
-  try {
-
-    const {
-      data: {
-        user
-      },
-      error: userError
-    } =
-      await supabaseClient.auth.getUser();
-
-
-    if (userError) {
-
-      console.error(
-        "Authentication error:",
-        userError
-      );
-
-      showMessage(
-        "Unable to verify your account.",
-        "error"
-      );
-
-      return;
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
     }
 
 
-    if (!user) {
-
-      currentBalance = 0;
-
-      document.getElementById(
-        "balance"
-      ).textContent = "KES 0.00";
-
-      return;
-    }
-
-
-    const {
-      data: wallet,
-      error
-    } =
-      await supabaseClient
-        .from("wallets")
-        .select(`
-          balance,
-          deposit_balance,
-          total_earned,
-          total_withdrawn
-        `)
-        .eq(
-          "user_id",
-          user.id
-        )
-        .maybeSingle();
-
-
-    if (error) {
-
-      console.error(
-        "Wallet loading error:",
-        error
-      );
-
-      showMessage(
-        "Unable to load your earning balance.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    if (!wallet) {
-
-      currentBalance = 0;
-
-      document.getElementById(
-        "balance"
-      ).textContent = "KES 0.00";
-
-      return;
-    }
-
-
-    currentBalance =
-      Number(
-        wallet.balance || 0
-      );
-
-
-    document.getElementById(
-      "balance"
-    ).textContent =
-      "KES " +
-      currentBalance.toFixed(2);
-
-
-  } catch (error) {
-
-    console.error(
-      "Balance loading exception:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================
-   SELECT METHOD
-========================================= */
-
-function selectMethod(method) {
-
-  selectedMethod = method;
-
-
-  const mobileBtn =
-    document.getElementById(
-      "mobileBtn"
-    );
-
-  const bankBtn =
-    document.getElementById(
-      "bankBtn"
-    );
-
-  const mobileGroup =
-    document.getElementById(
-      "mobileGroup"
-    );
-
-  const bankGroup =
-    document.getElementById(
-      "bankGroup"
-    );
-
-
-  if (
-    method ===
-    "Mobile Money"
-  ) {
-
-    mobileBtn.classList.add(
-      "active"
-    );
-
-    bankBtn.classList.remove(
-      "active"
-    );
-
-    mobileGroup.style.display =
-      "block";
-
-    bankGroup.style.display =
-      "none";
-
-
-  } else {
-
-    bankBtn.classList.add(
-      "active"
-    );
-
-    mobileBtn.classList.remove(
-      "active"
-    );
-
-    mobileGroup.style.display =
-      "none";
-
-    bankGroup.style.display =
-      "block";
-
-  }
-
-}
-
-
-/* =========================================
-   MESSAGE
-========================================= */
-
-function showMessage(
-  text,
-  type
-) {
-
-  const message =
-    document.getElementById(
-      "message"
-    );
-
-
-  message.textContent =
-    text;
-
-
-  message.className =
-    "message " + type;
-
-}
-
-
-/* =========================================
-   SUBMIT WITHDRAWAL
-========================================= */
-
-document
-  .getElementById(
-    "withdrawForm"
-  )
-  .addEventListener(
-    "submit",
-    async function(event) {
-
-      event.preventDefault();
-
-
-      const submitBtn =
-        document.getElementById(
-          "submitBtn"
-        );
-
-
-      submitBtn.disabled =
-        true;
-
-
-      submitBtn.textContent =
-        "Checking balance...";
-
-
+    /* =========================================
+       AUTHENTICATION
+    ========================================= */
+
+    async function checkUser() {
       try {
+        const { data, error } =
+          await supabaseClient.auth.getSession();
 
-        /* ============================
-           GET USER
-        ============================ */
+        if (error) throw error;
 
-        const {
-          data: {
-            user
-          },
-          error: userError
-        } =
-          await supabaseClient.auth.getUser();
-
-
-        if (userError) {
-
-          console.error(
-            userError
-          );
-
-          showMessage(
-            "Unable to verify your account.",
-            "error"
-          );
-
-          return;
+        if (!data.session) {
+          window.location.replace("login.html");
+          return false;
         }
 
-
-        if (!user) {
-
-          showMessage(
-            "Please log in before requesting a withdrawal.",
-            "error"
-          );
-
-          return;
-        }
-
-
-        /* ============================
-           FORM DATA
-        ============================ */
-
-        const accountName =
-          document
-            .getElementById(
-              "accountName"
-            )
-            .value
-            .trim();
-
-
-        const amount =
-          Number(
-            document
-              .getElementById(
-                "amount"
-              )
-              .value
-          );
-
-
-        if (!accountName) {
-
-          showMessage(
-            "Please enter the account name.",
-            "error"
-          );
-
-          return;
-        }
-
-
-        if (
-          !amount ||
-          amount <= 0
-        ) {
-
-          showMessage(
-            "Please enter a valid withdrawal amount.",
-            "error"
-          );
-
-          return;
-        }
-
-
-        /* ============================
-           GET FRESH WALLET BALANCE
-        ============================ */
-
-        submitBtn.textContent =
-          "Checking balance...";
-
-
-        const {
-          data: wallet,
-          error: walletError
-        } =
-          await supabaseClient
-            .from("wallets")
-            .select(
-              "balance"
-            )
-            .eq(
-              "user_id",
-              user.id
-            )
-            .maybeSingle();
-
-
-        if (walletError) {
-
-          console.error(
-            "Wallet error:",
-            walletError
-          );
-
-          showMessage(
-            "Unable to verify your earning balance.",
-            "error"
-          );
-
-          return;
-        }
-
-
-        if (!wallet) {
-
-          showMessage(
-            "Wallet account not found.",
-            "error"
-          );
-
-          return;
-        }
-
-
-        const balance =
-          Number(
-            wallet.balance || 0
-          );
-
-
-        currentBalance =
-          balance;
-
-
-        document.getElementById(
-          "balance"
-        ).textContent =
-          "KES " +
-          balance.toFixed(2);
-
-
-        /* ============================
-           CHECK BALANCE
-        ============================ */
-
-        if (
-          amount >
-          balance
-        ) {
-
-          showMessage(
-            "Insufficient earning balance. Available: KES " +
-            balance.toFixed(2),
-            "error"
-          );
-
-          return;
-        }
-
-
-        /* ============================
-           PREPARE ACCOUNT DETAILS
-        ============================ */
-
-        let mpesaNumber =
-          null;
-
-        let accountNumber =
-          null;
-
-
-        /* ============================
-           MOBILE MONEY
-        ============================ */
-
-        if (
-          selectedMethod ===
-          "Mobile Money"
-        ) {
-
-          mpesaNumber =
-            document
-              .getElementById(
-                "mobileNumber"
-              )
-              .value
-              .trim();
-
-
-          if (!mpesaNumber) {
-
-            showMessage(
-              "Please enter your M-Pesa number.",
-              "error"
-            );
-
-            return;
-          }
-
-
-          /*
-            Save the M-Pesa number in
-            the correct database column.
-          */
-
-          accountNumber =
-            mpesaNumber;
-
-
-        }
-
-
-        /* ============================
-           BANK ACCOUNT
-        ============================ */
-
-        else {
-
-          const bankName =
-            document
-              .getElementById(
-                "bankName"
-              )
-              .value
-              .trim();
-
-
-          const bankAccountNumber =
-            document
-              .getElementById(
-                "bankAccountNumber"
-              )
-              .value
-              .trim();
-
-
-          if (
-            !bankName ||
-            !bankAccountNumber
-          ) {
-
-            showMessage(
-              "Please enter the bank name and account number.",
-              "error"
-            );
-
-            return;
-          }
-
-
-          /*
-            Store the bank details
-            together in account_number.
-          */
-
-          accountNumber =
-            bankName +
-            " - " +
-            bankAccountNumber;
-
-        }
-
-
-        /* ============================
-           INSERT REQUEST
-        ============================ */
-
-        submitBtn.textContent =
-          "Submitting...";
-
-
-        const {
-          data: withdrawal,
-          error
-        } =
-          await supabaseClient
-            .from(
-              "withdrawal_requests"
-            )
-            .insert({
-
-              user_id:
-                user.id,
-
-              amount:
-                amount,
-
-              currency:
-                "KES",
-
-              method:
-                selectedMethod,
-
-              mpesa_number:
-                mpesaNumber,
-
-              account_number:
-                accountNumber,
-
-              account_name:
-                accountName,
-
-              status:
-                "pending"
-
-            })
-            .select()
-            .single();
-
-
-        if (error) {
-
-          console.error(
-            "Withdrawal request error:",
-            error
-          );
-
-          showMessage(
-            "Withdrawal request failed: " +
-            error.message,
-            "error"
-          );
-
-          return;
-        }
-
-
-        console.log(
-          "Withdrawal created:",
-          withdrawal
-        );
-
-
-        /* ============================
-           SUCCESS
-        ============================ */
-
-        showMessage(
-          "Withdrawal request submitted successfully.",
-          "success"
-        );
-
-
-        document
-          .getElementById(
-            "withdrawForm"
-          )
-          .reset();
-
-
-        selectedMethod =
-          "Mobile Money";
-
-
-        selectMethod(
-          "Mobile Money"
-        );
-
-
-        await loadBalance();
-
-        await loadRequests();
-
+        currentUser = data.session.user;
+        return true;
 
       } catch (error) {
-
-        console.error(
-          "Withdrawal exception:",
-          error
-        );
+        console.error("Authentication error:", error);
 
         showMessage(
-          "Something went wrong while processing your withdrawal.",
+          "Unable to verify your login session. Please refresh the page.",
           "error"
         );
 
-
-      } finally {
-
-        submitBtn.disabled =
-          false;
-
-
-        submitBtn.textContent =
-          "Submit Withdrawal";
-
+        return false;
       }
-
     }
-  );
 
 
-/* =========================================
-   LOAD WITHDRAWAL REQUESTS
-========================================= */
+    /* =========================================
+       LOAD EARNING BALANCE
+    ========================================= */
 
-async function loadRequests() {
+    async function loadBalance() {
+      if (!currentUser) return;
 
-  const requestsContainer =
-    document.getElementById(
-      "requests"
+      try {
+        const { data: wallet, error } =
+          await supabaseClient
+            .from("wallets")
+            .select("balance")
+            .eq("user_id", currentUser.id)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        currentBalance = Number(wallet?.balance || 0);
+
+        document.getElementById("balance").textContent =
+          "KES " + currentBalance.toFixed(2);
+
+      } catch (error) {
+        console.error("Wallet loading error:", error);
+
+        showMessage(
+          "Unable to load your earning balance.",
+          "error"
+        );
+      }
+    }
+
+
+    /* =========================================
+       SELECT WITHDRAWAL METHOD
+    ========================================= */
+
+    function selectMethod(method) {
+      selectedMethod = method;
+
+      const mobileBtn = document.getElementById("mobileBtn");
+      const bankBtn = document.getElementById("bankBtn");
+
+      const mobileGroup = document.getElementById("mobileGroup");
+      const bankGroup = document.getElementById("bankGroup");
+
+      const mobileNumber = document.getElementById("mobileNumber");
+      const bankName = document.getElementById("bankName");
+      const bankAccountNumber = document.getElementById("bankAccountNumber");
+
+      if (method === "Mobile Money") {
+
+        mobileBtn.classList.add("active");
+        bankBtn.classList.remove("active");
+
+        mobileGroup.style.display = "block";
+        bankGroup.style.display = "none";
+
+        mobileNumber.required = true;
+        bankName.required = false;
+        bankAccountNumber.required = false;
+
+      } else {
+
+        bankBtn.classList.add("active");
+        mobileBtn.classList.remove("active");
+
+        mobileGroup.style.display = "none";
+        bankGroup.style.display = "block";
+
+        mobileNumber.required = false;
+        bankName.required = true;
+        bankAccountNumber.required = true;
+      }
+    }
+
+    document.getElementById("mobileBtn").addEventListener(
+      "click",
+      () => selectMethod("Mobile Money")
+    );
+
+    document.getElementById("bankBtn").addEventListener(
+      "click",
+      () => selectMethod("Bank Account")
     );
 
 
-  const {
-    data: {
-      user
-    },
-    error: userError
-  } =
-    await supabaseClient.auth.getUser();
+    /* =========================================
+       SUBMIT WITHDRAWAL
+    ========================================= */
+
+    document
+      .getElementById("withdrawForm")
+      .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const submitBtn = document.getElementById("submitBtn");
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Checking balance...";
+
+        try {
+
+          /* VERIFY CURRENT SESSION */
+
+          const { data: sessionData, error: sessionError } =
+            await supabaseClient.auth.getSession();
+
+          if (sessionError) throw sessionError;
+
+          if (!sessionData.session) {
+            throw new Error(
+              "Your login session has expired. Please log in again."
+            );
+          }
+
+          currentUser = sessionData.session.user;
 
 
-  if (
-    userError ||
-    !user
-  ) {
+          /* FORM DATA */
 
-    requestsContainer.innerHTML = `
-      <div class="empty">
-        Please log in to view your withdrawal requests.
-      </div>
-    `;
+          const accountName = document
+            .getElementById("accountName")
+            .value.trim();
 
-    return;
+          const amount = Number(
+            document.getElementById("amount").value
+          );
 
-  }
-
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from(
-        "withdrawal_requests"
-      )
-      .select(`
-        id,
-        amount,
-        currency,
-        method,
-        mpesa_number,
-        account_number,
-        account_name,
-        status,
-        admin_note,
-        reviewed_at,
-        created_at
-      `)
-      .eq(
-        "user_id",
-        user.id
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-
-
-  if (error) {
-
-    console.error(
-      "Request loading error:",
-      error
-    );
-
-    requestsContainer.innerHTML = `
-      <div class="empty">
-        Failed to load withdrawal requests.
-      </div>
-    `;
-
-    return;
-  }
-
-
-  if (
-    !data ||
-    data.length === 0
-  ) {
-
-    requestsContainer.innerHTML = `
-      <div class="empty">
-        You have no withdrawal requests yet.
-      </div>
-    `;
-
-    return;
-  }
-
-
-  requestsContainer.innerHTML =
-    data
-      .map(
-        request => {
-
-          const status =
-            request.status ||
-            "pending";
-
-
-          const statusLower =
-            String(
-              status
-            ).toLowerCase();
-
-
-          let statusClass =
-            "status-pending";
-
+          if (!accountName) {
+            throw new Error("Please enter the account name.");
+          }
 
           if (
-            statusLower ===
-            "approved"
+            !Number.isFinite(amount) ||
+            amount <= 0
           ) {
+            throw new Error("Please enter a valid withdrawal amount.");
+          }
 
-            statusClass =
-              "status-approved";
 
-          } else if (
-            statusLower ===
-            "rejected"
-          ) {
+          /* GET FRESH EARNING BALANCE */
 
-            statusClass =
-              "status-rejected";
+          submitBtn.textContent = "Checking balance...";
+
+          const { data: wallet, error: walletError } =
+            await supabaseClient
+              .from("wallets")
+              .select("balance")
+              .eq("user_id", currentUser.id)
+              .maybeSingle();
+
+          if (walletError) throw walletError;
+
+          if (!wallet) {
+            throw new Error("Wallet account not found.");
+          }
+
+          const balance = Number(wallet.balance || 0);
+
+          currentBalance = balance;
+
+          document.getElementById("balance").textContent =
+            "KES " + balance.toFixed(2);
+
+
+          /* CHECK AVAILABLE BALANCE */
+
+          if (amount > balance) {
+            throw new Error(
+              "Insufficient earning balance. Available: KES " +
+              balance.toFixed(2)
+            );
+          }
+
+
+          /* PREPARE WITHDRAWAL DETAILS */
+
+          let mpesaNumber = null;
+          let accountNumber = null;
+
+
+          /* MOBILE MONEY */
+
+          if (selectedMethod === "Mobile Money") {
+
+            mpesaNumber = document
+              .getElementById("mobileNumber")
+              .value.trim()
+              .replace(/[\s-]/g, "");
+
+            if (!/^(?:\+?254|0)\d{9}$/.test(mpesaNumber)) {
+              throw new Error(
+                "Enter a valid Kenyan M-Pesa number, for example 0712345678."
+              );
+            }
+
+            accountNumber = mpesaNumber;
 
           }
-          return `
 
+
+          /* BANK ACCOUNT */
+
+          else {
+
+            const bankName = document
+              .getElementById("bankName")
+              .value.trim();
+
+            const bankAccountNumber = document
+              .getElementById("bankAccountNumber")
+              .value.trim();
+
+            if (!bankName || !bankAccountNumber) {
+              throw new Error(
+                "Please enter the bank name and account number."
+              );
+            }
+
+            accountNumber =
+              bankName + " - " + bankAccountNumber;
+          }
+
+
+          /* INSERT WITHDRAWAL REQUEST */
+
+          submitBtn.textContent = "Submitting...";
+
+          const { data: withdrawal, error } =
+            await supabaseClient
+              .from("withdrawal_requests")
+              .insert({
+                user_id: currentUser.id,
+                amount: amount,
+                currency: "KES",
+                method: selectedMethod,
+                mpesa_number: mpesaNumber,
+                account_number: accountNumber,
+                account_name: accountName,
+                status: "pending"
+              })
+              .select()
+              .single();
+
+          if (error) throw error;
+
+          console.log("Withdrawal created:", withdrawal);
+
+
+          /* SUCCESS */
+
+          showMessage(
+            "Withdrawal request submitted successfully. It is pending admin approval.",
+            "success"
+          );
+
+          document.getElementById("withdrawForm").reset();
+
+          selectMethod("Mobile Money");
+
+          await loadBalance();
+          await loadRequests();
+
+        } catch (error) {
+
+          console.error("Withdrawal submission error:", error);
+
+          showMessage(
+            error.message ||
+            "Something went wrong while processing your withdrawal.",
+            "error"
+          );
+
+        } finally {
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Withdrawal";
+
+        }
+
+      });
+
+
+    /* =========================================
+       LOAD WITHDRAWAL REQUESTS
+       Account name and account number are
+       deliberately NOT displayed to the user.
+    ========================================= */
+
+    async function loadRequests() {
+
+      const requestsContainer =
+        document.getElementById("requests");
+
+      if (!currentUser) {
+        requestsContainer.innerHTML = `
+          <div class="empty">
+            Please log in to view your withdrawal requests.
+          </div>
+        `;
+        return;
+      }
+
+      requestsContainer.innerHTML = `
+        <div class="empty">Loading requests...</div>
+      `;
+
+      try {
+
+        const { data, error } =
+          await supabaseClient
+            .from("withdrawal_requests")
+            .select(`
+              id,
+              amount,
+              currency,
+              method,
+              status,
+              admin_note,
+              reviewed_at,
+              created_at
+            `)
+            .eq("user_id", currentUser.id)
+            .order("created_at", {
+              ascending: false
+            });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+
+          requestsContainer.innerHTML = `
+            <div class="empty">
+              You have no withdrawal requests yet.
+            </div>
+          `;
+
+          return;
+        }
+
+        requestsContainer.innerHTML = data.map(request => {
+
+          const status = String(
+            request.status || "pending"
+          ).toLowerCase();
+
+          let statusClass = "status-pending";
+
+          if (status === "approved") {
+            statusClass = "status-approved";
+          } else if (status === "rejected") {
+            statusClass = "status-rejected";
+          }
+
+          const currency = escapeHtml(
+            request.currency || "KES"
+          );
+
+          const amount = Number(
+            request.amount || 0
+          );
+
+          return `
             <div class="request">
 
               <div class="request-top">
 
                 <div class="request-amount">
-
-                  KES ${Number(
-                    request.amount || 0
-                  ).toFixed(2)}
-
+                  ${currency} ${amount.toFixed(2)}
                 </div>
 
-                <span
-                  class="status ${statusClass}"
-                >
-                  ${escapeHtml(
-                    status
-                  )}
+                <span class="status ${statusClass}">
+                  ${escapeHtml(capitalize(status))}
                 </span>
 
               </div>
 
-
               <div class="request-date">
-
-                Submitted:
-                ${formatDate(
-                  request.created_at
-                )}
-
+                Submitted: ${formatDate(request.created_at)}
               </div>
 
-
               <div class="request-details">
-                <strong>
-                  Method:
-                </strong>
 
-                ${escapeHtml(
-                  request.method
-                )}
+                <strong>Method:</strong>
+                ${escapeHtml(request.method || "-")}
+
                 ${
                   request.reviewed_at
-                    ?
-                    `
+                    ? `
                       <br>
-
-                      <strong>
-                        Reviewed:
-                      </strong>
-
-                      ${formatDate(
-                        request.reviewed_at
-                      )}
+                      <strong>Reviewed:</strong>
+                      ${formatDate(request.reviewed_at)}
                     `
-                    :
-                    ""
+                    : ""
                 }
 
               </div>
 
-
               ${
-                statusLower ===
-                  "rejected" &&
-                request.admin_note
-                  ?
-                  `
+                status === "rejected" && request.admin_note
+                  ? `
                     <div class="admin-note">
-
-                      <strong>
-                        Admin Note:
-                      </strong>
-
+                      <strong>Admin Note:</strong>
                       <br>
-
-                      ${escapeHtml(
-                        request.admin_note
-                      )}
-
+                      ${escapeHtml(request.admin_note)}
                     </div>
                   `
-                  :
-                  ""
+                  : ""
               }
 
             </div>
-
           `;
 
-        }
-      )
-      .join("");
+        }).join("");
 
-}
+      } catch (error) {
 
+        console.error("Request loading error:", error);
 
-/* =========================================
-   FORMAT DATE
-========================================= */
-
-function formatDate(date) {
-
-  if (!date) {
-    return "-";
-  }
+        requestsContainer.innerHTML = `
+          <div class="empty">
+            Failed to load withdrawal requests.
+            Please refresh the page.
+          </div>
+        `;
+      }
+    }
 
 
-  return new Date(
-    date
-  ).toLocaleString();
+    /* =========================================
+       FORMAT DATE
+    ========================================= */
 
-}
+    function formatDate(date) {
 
+      if (!date) return "-";
 
-/* =========================================
-   ESCAPE HTML
-========================================= */
+      const parsedDate = new Date(date);
 
-function escapeHtml(value) {
+      if (Number.isNaN(parsedDate.getTime())) {
+        return "-";
+      }
 
-  if (
-    value === null ||
-    value === undefined
-  ) {
-
-    return "";
-
-  }
+      return parsedDate.toLocaleString("en-KE");
+    }
 
 
-  return String(value)
+    /* =========================================
+       CAPITALIZE STATUS
+    ========================================= */
 
-    .replace(
-      /&/g,
-      "&amp;"
-    )
+    function capitalize(value) {
+      return value.charAt(0).toUpperCase() +
+        value.slice(1);
+    }
 
-    .replace(
-      /</g,
-      "&lt;"
-    )
 
-    .replace(
-      />/g,
-      "&gt;"
-    )
+    /* =========================================
+       ESCAPE HTML
+    ========================================= */
 
-    .replace(
-      /"/g,
-      "&quot;"
-    )
+    function escapeHtml(value) {
 
-    .replace(
-      /'/g,
-      "&#039;"
+      if (value === null || value === undefined) {
+        return "";
+      }
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    /* =========================================
+       LOGOUT
+    ========================================= */
+
+    async function logout() {
+
+      const { error } =
+        await supabaseClient.auth.signOut();
+
+      if (error) {
+
+        console.error("Logout error:", error);
+
+        showMessage(
+          "Unable to log out. Please try again.",
+          "error"
+        );
+
+        return;
+      }
+
+      window.location.replace("login.html");
+    }
+
+    document.getElementById("logoutBtn").addEventListener(
+      "click",
+      function(event) {
+        event.preventDefault();
+        logout();
+      }
     );
 
-}
 
+    /* =========================================
+       INITIALIZE PAGE
+    ========================================= */
 
-/* =========================================
-   LOGOUT
-========================================= */
+    async function initializeWithdrawalPage() {
 
-async function logout() {
+      const loggedIn = await checkUser();
 
-  await supabaseClient
-    .auth
-    .signOut();
+      if (!loggedIn) return;
 
+      await loadBalance();
+      await loadRequests();
 
-  localStorage.removeItem(
-    "nexaLearnLoggedIn"
-  );
+    }
 
-  localStorage.removeItem(
-    "nexaLearnUser"
-  );
+    initializeWithdrawalPage();
 
-  localStorage.removeItem(
-    "nexaLearnUserId"
-  );
-
-  localStorage.removeItem(
-    "nexaLearnBalance"
-  );
-
-
-  window.location.href =
-    "login.html";
-
-}
-
-
-/* =========================================
-   INITIALIZE
-========================================= */
-
-async function initializeWithdrawalPage() {
-
-  await loadBalance();
-
-  await loadRequests();
-
-}
-
-
-initializeWithdrawalPage();
-
-</script>
+  </script>
 
 </body>
 </html>
