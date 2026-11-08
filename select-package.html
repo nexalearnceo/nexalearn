@@ -396,7 +396,8 @@ const supabaseClient = window.supabase.createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storageKey: "nexalearn-auth"
     }
   }
 );
@@ -444,7 +445,7 @@ async function loadPage() {
     if (sessionError) throw sessionError;
 
     if (!sessionData.session) {
-      window.location.href = "login.html";
+      window.location.replace("login.html");
       return;
     }
 
@@ -454,7 +455,7 @@ async function loadPage() {
     const packageId = params.get("package_id");
 
     if (!packageId) {
-      window.location.href = "packages.html";
+      window.location.replace("packages.html");
       return;
     }
 
@@ -614,7 +615,7 @@ async function activatePackage() {
 
     button.textContent = "Package Activated";
 
-    // A new activation is allowed; return to packages to choose again.
+    // Return to packages after successful activation.
     setTimeout(() => {
       window.location.href = "packages.html";
     }, 1800);
@@ -630,8 +631,10 @@ async function activatePackage() {
     if (lower.includes("insufficient")) {
       errorMessage =
         "Insufficient deposit balance. Please deposit funds before activating this package.";
-    } else if (lower.includes("already have an active package") ||
-               lower.includes("active package")) {
+    } else if (
+      lower.includes("already have an active package") ||
+      lower.includes("active package")
+    ) {
       errorMessage =
         "Your Supabase activation function still blocks another active package. Update the activate_package SQL function and try again.";
     }
