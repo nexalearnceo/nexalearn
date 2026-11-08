@@ -226,7 +226,8 @@ const supabaseClient = window.supabase.createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storageKey: "nexalearn-auth"
     }
   }
 );
