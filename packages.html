@@ -400,6 +400,12 @@
       transform: translateY(-1px);
     }
 
+    .purchase-button:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     /* MESSAGES */
 
     .message {
@@ -956,6 +962,49 @@
     `;
   }
 
+  // GET THE CURRENT AUTHENTICATED USER
+  // Retry briefly because Supabase may still be restoring the saved session.
+
+  async function getAuthenticatedUser() {
+
+    let lastError = null;
+
+    for (let attempt = 0; attempt < 4; attempt++) {
+
+      try {
+
+        const { data, error } =
+          await supabaseClient.auth.getSession();
+
+        if (error) {
+          lastError = error;
+        } else if (data?.session?.user) {
+          currentUser = data.session.user;
+          return currentUser;
+        }
+
+        // Use the session already received by the auth-state listener, if present.
+        if (currentUser) {
+          return currentUser;
+        }
+
+      } catch (error) {
+        lastError = error;
+      }
+
+      if (attempt < 3) {
+        await new Promise(resolve => setTimeout(resolve, 400));
+      }
+    }
+
+    if (lastError) {
+      console.error("Authentication check error:", lastError);
+    }
+
+    return null;
+  }
+
+
   // SELECT PACKAGE
 
   async function selectPackage(packageId) {
@@ -965,23 +1014,29 @@
       return;
     }
 
+    const buttons = document.querySelectorAll(".purchase-button");
+    buttons.forEach(button => {
+      button.disabled = true;
+      button.textContent = "Checking account...";
+    });
+
     try {
 
-      // Check the saved session again before activation.
+      const user = await getAuthenticatedUser();
 
-      const { data, error } =
-        await supabaseClient.auth.getSession();
+      if (!user) {
 
-      if (error || !data.session?.user) {
+        alert("Your login session could not be found. Please log in again.");
 
-        alert("Please log in before activating a package.");
+        // Preserve the selected package so the user can return after login.
+        window.location.href =
+          "login.html?return=" +
+          encodeURIComponent(
+            "select-package.html?package_id=" + packageId
+          );
 
-        window.location.href = "login.html";
         return;
-
       }
-
-      currentUser = data.session.user;
 
       window.location.href =
         "select-package.html?package_id=" +
@@ -992,6 +1047,11 @@
       console.error("Package selection error:", error);
 
       alert("Unable to verify your login. Please try again.");
+
+      buttons.forEach(button => {
+        button.disabled = false;
+        button.textContent = "Select Package";
+      });
 
     }
   }
