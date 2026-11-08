@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -32,6 +31,7 @@ body {
     background: #091827;
     border-right: 1px solid #17304a;
     padding: 25px 15px;
+    overflow-y: auto;
 }
 
 .logo {
@@ -74,7 +74,7 @@ body {
 .main {
     margin-left: 230px;
     padding: 35px;
-    max-width: 1200px;
+    max-width: 1430px;
 }
 
 .topbar {
@@ -108,6 +108,7 @@ body {
     color: #8ca5bb;
     font-size: 13px;
     margin-bottom: 22px;
+    line-height: 1.6;
 }
 
 .folder-box {
@@ -149,6 +150,11 @@ input[type="file"] {
     background: #0d65dd;
 }
 
+.folder-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .selected-info {
     margin-top: 18px;
     color: #9bb2c7;
@@ -188,6 +194,7 @@ input[type="file"] {
     margin-top: 20px;
     line-height: 1.6;
     white-space: pre-line;
+    overflow-wrap: anywhere;
 }
 
 .audio-list {
@@ -221,6 +228,7 @@ input[type="file"] {
 .audio-details {
     color: #718ba2;
     font-size: 12px;
+    word-break: break-word;
 }
 
 .audio-actions {
@@ -247,10 +255,18 @@ input[type="file"] {
     background: #b73535;
 }
 
+.play-button:disabled,
+.delete-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .empty {
     color: #718ba2;
     text-align: center;
     padding: 25px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
 }
 
 .progress-container {
@@ -302,204 +318,123 @@ input[type="file"] {
     }
 }
 </style>
-
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-
 <aside class="sidebar">
 
-```
-<div class="logo">NexaLearn</div>
-<div class="tagline">LEARN • COMPLETE • EARN</div>
+    <div class="logo">NexaLearn</div>
+    <div class="tagline">LEARN • COMPLETE • EARN</div>
 
-<div class="nav">
+    <div class="nav">
 
-    <div class="nav-title">Management</div>
+        <div class="nav-title">Management</div>
 
-    <a href="admin.html">
-        Admin Dashboard
-    </a>
+        <a href="admin.html">Admin Dashboard</a>
+        <a href="admin.html#deposits">Deposits</a>
+        <a href="admin.html#withdrawals">Withdrawals</a>
+        <a href="tasks.html">Tasks</a>
+        <a href="admin-audio.html" class="active">Audio Uploads</a>
+        <a href="admin-images.html">Image Uploads</a>
+        <a href="packages.html">Packages</a>
 
-    <a href="admin.html#deposits">
-        Deposits
-    </a>
+        <div class="nav-title">User Area</div>
 
-    <a href="admin.html#withdrawals">
-        Withdrawals
-    </a>
+        <a href="wallet.html">Wallet</a>
+        <a href="history.html">History</a>
+        <a href="dashboard.html">User Dashboard</a>
+        <a href="login.html" onclick="logout(event)">Logout</a>
 
-    <a href="tasks.html">
-        Tasks
-    </a>
-
-    <a href="admin-audio.html" class="active">
-        Audio Uploads
-    </a>
-
-    <a href="admin-images.html">
-        Image Uploads
-    </a>
-
-    <a href="packages.html">
-        Packages
-    </a>
-
-    <div class="nav-title">User Area</div>
-
-    <a href="wallet.html">
-        Wallet
-    </a>
-
-    <a href="history.html">
-        History
-    </a>
-
-    <a href="dashboard.html">
-        User Dashboard
-    </a>
-
-    <a href="login.html" onclick="logout(event)">
-        Logout
-    </a>
-
-</div>
-```
+    </div>
 
 </aside>
 
-<!-- MAIN -->
-
 <main class="main">
 
-```
-<div class="topbar">
-
-    <h1>Audio Uploads</h1>
-
-    <p>
-        Upload and manage NexaLearn audio learning content.
-    </p>
-
-</div>
-
-
-<!-- UPLOAD CARD -->
-<section class="card">
-
-    <h2>Upload Audio Folder</h2>
-
-    <div class="card-description">
-        Select a folder containing your audio files.
-        NexaLearn will automatically use each file name as the audio title.
+    <div class="topbar">
+        <h1>Audio Uploads</h1>
+        <p>Upload and manage NexaLearn audio content.</p>
     </div>
 
+    <section class="card">
 
-    <div class="folder-box">
+        <h2>Upload Audio Folder</h2>
 
-        <h3>Select Audio Folder</h3>
-
-        <p>
-            Put all your audio files inside one folder first.<br>
-            Then select that folder below.<br>
-            Each audio file will keep its original name.
-        </p>
-
-        <label
-            for="audioFolder"
-            class="folder-button"
-        >
-            📁 Choose Audio Folder
-        </label>
-
-        <input
-            type="file"
-            id="audioFolder"
-            webkitdirectory
-            directory
-            multiple
-            accept="audio/*"
-            onchange="handleFolderSelection(event)"
-        >
-
-        <div
-            id="selectedInfo"
-            class="selected-info"
-        >
-            No folder selected.
+        <div class="card-description">
+            Select a folder containing your audio files.
+            NexaLearn will automatically use each file name as the audio title.
         </div>
 
-    </div>
+        <div class="folder-box">
 
+            <h3>Select Audio Folder</h3>
 
-    <button
-        id="uploadButton"
-        class="upload-button"
-        onclick="uploadAllAudio()"
-        disabled
-    >
-        Upload All Audio
-    </button>
+            <p>
+                Put all your audio files inside one folder first.<br>
+                Then select that folder below.<br>
+                Each audio file will keep its original name.
+            </p>
 
+            <label for="audioFolder" class="folder-button" id="folderLabel">
+                📁 Choose Audio Folder
+            </label>
 
-    <div
-        id="progressContainer"
-        class="progress-container"
-    >
+            <input
+                type="file"
+                id="audioFolder"
+                webkitdirectory
+                directory
+                multiple
+                accept="audio/*"
+            >
 
-        <div class="progress-bar-background">
-
-            <div
-                id="progressBar"
-                class="progress-bar"
-            ></div>
+            <div id="selectedInfo" class="selected-info">
+                No folder selected.
+            </div>
 
         </div>
 
-        <div
-            id="progressText"
-            class="progress-text"
+        <button
+            id="uploadButton"
+            class="upload-button"
+            onclick="uploadAllAudio()"
+            disabled
         >
-            Preparing upload...
+            Upload All Audio
+        </button>
+
+        <div id="progressContainer" class="progress-container">
+
+            <div class="progress-bar-background">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
+            <div id="progressText" class="progress-text">
+                Preparing upload...
+            </div>
+
         </div>
 
-    </div>
-
-
-    <div
-        id="statusBox"
-        class="status"
-    >
-        Checking administrator access...
-    </div>
-
-</section>
-
-
-<!-- AUDIO LIBRARY -->
-<section class="card">
-
-    <h2>Audio Library</h2>
-
-    <div class="card-description">
-        All audio files currently uploaded to NexaLearn.
-    </div>
-
-    <div
-        id="audioList"
-        class="audio-list"
-    >
-
-        <div class="empty">
-            Loading audio library...
+        <div id="statusBox" class="status">
+            Checking administrator access...
         </div>
 
-    </div>
+    </section>
 
-</section>
-```
+    <section class="card">
+
+        <h2>Audio Library</h2>
+
+        <div class="card-description">
+            All audio files currently uploaded to NexaLearn.
+        </div>
+
+        <div id="audioList" class="audio-list">
+            <div class="empty">Loading audio library...</div>
+        </div>
+
+    </section>
 
 </main>
 
@@ -515,19 +450,18 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY,
-        {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true
-            }
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storageKey: "nexalearn-auth"
         }
-    );
+    }
+);
 
 
 /* =====================================================
@@ -535,8 +469,8 @@ const supabaseClient =
    ===================================================== */
 
 let selectedAudioFiles = [];
-
 let isAdmin = false;
+let isUploading = false;
 
 
 /* =====================================================
@@ -545,30 +479,19 @@ let isAdmin = false;
 
 function setStatus(message, type = "normal") {
 
-    const box =
-        document.getElementById("statusBox");
+    const box = document.getElementById("statusBox");
 
     box.textContent = message;
 
     if (type === "success") {
-
         box.style.color = "#65e6a5";
         box.style.borderColor = "#226846";
-
-    }
-
-    else if (type === "error") {
-
+    } else if (type === "error") {
         box.style.color = "#ff7d7d";
         box.style.borderColor = "#713434";
-
-    }
-
-    else {
-
+    } else {
         box.style.color = "#9bb2c7";
         box.style.borderColor = "#17304a";
-
     }
 }
 
@@ -586,72 +509,40 @@ async function checkAdmin() {
             error: authError
         } = await supabaseClient.auth.getUser();
 
+        if (authError || !user) {
 
-        if (authError) {
-
-            console.error(
-                "Auth error:",
-                authError
-            );
+            console.error("Authentication error:", authError);
 
             setStatus(
-                "Authentication error. Please log in again.",
+                "Your login session could not be found. Please log in again.",
                 "error"
             );
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1500);
 
             return false;
         }
 
-
-        if (!user) {
-
-            console.error(
-                "No logged-in user."
-            );
-
-            setStatus(
-                "No logged-in user was found. Please log in again.",
-                "error"
-            );
-
-            return false;
-        }
-
-
-        console.log(
-            "Logged-in user:",
-            user.email
-        );
-
-        console.log(
-            "User ID:",
-            user.id
-        );
-
+        console.log("Logged-in user:", user.email);
+        console.log("User ID:", user.id);
 
         const {
             data: profile,
             error: profileError
         } = await supabaseClient
-
             .from("profiles")
-
             .select("id, role")
-
             .eq("id", user.id)
-
             .maybeSingle();
-
 
         if (profileError) {
 
-            console.error(
-                "Profile error:",
-                profileError
-            );
+            console.error("Profile error:", profileError);
 
             setStatus(
-                "Could not read your administrator profile.\n\n" +
+                "Could not verify your administrator profile.\n\n" +
                 profileError.message,
                 "error"
             );
@@ -659,72 +550,57 @@ async function checkAdmin() {
             return false;
         }
 
-
-        console.log(
-            "Profile:",
-            profile
-        );
-
-
         if (!profile) {
 
             setStatus(
-                "No profile was found for this account.",
+                "Your account profile could not be found. Redirecting...",
                 "error"
             );
+
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 2000);
 
             return false;
         }
 
+        const role = String(profile.role || "")
+            .trim()
+            .toLowerCase();
 
-        console.log(
-            "User role:",
-            profile.role
-        );
+        console.log("User role:", role);
 
-
-        if (profile.role !== "admin") {
+        if (role !== "admin") {
 
             setStatus(
-                "Administrator verification failed.\n\n" +
-                "Your account role is: " +
-                profile.role +
-                "\n\n" +
-                "This page requires role = admin.",
+                "Access denied. This page is only available to administrators.",
                 "error"
             );
+
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 2000);
 
             return false;
         }
 
-
-        console.log(
-            "ADMIN VERIFIED SUCCESSFULLY"
-        );
-
+        isAdmin = true;
 
         setStatus(
             "Administrator verified successfully. You can upload audio.",
             "success"
         );
 
-
-        isAdmin = true;
+        console.log("ADMIN VERIFIED SUCCESSFULLY");
 
         return true;
 
-    }
+    } catch (error) {
 
-    catch (error) {
-
-        console.error(
-            "Admin verification error:",
-            error
-        );
+        console.error("Admin verification error:", error);
 
         setStatus(
-            "Administrator verification failed.\n\n" +
-            error.message,
+            "Administrator verification failed.\n\n" + error.message,
             "error"
         );
 
@@ -734,39 +610,64 @@ async function checkAdmin() {
 
 
 /* =====================================================
+   CHECK WHETHER FILE IS AUDIO
+   ===================================================== */
+
+function isAudioFile(file) {
+
+    if (file.type && file.type.startsWith("audio/")) {
+        return true;
+    }
+
+    const allowedExtensions = [
+        "mp3",
+        "wav",
+        "ogg",
+        "oga",
+        "m4a",
+        "aac",
+        "flac",
+        "wma",
+        "opus",
+        "webm"
+    ];
+
+    const extension = file.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+    return allowedExtensions.includes(extension);
+}
+
+
+/* =====================================================
    FOLDER SELECTION
    ===================================================== */
 
 function handleFolderSelection(event) {
 
-    const files =
-        Array.from(
-            event.target.files || []
+    if (!isAdmin) {
+        setStatus(
+            "Administrator verification is required.",
+            "error"
         );
+        return;
+    }
 
+    if (isUploading) return;
 
-    selectedAudioFiles =
-        files.filter(file =>
-            file.type &&
-            file.type.startsWith("audio/")
-        );
+    const files = Array.from(event.target.files || []);
 
+    selectedAudioFiles = files.filter(isAudioFile);
 
     const selectedInfo =
-        document.getElementById(
-            "selectedInfo"
-        );
-
+        document.getElementById("selectedInfo");
 
     const uploadButton =
-        document.getElementById(
-            "uploadButton"
-        );
+        document.getElementById("uploadButton");
 
-
-    if (
-        selectedAudioFiles.length === 0
-    ) {
+    if (selectedAudioFiles.length === 0) {
 
         selectedInfo.textContent =
             "No audio files were found in the selected folder.";
@@ -776,35 +677,22 @@ function handleFolderSelection(event) {
         return;
     }
 
-
-    let totalSize = 0;
-
-
-    selectedAudioFiles.forEach(
-        file => {
-            totalSize += file.size;
-        }
+    const totalSize = selectedAudioFiles.reduce(
+        (total, file) => total + file.size,
+        0
     );
 
+    const totalMB = (
+        totalSize / 1024 / 1024
+    ).toFixed(2);
 
-    const totalMB =
-        (
-            totalSize /
-            1024 /
-            1024
-        ).toFixed(2);
-
-
-    selectedInfo.innerHTML =
-        "<strong>" +
+    selectedInfo.textContent =
         selectedAudioFiles.length +
-        "</strong> audio file(s) selected • " +
+        " audio file(s) selected • " +
         totalMB +
         " MB";
 
-
     uploadButton.disabled = false;
-
 
     setStatus(
         selectedAudioFiles.length +
@@ -821,88 +709,44 @@ function getAudioTitle(file) {
 
     let name = file.name;
 
+    name = name.replace(/\.[^/.]+$/, "");
 
-    /* Remove extension */
+    name = name.replace(/[_-]+/g, " ");
 
-    name =
-        name.replace(
-            /\.[^/.]+$/,
-            ""
-        );
-
-
-    /* Replace underscores and hyphens */
-
-    name =
-        name.replace(
-            /[_-]+/g,
-            " "
-        );
-
-
-    /* Remove unnecessary spaces */
-
-    name =
-        name
-            .replace(/\s+/g, " ")
-            .trim();
-
-
-    /* Capitalize first letter */
+    name = name.replace(/\s+/g, " ").trim();
 
     if (name.length > 0) {
-
-        name =
-            name.charAt(0).toUpperCase() +
-            name.slice(1);
-
+        name = name.charAt(0).toUpperCase() + name.slice(1);
     }
-
 
     return name;
 }
 
 
 /* =====================================================
-   CREATE SAFE STORAGE FILE PATH
+   CREATE STORAGE FILE PATH
    ===================================================== */
 
 function createStoragePath(file) {
 
-    const timestamp =
-        Date.now();
+    const timestamp = Date.now();
 
+    const random = Math.random()
+        .toString(36)
+        .substring(2, 10);
 
-    const random =
-        Math.random()
-            .toString(36)
-            .substring(2, 10);
-
-
-    const extension =
-        file.name.includes(".")
-            ? "." +
-              file.name
-                  .split(".")
-                  .pop()
-            : "";
-
+    const extension = file.name.includes(".")
+        ? "." + file.name.split(".").pop().toLowerCase()
+        : "";
 
     /*
-       IMPORTANT:
+       The bucket is already selected using:
+       .from("audio")
 
-       Do NOT add "audio/" here.
-
-       .from("audio") already selects
-       the audio Storage bucket.
+       Therefore, do not add audio/ to this path.
     */
 
-    return (
-        timestamp +
-        "_" +
-        random +
-        extension
-    );
+    return timestamp + "_" + random + extension;
 }
 
 
@@ -913,107 +757,74 @@ function createStoragePath(file) {
 async function uploadAllAudio() {
 
     if (!isAdmin) {
-
         setStatus(
             "Administrator verification is required before uploading.",
             "error"
         );
-
         return;
     }
 
+    if (isUploading) return;
 
-    if (
-        !selectedAudioFiles ||
-        selectedAudioFiles.length === 0
-    ) {
-
+    if (!selectedAudioFiles.length) {
         setStatus(
             "Please select an audio folder first.",
             "error"
         );
-
         return;
     }
 
+    isUploading = true;
 
     const uploadButton =
-        document.getElementById(
-            "uploadButton"
-        );
+        document.getElementById("uploadButton");
 
+    const folderLabel =
+        document.getElementById("folderLabel");
+
+    const folderInput =
+        document.getElementById("audioFolder");
 
     const progressContainer =
-        document.getElementById(
-            "progressContainer"
-        );
-
+        document.getElementById("progressContainer");
 
     const progressBar =
-        document.getElementById(
-            "progressBar"
-        );
-
+        document.getElementById("progressBar");
 
     const progressText =
-        document.getElementById(
-            "progressText"
-        );
-
+        document.getElementById("progressText");
 
     uploadButton.disabled = true;
+    folderInput.disabled = true;
+    folderLabel.classList.add("disabled");
 
-
-    progressContainer.style.display =
-        "block";
-
+    progressContainer.style.display = "block";
+    progressBar.style.width = "0%";
 
     let successful = 0;
-
     let failed = 0;
 
-
-    const total =
-        selectedAudioFiles.length;
-
+    const total = selectedAudioFiles.length;
 
     setStatus(
-        "Starting upload of " +
-        total +
-        " audio file(s)..."
+        "Starting upload of " + total + " audio file(s)..."
     );
 
+    for (let i = 0; i < total; i++) {
 
-    for (
-        let i = 0;
-        i < selectedAudioFiles.length;
-        i++
-    ) {
+        const file = selectedAudioFiles[i];
+        const title = getAudioTitle(file);
 
-        const file =
-            selectedAudioFiles[i];
-
-
-        const title =
-            getAudioTitle(file);
-
+        let filePath = null;
+        let storageUploaded = false;
 
         progressText.textContent =
-            "Uploading " +
-            (i + 1) +
-            " of " +
-            total +
-            ": " +
-            title;
-
+            "Uploading " + (i + 1) +
+            " of " + total + ": " + title;
 
         try {
 
-            /* Create unique Storage path */
-
-            const filePath =
-                createStoragePath(file);
-
+            filePath = createStoragePath(file);
 
             console.log(
                 "Uploading:",
@@ -1022,84 +833,50 @@ async function uploadAllAudio() {
                 filePath
             );
 
-
-            /* Upload to Storage */
+            /* Upload audio to Storage */
 
             const {
                 error: uploadError
             } = await supabaseClient
-
                 .storage
-
                 .from("audio")
-
                 .upload(
                     filePath,
                     file,
                     {
                         cacheControl: "3600",
                         upsert: false,
-                        contentType: file.type
+                        contentType: file.type || "application/octet-stream"
                     }
                 );
 
-
             if (uploadError) {
-
                 throw uploadError;
             }
 
+            storageUploaded = true;
 
-            /* Save metadata */
+            /* Save audio information in database */
 
             const {
                 error: databaseError
             } = await supabaseClient
-
                 .from("audio_files")
-
                 .insert({
-
                     title: title,
-
                     file_path: filePath,
-
                     file_name: file.name,
-
-                    mime_type: file.type,
-
+                    mime_type: file.type || null,
                     file_size: file.size
-
                 });
 
-
-            /*
-               If database insert fails,
-               remove Storage file.
-            */
-
             if (databaseError) {
-
-                await supabaseClient
-
-                    .storage
-
-                    .from("audio")
-
-                    .remove([
-                        filePath
-                    ]);
-
-
                 throw databaseError;
             }
 
-
             successful++;
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "Upload failed:",
@@ -1109,66 +886,68 @@ async function uploadAllAudio() {
 
             failed++;
 
+            /*
+               If Storage upload succeeded but the database
+               insert failed, try to remove the uploaded file.
+            */
+
+            if (storageUploaded && filePath) {
+
+                const {
+                    error: cleanupError
+                } = await supabaseClient
+                    .storage
+                    .from("audio")
+                    .remove([filePath]);
+
+                if (cleanupError) {
+                    console.error(
+                        "Storage cleanup failed:",
+                        cleanupError
+                    );
+                }
+            }
         }
 
+        /* Update progress after every processed file */
 
-        const percent =
-            Math.round(
-                (
-                    (i + 1) /
-                    total
-                ) * 100
-            );
+        const percent = Math.round(
+            ((i + 1) / total) * 100
+        );
 
+        progressBar.style.width = percent + "%";
 
-        progressBar.style.width =
-            percent + "%";
+        progressText.textContent =
+            "Processed " + (i + 1) +
+            " of " + total + " files.";
     }
 
-
-    progressText.textContent =
-        "Upload completed.";
-
+    progressText.textContent = "Upload completed.";
 
     setStatus(
-
         "Upload finished.\n\n" +
-
-        "Successful: " +
-        successful +
-
-        "\n" +
-
-        "Failed: " +
-        failed,
-
-        failed === 0
-            ? "success"
-            : "error"
+        "Successful: " + successful + "\n" +
+        "Failed: " + failed,
+        failed === 0 ? "success" : "error"
     );
 
-
-    uploadButton.disabled =
-        false;
-
-
-    /* Clear selected folder */
+    /* Clear selected files */
 
     selectedAudioFiles = [];
 
+    folderInput.value = "";
+    folderInput.disabled = false;
 
-    document.getElementById(
-        "audioFolder"
-    ).value = "";
+    folderLabel.classList.remove("disabled");
 
-
-    document.getElementById(
-        "selectedInfo"
-    ).textContent =
+    document.getElementById("selectedInfo").textContent =
         "No folder selected.";
 
+    uploadButton.disabled = true;
 
-    /* Reload library */
+    isUploading = false;
+
+    /* Reload audio library */
 
     await loadAudioLibrary();
 }
@@ -1180,15 +959,13 @@ async function uploadAllAudio() {
 
 async function loadAudioLibrary() {
 
-    const audioList =
-        document.getElementById(
-            "audioList"
-        );
+    if (!isAdmin) return;
 
+    const audioList =
+        document.getElementById("audioList");
 
     audioList.innerHTML =
         '<div class="empty">Loading audio library...</div>';
-
 
     try {
 
@@ -1196,194 +973,88 @@ async function loadAudioLibrary() {
             data: audios,
             error
         } = await supabaseClient
-
             .from("audio_files")
-
             .select("*")
-
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
+            .order("created_at", {
+                ascending: false
+            });
 
         if (error) {
-
             throw error;
         }
 
-
-        if (
-            !audios ||
-            audios.length === 0
-        ) {
+        if (!audios || audios.length === 0) {
 
             audioList.innerHTML =
-                '<div class="empty">' +
-                "No audio files uploaded yet." +
-                "</div>";
+                '<div class="empty">No audio files uploaded yet.</div>';
 
             return;
         }
 
-
         audioList.innerHTML = "";
-
 
         for (const audio of audios) {
 
-            const item =
-                document.createElement(
-                    "div"
-                );
+            const item = document.createElement("div");
+            item.className = "audio-item";
 
+            const info = document.createElement("div");
+            info.className = "audio-info";
 
-            item.className =
-                "audio-item";
+            const name = document.createElement("div");
+            name.className = "audio-name";
+            name.textContent = audio.title || audio.file_name || "Untitled audio";
 
+            const details = document.createElement("div");
+            details.className = "audio-details";
 
-            const info =
-                document.createElement(
-                    "div"
-                );
-
-
-            info.className =
-                "audio-info";
-
-
-            const name =
-                document.createElement(
-                    "div"
-                );
-
-
-            name.className =
-                "audio-name";
-
-
-            name.textContent =
-                audio.title;
-
-
-            const details =
-                document.createElement(
-                    "div"
-                );
-
-
-            details.className =
-                "audio-details";
-
-
-            const sizeMB =
-                audio.file_size
-
-                    ? (
-                        audio.file_size /
-                        1024 /
-                        1024
-                      ).toFixed(2)
-
-                    : "0";
-
+            const sizeMB = audio.file_size
+                ? (audio.file_size / 1024 / 1024).toFixed(2)
+                : "0";
 
             details.textContent =
-                audio.file_name +
-                " • " +
-                sizeMB +
-                " MB";
-
+                (audio.file_name || "Unknown file") +
+                " • " + sizeMB + " MB";
 
             info.appendChild(name);
-
             info.appendChild(details);
 
+            const actions = document.createElement("div");
+            actions.className = "audio-actions";
 
-            const actions =
-                document.createElement(
-                    "div"
-                );
+            const playButton = document.createElement("button");
+            playButton.className = "play-button";
+            playButton.textContent = "▶ Play";
 
+            playButton.onclick = () => playAudio(audio);
 
-            actions.className =
-                "audio-actions";
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "delete-button";
+            deleteButton.textContent = "Delete";
 
+            deleteButton.onclick = () => deleteAudio(audio);
 
-            const playButton =
-                document.createElement(
-                    "button"
-                );
-
-
-            playButton.className =
-                "play-button";
-
-
-            playButton.textContent =
-                "▶ Play";
-
-
-            playButton.onclick =
-                () => playAudio(audio);
-
-
-            const deleteButton =
-                document.createElement(
-                    "button"
-                );
-
-
-            deleteButton.className =
-                "delete-button";
-
-
-            deleteButton.textContent =
-                "Delete";
-
-
-            deleteButton.onclick =
-                () => deleteAudio(audio);
-
-
-            actions.appendChild(
-                playButton
-            );
-
-
-            actions.appendChild(
-                deleteButton
-            );
-
+            actions.appendChild(playButton);
+            actions.appendChild(deleteButton);
 
             item.appendChild(info);
-
             item.appendChild(actions);
-
 
             audioList.appendChild(item);
         }
 
-    }
+    } catch (error) {
 
-    catch (error) {
+        console.error("Library error:", error);
 
-        console.error(
-            "Library error:",
-            error
-        );
+        audioList.innerHTML = "";
 
+        const errorMessage = document.createElement("div");
+        errorMessage.className = "empty";
+        errorMessage.textContent =
+            "Could not load audio library: " + error.message;
 
-        audioList.innerHTML =
-            '<div class="empty">' +
-
-            "Could not load audio library.<br><br>" +
-
-            error.message +
-
-            "</div>";
+        audioList.appendChild(errorMessage);
     }
 }
 
@@ -1394,52 +1065,43 @@ async function loadAudioLibrary() {
 
 async function playAudio(audio) {
 
+    if (!isAdmin) return;
+
     try {
 
         const {
             data,
             error
         } = await supabaseClient
-
             .storage
-
             .from("audio")
-
             .createSignedUrl(
                 audio.file_path,
                 3600
             );
 
-
         if (error) {
-
             throw error;
         }
 
-
-        if (
-            !data ||
-            !data.signedUrl
-        ) {
-
+        if (!data || !data.signedUrl) {
             throw new Error(
                 "Could not create audio playback URL."
             );
         }
 
-
         window.open(
             data.signedUrl,
-            "_blank"
+            "_blank",
+            "noopener,noreferrer"
         );
 
-    }
+    } catch (error) {
 
-    catch (error) {
+        console.error("Playback error:", error);
 
         alert(
-            "Could not play audio:\n\n" +
-            error.message
+            "Could not play audio:\n\n" + error.message
         );
     }
 }
@@ -1451,85 +1113,74 @@ async function playAudio(audio) {
 
 async function deleteAudio(audio) {
 
-    const confirmed =
-        confirm(
-            "Delete this audio?\n\n" +
-            audio.title
-        );
+    if (!isAdmin) return;
 
+    const confirmed = confirm(
+        "Delete this audio?\n\n" +
+        (audio.title || audio.file_name)
+    );
 
-    if (!confirmed) {
-
-        return;
-    }
-
+    if (!confirmed) return;
 
     try {
 
-        /* Delete Storage file */
-
-        const {
-            error: storageError
-        } = await supabaseClient
-
-            .storage
-
-            .from("audio")
-
-            .remove([
-                audio.file_path
-            ]);
-
-
-        if (storageError) {
-
-            throw storageError;
-        }
-
-
-        /* Delete database record */
+        /*
+           Delete the database record first.
+           If this fails, the Storage file is left untouched.
+        */
 
         const {
             error: databaseError
         } = await supabaseClient
-
             .from("audio_files")
-
             .delete()
-
-            .eq(
-                "id",
-                audio.id
-            );
-
+            .eq("id", audio.id);
 
         if (databaseError) {
-
             throw databaseError;
         }
 
+        /*
+           Then remove the actual file from Storage.
+        */
+
+        const {
+            error: storageError
+        } = await supabaseClient
+            .storage
+            .from("audio")
+            .remove([audio.file_path]);
+
+        if (storageError) {
+
+            console.error(
+                "Storage cleanup error:",
+                storageError
+            );
+
+            setStatus(
+                "The audio library record was deleted, but the Storage file could not be removed.\n\n" +
+                storageError.message,
+                "error"
+            );
+
+            await loadAudioLibrary();
+            return;
+        }
 
         setStatus(
             "Audio deleted successfully.",
             "success"
         );
 
-
         await loadAudioLibrary();
 
-    }
+    } catch (error) {
 
-    catch (error) {
-
-        console.error(
-            "Delete error:",
-            error
-        );
-
+        console.error("Delete error:", error);
 
         setStatus(
-            "Could not delete audio.\n\n" +
-            error.message,
+            "Could not delete audio.\n\n" + error.message,
             "error"
         );
     }
@@ -1546,12 +1197,17 @@ async function logout(event) {
         event.preventDefault();
     }
 
+    try {
 
-    await supabaseClient.auth.signOut();
+        await supabaseClient.auth.signOut();
 
+    } catch (error) {
 
-    window.location.href =
-        "login.html";
+        console.error("Logout error:", error);
+
+    }
+
+    window.location.href = "login.html";
 }
 
 
@@ -1561,17 +1217,21 @@ async function logout(event) {
 
 async function startPage() {
 
-    isAdmin =
-        await checkAdmin();
+    const verified = await checkAdmin();
 
-
-    if (isAdmin) {
-
+    if (verified) {
         await loadAudioLibrary();
-
     }
-
 }
+
+
+/* =====================================================
+   EVENT LISTENERS
+   ===================================================== */
+
+document
+    .getElementById("audioFolder")
+    .addEventListener("change", handleFolderSelection);
 
 
 startPage();

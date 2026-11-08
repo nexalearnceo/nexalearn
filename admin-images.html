@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +18,7 @@
     body {
       font-family: Arial, sans-serif;
       background: #06101d;
-      color: #ffffff;
+      color: #fff;
       min-height: 100vh;
     }
 
@@ -31,6 +31,7 @@
       background: #081827;
       border-right: 1px solid #173047;
       padding: 25px 15px;
+      overflow-y: auto;
     }
 
     .logo {
@@ -59,7 +60,25 @@
     .sidebar a:hover,
     .sidebar a.active {
       background: #102b42;
-      color: #ffffff;
+      color: #fff;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: #173047;
+      margin: 18px 0;
+    }
+
+    .logout-btn {
+      width: 100%;
+      border: none;
+      background: #8f3030;
+      color: white;
+      padding: 12px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
     }
 
     .main {
@@ -97,6 +116,7 @@
       color: #8da4b8;
       font-size: 14px;
       margin-bottom: 20px;
+      line-height: 1.5;
     }
 
     .upload-box {
@@ -161,6 +181,7 @@
       font-size: 14px;
       display: none;
       word-break: break-word;
+      line-height: 1.5;
     }
 
     .progress-wrap {
@@ -180,7 +201,7 @@
       width: 0%;
       height: 100%;
       background: #159447;
-      transition: width 0.2s ease;
+      transition: width .2s ease;
     }
 
     .progress-text {
@@ -272,6 +293,12 @@
       background: #c43d3d;
     }
 
+    .view-btn:disabled,
+    .delete-btn:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
     .empty {
       color: #8298aa;
       padding: 25px 0;
@@ -301,6 +328,13 @@
     <a href="admin.html">Dashboard</a>
     <a href="admin-audio.html">Audio Uploads</a>
     <a href="admin-images.html" class="active">Image Uploads</a>
+
+    <div class="sidebar-divider"></div>
+
+    <a href="tasks.html">Manage Tasks</a>
+    <a href="dashboard.html">User Dashboard</a>
+
+    <button class="logout-btn" id="logoutBtn">Logout</button>
   </aside>
 
   <main class="main">
@@ -316,7 +350,7 @@
 
       <div class="card-description">
         Select a folder containing your images. Each uploaded image
-        will automatically become an Image Annotation task item.
+        will be saved in your NexaLearn image library.
       </div>
 
       <div class="upload-box">
@@ -334,32 +368,22 @@
           accept="image/*"
         >
 
-        <div id="selectionInfo">
-          No folder selected.
-        </div>
+        <div id="selectionInfo">No folder selected.</div>
 
       </div>
 
-      <button
-        class="upload-btn"
-        id="uploadBtn"
-        disabled
-      >
+      <button class="upload-btn" id="uploadBtn" disabled>
         Upload Images
       </button>
 
       <div id="status" class="status"></div>
 
       <div id="progressWrap" class="progress-wrap">
-
         <div class="progress-bar">
           <div id="progressFill" class="progress-fill"></div>
         </div>
 
-        <div id="progressText" class="progress-text">
-          0 / 0
-        </div>
-
+        <div id="progressText" class="progress-text">0 / 0</div>
       </div>
 
     </div>
@@ -373,9 +397,7 @@
       </div>
 
       <div id="library" class="library">
-        <div class="empty">
-          Loading image library...
-        </div>
+        <div class="empty">Loading image library...</div>
       </div>
 
     </div>
@@ -384,1209 +406,716 @@
 
 <script>
 
-  /* =========================================================
-     SUPABASE CONFIGURATION
-  ========================================================= */
+/* =========================================================
+   SUPABASE CONFIGURATION
+========================================================= */
 
-  const SUPABASE_URL =
-    "https://vzgrzzesquqnftfhchwt.supabase.co";
+const SUPABASE_URL =
+  "https://vzgrzzesquqnftfhchwt.supabase.co";
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_G7FZFKxmFb_SfY_94Ix69g_79hu8NwM";
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      }
-    );
-
-
-  /* =========================================================
-     GLOBAL VARIABLES
-  ========================================================= */
-
-  let selectedImages = [];
-
-
-  /* =========================================================
-     STATUS MESSAGE
-  ========================================================= */
-
-  function showStatus(message) {
-
-    const status =
-      document.getElementById("status");
-
-    status.style.display = "block";
-    status.textContent = message;
-
-  }
-
-
-  /* =========================================================
-     FORMAT FILE SIZE
-  ========================================================= */
-
-  function formatBytes(bytes) {
-
-    if (!bytes) {
-      return "0 KB";
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storageKey: "nexalearn-auth"
     }
+  }
+);
 
-    const units = [
-      "B",
-      "KB",
-      "MB",
-      "GB"
-    ];
+let selectedImages = [];
+let uploadInProgress = false;
 
-    const i =
-      Math.floor(
-        Math.log(bytes) /
-        Math.log(1024)
-      );
 
-    return (
-      parseFloat(
-        (
-          bytes /
-          Math.pow(1024, i)
-        ).toFixed(2)
-      ) +
-      " " +
-      units[i]
-    );
+/* =========================================================
+   STATUS MESSAGE
+========================================================= */
 
+function showStatus(message) {
+  const status = document.getElementById("status");
+
+  status.style.display = "block";
+  status.textContent = message;
+}
+
+
+/* =========================================================
+   FORMAT FILE SIZE
+========================================================= */
+
+function formatBytes(bytes) {
+  if (!bytes) return "0 KB";
+
+  const units = ["B", "KB", "MB", "GB"];
+
+  const i = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)),
+    units.length - 1
+  );
+
+  return (
+    parseFloat(
+      (bytes / Math.pow(1024, i)).toFixed(2)
+    ) +
+    " " +
+    units[i]
+  );
+}
+
+
+/* =========================================================
+   CREATE IMAGE TITLE
+========================================================= */
+
+function getImageTitle(file) {
+  let name = file.name;
+
+  const lastDot = name.lastIndexOf(".");
+
+  if (lastDot > 0) {
+    name = name.substring(0, lastDot);
   }
 
+  return name
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  /* =========================================================
-     CREATE IMAGE TITLE
-  ========================================================= */
 
-  function getImageTitle(file) {
+/* =========================================================
+   GET FILE EXTENSION
+========================================================= */
 
-    let name =
-      file.name;
+function getExtension(file) {
+  const dot = file.name.lastIndexOf(".");
 
-    const lastDot =
-      name.lastIndexOf(".");
+  if (dot === -1) return "";
 
-    if (lastDot > 0) {
+  return file.name.substring(dot).toLowerCase();
+}
 
-      name =
-        name.substring(
-          0,
-          lastDot
-        );
 
-    }
+/* =========================================================
+   CREATE UNIQUE STORAGE PATH
+========================================================= */
 
-    name =
-      name.replace(
-        /[_-]+/g,
-        " "
-      );
+function createStoragePath(file) {
+  const random = Math.random()
+    .toString(36)
+    .substring(2, 10);
 
-    name =
-      name.replace(
-        /\s+/g,
-        " "
-      ).trim();
+  return (
+    Date.now() +
+    "_" +
+    random +
+    getExtension(file)
+  );
+}
 
-    return name;
 
-  }
+/* =========================================================
+   CHECK ADMIN ACCESS
+========================================================= */
 
+async function checkAdmin() {
+  try {
+    showStatus("Checking administrator access...");
 
-  /* =========================================================
-     GET FILE EXTENSION
-  ========================================================= */
+    const {
+      data: { session },
+      error: sessionError
+    } = await supabaseClient.auth.getSession();
 
-  function getExtension(file) {
+    if (sessionError) throw sessionError;
 
-    const name =
-      file.name;
-
-    const dot =
-      name.lastIndexOf(".");
-
-    if (dot === -1) {
-      return "";
-    }
-
-    return name
-      .substring(dot)
-      .toLowerCase();
-
-  }
-
-
-  /* =========================================================
-     CREATE UNIQUE STORAGE PATH
-  ========================================================= */
-
-  function createStoragePath(file) {
-
-    const random =
-      Math.random()
-        .toString(36)
-        .substring(2, 10);
-
-    const timestamp =
-      Date.now();
-
-    return (
-      timestamp +
-      "_" +
-      random +
-      getExtension(file)
-    );
-
-  }
-
-
-  /* =========================================================
-     SELECT IMAGE FOLDER
-  ========================================================= */
-
-  function handleFolderSelection(event) {
-
-    const files =
-      Array.from(
-        event.target.files || []
-      );
-
-    selectedImages =
-      files.filter(
-        file =>
-          file.type &&
-          file.type.startsWith("image/")
-      );
-
-    const info =
-      document.getElementById(
-        "selectionInfo"
-      );
-
-    const uploadBtn =
-      document.getElementById(
-        "uploadBtn"
-      );
-
-    if (
-      selectedImages.length === 0
-    ) {
-
-      info.textContent =
-        "No image files found.";
-
-      uploadBtn.disabled =
-        true;
-
-      return;
-    }
-
-    const totalSize =
-      selectedImages.reduce(
-        (sum, file) =>
-          sum + file.size,
-        0
-      );
-
-    info.textContent =
-      selectedImages.length +
-      " image(s) selected • " +
-      formatBytes(totalSize);
-
-    uploadBtn.disabled =
-      false;
-
-    showStatus(
-      selectedImages.length +
-      " image(s) ready for upload."
-    );
-
-  }
-
-
-  /* =========================================================
-     CHECK ADMIN ACCESS
-  ========================================================= */
-
-  async function checkAdmin() {
-
-    showStatus(
-      "Checking administrator access..."
-    );
-
-    try {
-
-      const {
-        data: {
-          session
-        },
-        error: sessionError
-      } =
-        await supabaseClient.auth.getSession();
-
-      if (sessionError) {
-        throw sessionError;
-      }
-
-      if (!session) {
-
-        showStatus(
-          "No active session found. Please log in again."
-        );
-
-        return false;
-      }
-
-
-      const {
-        data: {
-          user
-        },
-        error: userError
-      } =
-        await supabaseClient.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-
-        showStatus(
-          "No logged-in user found. Please log in first."
-        );
-
-        return false;
-      }
-
-
-      const {
-        data: profile,
-        error: profileError
-      } =
-        await supabaseClient
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-
-      if (profileError) {
-        throw profileError;
-      }
-
-
-      if (
-        !profile ||
-        profile.role !== "admin"
-      ) {
-
-        showStatus(
-          "This account does not have administrator access."
-        );
-
-        return false;
-      }
-
-
-      showStatus(
-        "Administrator verified successfully. You can upload images."
-      );
-
-      return true;
-
-    } catch (error) {
-
-      console.error(
-        "Admin verification error:",
-        error
-      );
-
-      showStatus(
-        "Administrator verification failed: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
-      );
-
+    if (!session) {
+      window.location.replace("login.html");
       return false;
     }
 
-  }
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
 
+    if (userError) throw userError;
 
-  /* =========================================================
-     UPLOAD ALL IMAGES
-     
-     IMPORTANT:
-     We DO NOT create task_items here.
-     
-     The Supabase database trigger automatically creates
-     the task_items record after image_files is inserted.
-  ========================================================= */
-
-  async function uploadAllImages() {
-
-    if (
-      selectedImages.length === 0
-    ) {
-
-      showStatus(
-        "Please select an image folder first."
-      );
-
-      return;
+    if (!user) {
+      window.location.replace("login.html");
+      return false;
     }
 
+    const {
+      data: profile,
+      error: profileError
+    } = await supabaseClient
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    const uploadBtn =
-      document.getElementById(
-        "uploadBtn"
+    if (profileError) throw profileError;
+
+    if (!profile) {
+      showStatus("No profile was found for this account.");
+      return false;
+    }
+
+    const role = String(profile.role || "")
+      .trim()
+      .toLowerCase();
+
+    if (role !== "admin") {
+      alert("Administrator access required.");
+      window.location.replace("dashboard.html");
+      return false;
+    }
+
+    showStatus("Administrator verified successfully.");
+
+    return true;
+
+  } catch (error) {
+    console.error("Admin verification error:", error);
+
+    showStatus(
+      "Administrator verification failed: " +
+      error.message
+    );
+
+    return false;
+  }
+}
+
+
+/* =========================================================
+   SELECT IMAGE FOLDER
+========================================================= */
+
+function handleFolderSelection(event) {
+  const files = Array.from(event.target.files || []);
+
+  selectedImages = files.filter(file =>
+    file.type && file.type.startsWith("image/")
+  );
+
+  const info = document.getElementById("selectionInfo");
+  const uploadBtn = document.getElementById("uploadBtn");
+
+  if (selectedImages.length === 0) {
+    info.textContent = "No image files found.";
+    uploadBtn.disabled = true;
+    return;
+  }
+
+  const totalSize = selectedImages.reduce(
+    (sum, file) => sum + file.size,
+    0
+  );
+
+  info.textContent =
+    selectedImages.length +
+    " image(s) selected • " +
+    formatBytes(totalSize);
+
+  uploadBtn.disabled = false;
+
+  showStatus(
+    selectedImages.length + " image(s) ready for upload."
+  );
+}
+
+
+/* =========================================================
+   UPLOAD ALL IMAGES
+========================================================= */
+
+async function uploadAllImages() {
+  if (uploadInProgress) return;
+
+  if (selectedImages.length === 0) {
+    showStatus("Please select an image folder first.");
+    return;
+  }
+
+  uploadInProgress = true;
+
+  const uploadBtn = document.getElementById("uploadBtn");
+  const progressWrap = document.getElementById("progressWrap");
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+
+  const filesToUpload = [...selectedImages];
+
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = "Uploading...";
+
+  progressWrap.style.display = "block";
+  progressFill.style.width = "0%";
+  progressText.textContent = "0 / " + filesToUpload.length;
+
+  let successCount = 0;
+  let failedCount = 0;
+  let completedCount = 0;
+
+  try {
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError) throw userError;
+
+    if (!user) {
+      throw new Error(
+        "Your login session has expired. Please log in again."
       );
+    }
 
-    const progressWrap =
-      document.getElementById(
-        "progressWrap"
-      );
+    for (const file of filesToUpload) {
+      const title = getImageTitle(file);
+      const storagePath = createStoragePath(file);
 
-    const progressFill =
-      document.getElementById(
-        "progressFill"
-      );
+      let storageUploaded = false;
 
-    const progressText =
-      document.getElementById(
-        "progressText"
-      );
-
-
-    uploadBtn.disabled =
-      true;
-
-    progressWrap.style.display =
-      "block";
-
-    progressFill.style.width =
-      "0%";
-
-    progressText.textContent =
-      "0 / " +
-      selectedImages.length;
-
-
-    let successCount = 0;
-    let failedCount = 0;
-
-
-    try {
-
-      const {
-        data: {
-          user
-        },
-        error: userError
-      } =
-        await supabaseClient.auth.getUser();
-
-
-      if (userError) {
-        throw userError;
-      }
-
-
-      if (!user) {
-
-        throw new Error(
-          "Your login session has expired. Please log in again."
-        );
-
-      }
-
-
-      for (
-        let i = 0;
-        i < selectedImages.length;
-        i++
-      ) {
-
-        const file =
-          selectedImages[i];
-
-        const title =
-          getImageTitle(file);
-
-        const storagePath =
-          createStoragePath(file);
-
-
+      try {
         showStatus(
           "Uploading " +
-          (i + 1) +
+          (completedCount + 1) +
           " of " +
-          selectedImages.length +
+          filesToUpload.length +
           ": " +
           file.name
         );
 
-
-        /* =====================================================
-           STEP 1
-           UPLOAD IMAGE TO SUPABASE STORAGE
-        ===================================================== */
+        /* STEP 1: UPLOAD TO STORAGE */
 
         const {
-          data: storageData,
           error: uploadError
-        } =
-          await supabaseClient.storage
-            .from("images")
-            .upload(
-              storagePath,
-              file,
-              {
-                cacheControl: "3600",
-                upsert: false,
-                contentType: file.type
-              }
-            );
+        } = await supabaseClient.storage
+          .from("images")
+          .upload(storagePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type
+          });
 
+        if (uploadError) throw uploadError;
 
-        if (uploadError) {
+        storageUploaded = true;
 
-          console.error(
-            "Storage upload failed:",
-            uploadError
-          );
-
-          failedCount++;
-
-          showStatus(
-            "Storage upload failed for " +
-            file.name +
-            ": " +
-            (
-              uploadError.message ||
-              "Unknown storage error"
-            )
-          );
-
-          continue;
-        }
-
-
-        console.log(
-          "Storage upload successful:",
-          storageData
-        );
-
-
-        /* =====================================================
-           STEP 2
-           SAVE IMAGE INFORMATION TO image_files
-           
-           The DATABASE TRIGGER automatically creates
-           the task_items record after this insert.
-        ===================================================== */
+        /* STEP 2: SAVE IMAGE DATABASE RECORD */
 
         const {
           data: dbData,
           error: dbError
-        } =
-          await supabaseClient
-            .from("image_files")
-            .insert({
-              title: title,
-              file_path: storagePath,
-              file_name: file.name,
-              mime_type: file.type,
-              file_size: file.size,
-              created_by: user.id
-            })
-            .select()
-            .single();
+        } = await supabaseClient
+          .from("image_files")
+          .insert({
+            title: title,
+            file_path: storagePath,
+            file_name: file.name,
+            mime_type: file.type,
+            file_size: file.size,
+            created_by: user.id
+          })
+          .select()
+          .single();
 
+        if (dbError) throw dbError;
 
-        if (dbError) {
-
-          console.error(
-            "Database insert failed:",
-            dbError
-          );
-
-
-          /* Remove uploaded Storage object
-             if database record fails. */
-
-          await supabaseClient.storage
-            .from("images")
-            .remove([
-              storagePath
-            ]);
-
-
-          failedCount++;
-
-          showStatus(
-            "Image uploaded to Storage, but database record failed for " +
-            file.name +
-            ": " +
-            (
-              dbError.message ||
-              "Unknown database error"
-            )
-          );
-
-          continue;
-        }
-
-
-        console.log(
-          "Database record created:",
-          dbData
-        );
-
-
-        /* =====================================================
-           STEP 3
-           TASK ITEM IS CREATED AUTOMATICALLY BY SUPABASE
-        ===================================================== */
-
-        console.log(
-          "Image automatically added to Image Annotation:",
-          file.name
-        );
-
+        console.log("Image database record created:", dbData);
 
         successCount++;
 
+      } catch (fileError) {
+        console.error(
+          "Image upload failed:",
+          file.name,
+          fileError
+        );
 
-        const percentage =
-          Math.round(
-            (
-              (i + 1) /
-              selectedImages.length
-            ) * 100
-          );
+        /* ROLLBACK STORAGE FILE IF DATABASE INSERT FAILED */
 
+        if (storageUploaded) {
+          const { error: removeError } =
+            await supabaseClient.storage
+              .from("images")
+              .remove([storagePath]);
 
-        progressFill.style.width =
-          percentage + "%";
+          if (removeError) {
+            console.error(
+              "Storage cleanup failed:",
+              removeError
+            );
+          }
+        }
+
+        failedCount++;
+      } finally {
+        completedCount++;
+
+        const percentage = Math.round(
+          (completedCount / filesToUpload.length) * 100
+        );
+
+        progressFill.style.width = percentage + "%";
 
         progressText.textContent =
-          (i + 1) +
+          completedCount +
           " / " +
-          selectedImages.length;
-
+          filesToUpload.length;
       }
-
-
-      /* =====================================================
-         FINAL RESULT
-      ===================================================== */
-
-      if (
-        successCount ===
-        selectedImages.length
-      ) {
-
-        showStatus(
-          "Upload complete. " +
-          successCount +
-          " image(s) uploaded and automatically added to Image Annotation."
-        );
-
-      } else {
-
-        showStatus(
-          "Upload finished. " +
-          successCount +
-          " successful, " +
-          failedCount +
-          " failed."
-        );
-
-      }
-
-
-      selectedImages = [];
-
-
-      document.getElementById(
-        "imageFolder"
-      ).value = "";
-
-
-      document.getElementById(
-        "selectionInfo"
-      ).textContent =
-        "No folder selected.";
-
-
-      uploadBtn.disabled =
-        true;
-
-
-      await loadImageLibrary();
-
-
-    } catch (error) {
-
-      console.error(
-        "Upload process failed:",
-        error
-      );
-
-      showStatus(
-        "Upload failed: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
-      );
-
-    } finally {
-
-      uploadBtn.disabled =
-        selectedImages.length === 0;
-
     }
 
-  }
-
-
-  /* =========================================================
-     LOAD IMAGE LIBRARY
-  ========================================================= */
-
-  async function loadImageLibrary() {
-
-    const library =
-      document.getElementById(
-        "library"
-      );
-
-    library.innerHTML =
-      '<div class="empty">Loading image library...</div>';
-
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .from("image_files")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
-
-
-    if (error) {
-
-      console.error(
-        "Image library error:",
-        error
-      );
-
-      library.innerHTML =
-        '<div class="empty">' +
-        "Unable to load image library: " +
-        (
-          error.message ||
-          "Unknown error"
-        ) +
-        "</div>";
-
-      return;
-    }
-
-
-    if (
-      !data ||
-      data.length === 0
-    ) {
-
-      library.innerHTML =
-        '<div class="empty">' +
-        "No images uploaded yet." +
-        "</div>";
-
-      return;
-    }
-
-
-    library.innerHTML = "";
-
-
-    for (
-      const image of data
-    ) {
-
-      const card =
-        document.createElement(
-          "div"
-        );
-
-      card.className =
-        "image-card";
-
-
-      const preview =
-        document.createElement(
-          "div"
-        );
-
-      preview.className =
-        "image-preview";
-
-      preview.innerHTML =
-        "<span>Loading...</span>";
-
-
-      const info =
-        document.createElement(
-          "div"
-        );
-
-      info.className =
-        "image-info";
-
-
-      const title =
-        document.createElement(
-          "div"
-        );
-
-      title.className =
-        "image-title";
-
-      title.textContent =
-        image.title;
-
-
-      const meta =
-        document.createElement(
-          "div"
-        );
-
-      meta.className =
-        "image-meta";
-
-      meta.textContent =
-        (
-          image.file_name ||
-          "Image"
-        ) +
-        " • " +
-        formatBytes(
-          image.file_size
-        );
-
-
-      const actions =
-        document.createElement(
-          "div"
-        );
-
-      actions.className =
-        "image-actions";
-
-
-      const viewButton =
-        document.createElement(
-          "button"
-        );
-
-      viewButton.className =
-        "view-btn";
-
-      viewButton.textContent =
-        "View";
-
-
-      viewButton.onclick =
-        () =>
-          viewImage(
-            image.file_path
-          );
-
-
-      const deleteButton =
-        document.createElement(
-          "button"
-        );
-
-      deleteButton.className =
-        "delete-btn";
-
-      deleteButton.textContent =
-        "Delete";
-
-
-      deleteButton.onclick =
-        () =>
-          deleteImage(
-            image.id,
-            image.file_path
-          );
-
-
-      actions.appendChild(
-        viewButton
-      );
-
-      actions.appendChild(
-        deleteButton
-      );
-
-
-      info.appendChild(
-        title
-      );
-
-      info.appendChild(
-        meta
-      );
-
-      info.appendChild(
-        actions
-      );
-
-
-      card.appendChild(
-        preview
-      );
-
-      card.appendChild(
-        info
-      );
-
-
-      library.appendChild(
-        card
-      );
-
-
-      loadThumbnail(
-        image.file_path,
-        preview
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     LOAD IMAGE THUMBNAIL
-  ========================================================= */
-
-  async function loadThumbnail(
-    filePath,
-    previewElement
-  ) {
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.storage
-        .from("images")
-        .createSignedUrl(
-          filePath,
-          3600
-        );
-
-
-    if (
-      error ||
-      !data?.signedUrl
-    ) {
-
-      console.error(
-        "Thumbnail error:",
-        error
-      );
-
-      previewElement.innerHTML =
-        "<span>Preview unavailable</span>";
-
-      return;
-    }
-
-
-    const img =
-      document.createElement(
-        "img"
-      );
-
-
-    img.src =
-      data.signedUrl;
-
-    img.alt =
-      "NexaLearn image";
-
-
-    img.onerror = () => {
-
-      previewElement.innerHTML =
-        "<span>Preview unavailable</span>";
-
-    };
-
-
-    previewElement.innerHTML =
-      "";
-
-    previewElement.appendChild(
-      img
+    showStatus(
+      "Upload finished. " +
+      successCount +
+      " successful, " +
+      failedCount +
+      " failed."
     );
 
-  }
+    selectedImages = [];
 
+    document.getElementById("imageFolder").value = "";
 
-  /* =========================================================
-     VIEW IMAGE
-  ========================================================= */
-
-  async function viewImage(
-    filePath
-  ) {
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.storage
-        .from("images")
-        .createSignedUrl(
-          filePath,
-          3600
-        );
-
-
-    if (
-      error ||
-      !data?.signedUrl
-    ) {
-
-      console.error(
-        "View image error:",
-        error
-      );
-
-      alert(
-        "Unable to open image: " +
-        (
-          error?.message ||
-          "Unknown error"
-        )
-      );
-
-      return;
-    }
-
-
-    window.open(
-      data.signedUrl,
-      "_blank"
-    );
-
-  }
-
-
-  /* =========================================================
-     DELETE IMAGE
-  ========================================================= */
-
-  async function deleteImage(
-    id,
-    filePath
-  ) {
-
-    const confirmed =
-      confirm(
-        "Are you sure you want to delete this image?"
-      );
-
-
-    if (!confirmed) {
-      return;
-    }
-
-
-    try {
-
-      showStatus(
-        "Deleting image..."
-      );
-
-
-      /* Delete task item connected
-         to this image. */
-
-      const {
-        error: taskItemDeleteError
-      } =
-        await supabaseClient
-          .from("task_items")
-          .delete()
-          .eq(
-            "task_id",
-            "b59f0dc8-60ad-43a9-9eb2-858ba7e9c2ef"
-          )
-          .contains(
-            "metadata",
-            {
-              image_id: id
-            }
-          );
-
-
-      if (taskItemDeleteError) {
-
-        console.error(
-          "Task item delete warning:",
-          taskItemDeleteError
-        );
-
-      }
-
-
-      /* Delete from Storage */
-
-      const {
-        error: storageError
-      } =
-        await supabaseClient.storage
-          .from("images")
-          .remove([
-            filePath
-          ]);
-
-
-      if (storageError) {
-        throw storageError;
-      }
-
-
-      /* Delete image database record */
-
-      const {
-        error: dbError
-      } =
-        await supabaseClient
-          .from("image_files")
-          .delete()
-          .eq(
-            "id",
-            id
-          );
-
-
-      if (dbError) {
-        throw dbError;
-      }
-
-
-      showStatus(
-        "Image deleted successfully."
-      );
-
-
-      await loadImageLibrary();
-
-
-    } catch (error) {
-
-      console.error(
-        "Delete failed:",
-        error
-      );
-
-      showStatus(
-        "Delete failed: " +
-        (
-          error.message ||
-          "Unknown error"
-        )
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     START PAGE
-  ========================================================= */
-
-  async function startPage() {
-
-    const isAdmin =
-      await checkAdmin();
-
-
-    if (!isAdmin) {
-
-      document.getElementById(
-        "uploadBtn"
-      ).disabled = true;
-
-      return;
-    }
-
+    document.getElementById("selectionInfo").textContent =
+      "No folder selected.";
 
     await loadImageLibrary();
 
+  } catch (error) {
+    console.error("Upload process failed:", error);
+
+    showStatus(
+      "Upload process failed: " + error.message
+    );
+
+  } finally {
+    uploadInProgress = false;
+
+    uploadBtn.disabled = selectedImages.length === 0;
+    uploadBtn.textContent = "Upload Images";
+  }
+}
+
+
+/* =========================================================
+   LOAD IMAGE LIBRARY
+========================================================= */
+
+async function loadImageLibrary() {
+  const library = document.getElementById("library");
+
+  library.innerHTML =
+    '<div class="empty">Loading image library...</div>';
+
+  try {
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("image_files")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      library.innerHTML =
+        '<div class="empty">No images uploaded yet.</div>';
+      return;
+    }
+
+    library.innerHTML = "";
+
+    for (const image of data) {
+      const card = document.createElement("div");
+      card.className = "image-card";
+
+      const preview = document.createElement("div");
+      preview.className = "image-preview";
+      preview.textContent = "Loading preview...";
+
+      const info = document.createElement("div");
+      info.className = "image-info";
+
+      const title = document.createElement("div");
+      title.className = "image-title";
+      title.textContent = image.title || image.file_name || "Untitled image";
+
+      const meta = document.createElement("div");
+      meta.className = "image-meta";
+      meta.textContent =
+        (image.file_name || "Image") +
+        " • " +
+        formatBytes(image.file_size);
+
+      const actions = document.createElement("div");
+      actions.className = "image-actions";
+
+      const viewButton = document.createElement("button");
+      viewButton.className = "view-btn";
+      viewButton.textContent = "View";
+
+      viewButton.addEventListener("click", () => {
+        viewImage(image.file_path);
+      });
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete-btn";
+      deleteButton.textContent = "Delete";
+
+      deleteButton.addEventListener("click", () => {
+        deleteImage(image.id, image.file_path, deleteButton);
+      });
+
+      actions.appendChild(viewButton);
+      actions.appendChild(deleteButton);
+
+      info.appendChild(title);
+      info.appendChild(meta);
+      info.appendChild(actions);
+
+      card.appendChild(preview);
+      card.appendChild(info);
+
+      library.appendChild(card);
+
+      loadThumbnail(image.file_path, preview);
+    }
+
+  } catch (error) {
+    console.error("Image library error:", error);
+
+    library.textContent =
+      "Unable to load image library: " + error.message;
+  }
+}
+
+
+/* =========================================================
+   LOAD IMAGE THUMBNAIL
+========================================================= */
+
+async function loadThumbnail(filePath, previewElement) {
+  try {
+    const {
+      data,
+      error
+    } = await supabaseClient.storage
+      .from("images")
+      .createSignedUrl(filePath, 3600);
+
+    if (error) throw error;
+
+    if (!data?.signedUrl) {
+      throw new Error("No image URL returned.");
+    }
+
+    const img = document.createElement("img");
+
+    img.src = data.signedUrl;
+    img.alt = "NexaLearn image";
+
+    img.onerror = () => {
+      previewElement.textContent = "Preview unavailable";
+    };
+
+    previewElement.innerHTML = "";
+    previewElement.appendChild(img);
+
+  } catch (error) {
+    console.error("Thumbnail error:", error);
+    previewElement.textContent = "Preview unavailable";
+  }
+}
+
+
+/* =========================================================
+   VIEW IMAGE
+========================================================= */
+
+async function viewImage(filePath) {
+  try {
+    const {
+      data,
+      error
+    } = await supabaseClient.storage
+      .from("images")
+      .createSignedUrl(filePath, 3600);
+
+    if (error) throw error;
+
+    if (!data?.signedUrl) {
+      throw new Error("Image URL was not returned.");
+    }
+
+    window.open(data.signedUrl, "_blank", "noopener");
+
+  } catch (error) {
+    console.error("View image error:", error);
+
+    alert("Unable to open image: " + error.message);
+  }
+}
+
+
+/* =========================================================
+   DELETE IMAGE
+========================================================= */
+
+async function deleteImage(id, filePath, button) {
+  if (!confirm("Are you sure you want to delete this image?")) {
+    return;
   }
 
+  button.disabled = true;
+  button.textContent = "Deleting...";
 
-  /* =========================================================
-     EVENTS
-  ========================================================= */
+  try {
+    showStatus("Deleting image...");
 
-  document
-    .getElementById("imageFolder")
-    .addEventListener(
-      "change",
-      handleFolderSelection
+    /*
+      The original code used a hardcoded task UUID.
+      This version instead looks for task items whose metadata
+      contains this image_id.
+
+      This assumes your database trigger stores image_id in
+      task_items.metadata.
+    */
+
+    const {
+      error: taskItemError
+    } = await supabaseClient
+      .from("task_items")
+      .delete()
+      .contains("metadata", {
+        image_id: id
+      });
+
+    if (taskItemError) {
+      throw new Error(
+        "Unable to remove the associated image task item: " +
+        taskItemError.message
+      );
+    }
+
+    /* REMOVE IMAGE FROM STORAGE */
+
+    const {
+      error: storageError
+    } = await supabaseClient.storage
+      .from("images")
+      .remove([filePath]);
+
+    if (storageError) throw storageError;
+
+    /* REMOVE IMAGE DATABASE RECORD */
+
+    const {
+      error: dbError
+    } = await supabaseClient
+      .from("image_files")
+      .delete()
+      .eq("id", id);
+
+    if (dbError) throw dbError;
+
+    showStatus("Image deleted successfully.");
+
+    await loadImageLibrary();
+
+  } catch (error) {
+    console.error("Delete image error:", error);
+
+    showStatus(
+      "Image deletion failed: " + error.message
     );
 
-
-  document
-    .getElementById("uploadBtn")
-    .addEventListener(
-      "click",
-      uploadAllImages
-    );
+    button.disabled = false;
+    button.textContent = "Delete";
+  }
+}
 
 
-  /* =========================================================
-     START
-  ========================================================= */
+/* =========================================================
+   LOGOUT
+========================================================= */
 
-  startPage();
+document
+  .getElementById("logoutBtn")
+  .addEventListener("click", async function() {
+
+    if (!confirm("Are you sure you want to log out?")) {
+      return;
+    }
+
+    const { error } = await supabaseClient.auth.signOut();
+
+    if (error) {
+      alert("Unable to log out: " + error.message);
+      return;
+    }
+
+    localStorage.removeItem("nexaLearnLoggedIn");
+    localStorage.removeItem("nexaLearnUser");
+    localStorage.removeItem("nexaLearnUserId");
+
+    window.location.replace("login.html");
+  });
+
+
+/* =========================================================
+   START PAGE
+========================================================= */
+
+async function startPage() {
+  console.log("Starting NexaLearn Image Uploads...");
+
+  const isAdmin = await checkAdmin();
+
+  if (!isAdmin) {
+    document.getElementById("uploadBtn").disabled = true;
+    return;
+  }
+
+  await loadImageLibrary();
+
+  console.log("Image Upload page loaded.");
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+document
+  .getElementById("imageFolder")
+  .addEventListener("change", handleFolderSelection);
+
+document
+  .getElementById("uploadBtn")
+  .addEventListener("click", uploadAllImages);
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+startPage();
 
 </script>
 
 </body>
 </html>
-```
