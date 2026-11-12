@@ -599,20 +599,26 @@
       <div class="notification-form">
 
         <p class="notification-hint">
-          Send an in-app message to one registered user.
-          Enter that user's Supabase Auth UUID.
+          Send an in-app announcement to every user or a private notification to one user.
         </p>
 
         <form id="adminNotificationForm">
 
-          <label for="notificationUserId">Recipient User ID (UUID)</label>
-          <input
-            id="notificationUserId"
-            name="notificationUserId"
-            required
-            placeholder="Paste the user's Supabase user ID"
-            pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-          >
+          <label for="notificationAudience">Who should receive this notification?</label>
+          <select id="notificationAudience" name="notificationAudience" required>
+            <option value="all">All users</option>
+            <option value="specific">One specific user</option>
+          </select>
+
+          <div id="specificUserField" hidden>
+            <label for="notificationUserId">Recipient User ID (UUID)</label>
+            <input
+              id="notificationUserId"
+              name="notificationUserId"
+              placeholder="Paste the user's Supabase user ID"
+              pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+            >
+          </div>
 
           <label for="notificationTitle">Title</label>
           <input
@@ -637,7 +643,7 @@
             name="notificationMessage"
             required
             maxlength="3000"
-            placeholder="Write the message for this user"
+            placeholder="Write the notification message"
           ></textarea>
 
           <button id="sendNotificationBtn" type="submit">
@@ -646,7 +652,7 @@
 
           <p class="notification-hint">
             Only verified administrators can send notifications.
-            Your Supabase notifications table and RLS policies must support this insert.
+            General announcements are sent to all users. Specific notifications are sent only to the selected user.
           </p>
 
         </form>
@@ -1264,38 +1270,48 @@ document.addEventListener("click", async function(event) {
    SEND MANUAL USER NOTIFICATION
 ===================================================== */
 
+const notificationAudience = document.getElementById("notificationAudience");
+const specificUserField = document.getElementById("specificUserField");
+const notificationUserIdInput = document.getElementById("notificationUserId");
+
+function updateNotificationAudience() {
+  const isSpecific = notificationAudience.value === "specific";
+  specificUserField.hidden = !isSpecific;
+  notificationUserIdInput.required = isSpecific;
+  if (!isSpecific) notificationUserIdInput.value = "";
+}
+
+notificationAudience.addEventListener("change", updateNotificationAudience);
+updateNotificationAudience();
+
 document
   .getElementById("adminNotificationForm")
   .addEventListener("submit", async function(event) {
-
     event.preventDefault();
 
     const button = document.getElementById("sendNotificationBtn");
+    const audience = notificationAudience.value;
+    const userId = notificationUserIdInput.value.trim();
+    const title = document.getElementById("notificationTitle").value.trim();
+    const notificationType = document.getElementById("notificationType").value;
+    const message = document.getElementById("notificationMessage").value.trim();
 
-    const userId = document
-      .getElementById("notificationUserId")
-      .value.trim();
-
-    const title = document
-      .getElementById("notificationTitle")
-      .value.trim();
-
-    const notificationType = document
-      .getElementById("notificationType")
-      .value;
-
-    const message = document
-      .getElementById("notificationMessage")
-      .value.trim();
-
-    if (!userId || !title || !message) {
-      alert("Please complete all notification fields.");
+    if (!title || !message) {
+      showMessage("Please enter a notification title and message.", true);
       return;
     }
 
-    if (!confirm("Send this notification to the selected user?")) {
+    if (audience === "specific" && !userId) {
+      showMessage("Please enter the recipient's Supabase User ID.", true);
       return;
     }
+
+    const targetUserId = audience === "all" ? null : userId;
+    const confirmation = audience === "all"
+      ? "Send this announcement to ALL users?"
+      : "Send this notification to the selected user?";
+
+    if (!confirm(confirmation)) return;
 
     button.disabled = true;
     button.textContent = "Sending...";
@@ -1303,53 +1319,41 @@ document
     try {
       const { data: authData, error: authError } =
         await supabaseClient.auth.getUser();
-
       if (authError) throw authError;
-
       if (!authData?.user) {
         throw new Error("Your admin session has expired. Please log in again.");
       }
 
-      const { data: profile, error: profileError } =
-        await supabaseClient
-          .from("profiles")
-          .select("role")
-          .eq("id", authData.user.id)
-          .maybeSingle();
-
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", authData.user.id)
+        .maybeSingle();
       if (profileError) throw profileError;
-
-      if (
-        !profile ||
-        String(profile.role || "").trim().toLowerCase() !== "admin"
-      ) {
+      if (!profile || String(profile.role || "").trim().toLowerCase() !== "admin") {
         throw new Error("Administrator access required.");
       }
 
       const { error: insertError } = await supabaseClient
         .from("notifications")
         .insert({
-          title: title,
-          message: message,
+          title,
+          message,
           notification_type: notificationType,
-          target_user_id: userId,
+          target_user_id: targetUserId,
           created_by: authData.user.id
         });
-
       if (insertError) throw insertError;
 
-      showMessage("Notification sent successfully.");
-
+      showMessage(audience === "all"
+        ? "Announcement sent successfully. It is now available to all users."
+        : "Notification sent successfully to the selected user.");
       document.getElementById("adminNotificationForm").reset();
+      updateNotificationAudience();
 
     } catch (error) {
       console.error("Notification error:", error);
-
-      showMessage(
-        "Unable to send notification: " + error.message,
-        true
-      );
-
+      showMessage("Unable to send notification: " + error.message, true);
     } finally {
       button.disabled = false;
       button.textContent = "Send Notification";

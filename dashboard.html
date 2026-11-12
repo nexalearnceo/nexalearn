@@ -395,6 +395,7 @@ async function loadDashboard() {
     const user = await getCurrentUser();
     if (!user) return;
 
+    signedInUserId = user.id;
     $("userEmail").textContent = user.email || "NexaLearn Member";
 
     await Promise.all([
@@ -403,6 +404,7 @@ async function loadDashboard() {
       loadPackage(user.id)
     ]);
 
+    await loadNotifications();
     loadingNote.style.display = "none";
     console.log("NexaLearn dashboard loaded successfully.");
   } catch (error) {
@@ -413,46 +415,85 @@ async function loadDashboard() {
   }
 }
 
-/* Browser-local notification centre */
-const notificationKey = "nexaLearnDashboardNotifications";
+/* Supabase-backed notification centre.
+   Read state is stored separately for each user so one user's actions
+   never mark an announcement read or cleared for other users. */
 const notificationToggle = $("notificationToggle");
 const notificationPanel = $("notificationPanel");
 const notificationBadge = $("notificationBadge");
 const notificationList = $("notificationList");
 const notificationSummary = $("notificationSummary");
+let signedInUserId = null;
+let dashboardNotifications = [];
+let notificationStatusById = new Map();
 
-function getNotifications() {
+function notificationIcon(type) {
+  const icons = {
+    announcement: "📢",
+    deposit: "💳",
+    withdrawal: "💸",
+    system: "⚙️"
+  };
+  return icons[type] || "🔔";
+}
+
+function showNotificationLoadError(message) {
+  notificationList.replaceChildren();
+  const empty = document.createElement("div");
+  empty.className = "notification-empty";
+  const title = document.createElement("p");
+  title.textContent = "Unable to load notifications";
+  const detail = document.createElement("small");
+  detail.textContent = message;
+  empty.append(title, detail);
+  notificationList.appendChild(empty);
+  notificationBadge.hidden = true;
+  notificationSummary.textContent = "Please try again";
+}
+
+async function loadNotifications() {
+  if (!signedInUserId) return;
+
   try {
-    const items = JSON.parse(localStorage.getItem(notificationKey) || "[]");
-    return Array.isArray(items) ? items : [];
-  } catch {
-    return [];
+    const { data: notifications, error: notificationError } = await supabaseClient
+      .from("notifications")
+      .select("id, title, message, notification_type, created_at, target_user_id")
+      .or(`target_user_id.is.null,target_user_id.eq.${signedInUserId}`)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (notificationError) throw notificationError;
+
+    const rows = notifications || [];
+    const ids = rows.map(item => item.id);
+    let statuses = [];
+
+    if (ids.length) {
+      const { data, error } = await supabaseClient
+        .from("notification_user_status")
+        .select("notification_id, is_read, is_dismissed")
+        .eq("user_id", signedInUserId)
+        .in("notification_id", ids);
+      if (error) throw error;
+      statuses = data || [];
+    }
+
+    notificationStatusById = new Map(statuses.map(status => [status.notification_id, status]));
+    dashboardNotifications = rows.filter(item =>
+      !notificationStatusById.get(item.id)?.is_dismissed
+    );
+    renderNotifications();
+
+  } catch (error) {
+    console.error("NOTIFICATION LOAD ERROR:", error);
+    showNotificationLoadError(error.message || "Please refresh the page.");
   }
 }
 
-function saveNotifications(items) {
-  localStorage.setItem(notificationKey, JSON.stringify(items));
-}
-
-function addNexaNotification(title, message, icon = "🔔") {
-  const items = getNotifications();
-
-  items.unshift({
-    id: Date.now().toString() + Math.random().toString(36).slice(2, 8),
-    title,
-    message,
-    icon,
-    read: false,
-    createdAt: new Date().toISOString()
-  });
-
-  saveNotifications(items.slice(0, 50));
-  renderNotifications();
-}
-
 function renderNotifications() {
-  const items = getNotifications();
-  const unread = items.filter(item => !item.read).length;
+  const unread = dashboardNotifications.filter(item =>
+    !notificationStatusById.get(item.id)?.is_read
+  ).length;
 
   notificationBadge.textContent = unread > 99 ? "99+" : String(unread);
   notificationBadge.hidden = unread === 0;
@@ -462,94 +503,130 @@ function renderNotifications() {
 
   notificationList.replaceChildren();
 
-  if (!items.length) {
+  if (!dashboardNotifications.length) {
     const empty = document.createElement("div");
     empty.className = "notification-empty";
-
     const icon = document.createElement("span");
     icon.textContent = "🔔";
-
     const message = document.createElement("p");
     message.textContent = "You're all caught up!";
-
     const hint = document.createElement("small");
-    hint.textContent = "New updates will appear here.";
-
+    hint.textContent = "New updates from NexaLearn will appear here.";
     empty.append(icon, message, hint);
     notificationList.appendChild(empty);
     return;
   }
 
-  items.forEach(item => {
+  dashboardNotifications.forEach(item => {
+    const status = notificationStatusById.get(item.id);
+    const isRead = Boolean(status?.is_read);
     const row = document.createElement("div");
-    row.className = "notification-item" + (item.read ? "" : " unread");
+    row.className = "notification-item" + (isRead ? "" : " unread");
 
     const icon = document.createElement("div");
     icon.className = "notification-icon";
-    icon.textContent = item.icon || "🔔";
+    icon.textContent = notificationIcon(item.notification_type);
 
     const content = document.createElement("div");
     content.className = "notification-content";
-
     const title = document.createElement("strong");
     title.textContent = item.title || "NexaLearn update";
-
     const message = document.createElement("p");
     message.textContent = item.message || "";
-
     const time = document.createElement("small");
-    const date = new Date(item.createdAt);
+    const date = new Date(item.created_at);
     time.textContent = Number.isNaN(date.getTime()) ? "" : date.toLocaleString();
-
     content.append(title, message, time);
 
     const readButton = document.createElement("button");
     readButton.type = "button";
-    readButton.textContent = item.read ? "✓" : "Read";
-    readButton.setAttribute("aria-label", item.read ? "Already read" : "Mark notification as read");
-    readButton.disabled = Boolean(item.read);
-
-    readButton.addEventListener("click", () => {
-      saveNotifications(getNotifications().map(n =>
-        n.id === item.id ? {...n, read: true} : n
-      ));
-      renderNotifications();
-    });
+    readButton.textContent = isRead ? "✓ Read" : "Mark read";
+    readButton.setAttribute("aria-label", isRead ? "Already read" : "Mark notification as read");
+    readButton.disabled = isRead;
+    readButton.addEventListener("click", () => markNotificationRead(item.id));
 
     row.append(icon, content, readButton);
     notificationList.appendChild(row);
   });
 }
 
-notificationToggle.addEventListener("click", () => {
+async function saveNotificationStatuses(rows) {
+  if (!rows.length) return;
+  const { error } = await supabaseClient
+    .from("notification_user_status")
+    .upsert(rows, { onConflict: "notification_id,user_id" });
+  if (error) throw error;
+}
+
+async function markNotificationRead(notificationId) {
+  try {
+    const status = {
+      notification_id: notificationId,
+      user_id: signedInUserId,
+      is_read: true,
+      is_dismissed: false,
+      read_at: new Date().toISOString()
+    };
+    await saveNotificationStatuses([status]);
+    notificationStatusById.set(notificationId, status);
+    renderNotifications();
+  } catch (error) {
+    console.error("MARK NOTIFICATION READ ERROR:", error);
+    alert("Unable to mark this notification as read: " + error.message);
+  }
+}
+
+notificationToggle.addEventListener("click", async () => {
   const open = notificationToggle.getAttribute("aria-expanded") !== "true";
   notificationToggle.setAttribute("aria-expanded", String(open));
   notificationPanel.hidden = !open;
-
-  if (open) renderNotifications();
+  if (open) await loadNotifications();
 });
 
-$("markAllRead").addEventListener("click", () => {
-  saveNotifications(getNotifications().map(item => ({...item, read: true})));
-  renderNotifications();
+$("markAllRead").addEventListener("click", async () => {
+  try {
+    const unreadItems = dashboardNotifications.filter(item =>
+      !notificationStatusById.get(item.id)?.is_read
+    );
+    const now = new Date().toISOString();
+    const rows = unreadItems.map(item => ({
+      notification_id: item.id,
+      user_id: signedInUserId,
+      is_read: true,
+      is_dismissed: false,
+      read_at: now
+    }));
+    await saveNotificationStatuses(rows);
+    rows.forEach(row => notificationStatusById.set(row.notification_id, row));
+    renderNotifications();
+  } catch (error) {
+    console.error("MARK ALL NOTIFICATIONS READ ERROR:", error);
+    alert("Unable to mark notifications as read: " + error.message);
+  }
 });
 
-$("clearNotifications").addEventListener("click", () => {
-  saveNotifications([]);
-  renderNotifications();
+$("clearNotifications").addEventListener("click", async () => {
+  if (!dashboardNotifications.length) return;
+  if (!confirm("Clear these notifications from your notification panel?")) return;
+
+  try {
+    const now = new Date().toISOString();
+    const rows = dashboardNotifications.map(item => ({
+      notification_id: item.id,
+      user_id: signedInUserId,
+      is_read: true,
+      is_dismissed: true,
+      read_at: now
+    }));
+    await saveNotificationStatuses(rows);
+    rows.forEach(row => notificationStatusById.set(row.notification_id, row));
+    dashboardNotifications = [];
+    renderNotifications();
+  } catch (error) {
+    console.error("CLEAR NOTIFICATIONS ERROR:", error);
+    alert("Unable to clear notifications: " + error.message);
+  }
 });
-
-/* Create the welcome message only once per browser. */
-if (!localStorage.getItem("nexaLearnWelcomeNotificationAdded")) {
-  addNexaNotification(
-    "Welcome to NexaLearn",
-    "Your workspace is ready. Explore tasks, packages, and your wallet.",
-    "🎉"
-  );
-  localStorage.setItem("nexaLearnWelcomeNotificationAdded", "true");
-}
-
-renderNotifications();
 
 /* Sign out */
 async function logout() {
